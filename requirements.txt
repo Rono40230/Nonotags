@@ -1,0 +1,21 @@
+# Dépendances Python pour Nonotags
+# Phase 1 - Fondations et Architecture
+
+# === Dépendances principales ===
+mutagen>=1.47.0          # Manipulation des métadonnées MP3
+PyGObject>=3.54.0        # Interface GTK pour Linux
+pycairo>=1.28.0          # Support graphique pour GTK
+
+# === Dépendances pour fonctionnalités avancées ===
+requests>=2.32.0         # API calls pour recherche de pochettes
+Pillow>=11.3.0           # Traitement d'images (pochettes)
+
+# === Dépendances de développement ===
+pytest>=8.0.0            # Tests unitaires
+black>=24.0.0            # Formatage de code
+flake8>=7.0.0            # Linting
+mypy>=1.8.0              # Vérification de types
+
+# === Dépendances optionnelles (Phase 4) ===
+# musicbrainzngs>=0.7.1    # API MusicBrainz
+# discogs-client>=2.6      # API Discogs

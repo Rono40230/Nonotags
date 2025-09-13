@@ -1,0 +1,761 @@
+/* 
+Thème moderne pour Nonotags
+Design épuré, moderne et intuitif
+Inspiré par les guidelines Material Design 3 et Adwaita
+*/
+
+/* === VARIABLES CSS MODERNES === */
+:root {
+  /* Palette de couleurs moderne */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  
+  /* Couleurs neutres */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  /* États */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  
+  /* Spacing moderne */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  
+  /* Rayons de bordure */
+  --radius-sm: 0.375rem;
+  --radius: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  
+  /* Ombres modernes */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* Transitions fluides */
+  --transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* === FENÊTRE PRINCIPALE === */
+window {
+  background: var(--gray-50);
+  color: var(--gray-900);
+}
+
+/* === FENÊTRE DE DÉMARRAGE === */
+.startup-window {
+  background: linear-gradient(135deg, var(--primary-50) 0%, var(--gray-50) 100%);
+  border-radius: var(--radius-xl);
+}
+
+.startup-container {
+  padding: var(--space-8);
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.startup-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.startup-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-700);
+  margin-bottom: var(--space-2);
+  letter-spacing: -0.025em;
+}
+
+.startup-subtitle {
+  font-size: 0.95rem;
+  color: var(--gray-600);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* === BOUTONS MODERNES === */
+.modern-button {
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-weight: 500;
+  font-size: 0.95rem;
+  border: none;
+  transition: var(--transition);
+  cursor: pointer;
+  min-height: 48px; /* Accessibilité tactile */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.modern-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.modern-button:active {
+  transform: translateY(0);
+}
+
+/* Bouton principal */
+.button-primary {
+  background: var(--primary-600);
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.button-primary:hover {
+  background: var(--primary-700);
+}
+
+.button-primary:focus {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+/* Bouton secondaire */
+.button-secondary {
+  background: white;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+  box-shadow: var(--shadow-sm);
+}
+
+.button-secondary:hover {
+  background: var(--gray-50);
+  border-color: var(--gray-400);
+}
+
+/* Bouton tertiaire */
+.button-tertiary {
+  background: transparent;
+  color: var(--gray-600);
+  border: none;
+}
+
+.button-tertiary:hover {
+  background: var(--gray-100);
+  color: var(--gray-700);
+}
+
+/* === CARDS MODERNES === */
+.modern-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--gray-200);
+  transition: var(--transition);
+  overflow: hidden;
+}
+
+.modern-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.card-body {
+  padding: var(--space-6);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: var(--space-2);
+}
+
+.card-subtitle {
+  color: var(--gray-600);
+  font-size: 0.875rem;
+}
+
+/* === ALBUM CARDS === */
+.album-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  border: 1px solid var(--gray-200);
+  cursor: pointer;
+  position: relative;
+}
+
+.album-card:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-4px);
+  border-color: var(--gray-300);
+}
+
+.album-card.selected {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
+  transform: translateY(-2px);
+}
+
+.album-card.selected::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+  z-index: 1;
+}
+
+/* Checkbox de sélection */
+.selection-checkbox {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  border: 2px solid var(--gray-300);
+  transition: var(--transition);
+}
+
+.selection-checkbox:checked {
+  background: var(--primary-500);
+  border-color: var(--primary-500);
+  color: white;
+}
+
+.selection-checkbox:hover {
+  border-color: var(--primary-400);
+}
+
+.album-cover {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  background: var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.album-info {
+  padding: var(--space-4);
+}
+
+.album-title {
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: var(--space-1);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.album-artist {
+  color: var(--gray-600);
+  font-size: 0.85rem;
+  margin-bottom: var(--space-2);
+}
+
+.album-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--gray-500);
+}
+
+/* === STATUTS === */
+.status-badge {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-pending {
+  background: var(--gray-100);
+  color: var(--gray-700);
+}
+
+.status-processing {
+  background: var(--primary-100);
+  color: var(--primary-700);
+}
+
+.status-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-error {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.status-warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+/* === HEADER BAR MODERNE === */
+.modern-headerbar {
+  background: white;
+  border-bottom: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+}
+
+.headerbar-title {
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+/* === GRILLE RESPONSIVE === */
+.album-grid {
+  padding: var(--space-6);
+  gap: var(--space-6);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+}
+
+/* Responsive pour différentes tailles d'écran */
+@media (min-width: 1400px) {
+  .album-grid {
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: var(--space-8);
+  }
+}
+
+@media (max-width: 768px) {
+  .album-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--space-4);
+    padding: var(--space-4);
+  }
+}
+
+/* === BARRE D'OUTILS MODERNE === */
+.toolbar {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--gray-200);
+  padding: var(--space-3) var(--space-4);
+}
+
+.toolbar button {
+  margin: 0 var(--space-1);
+}
+
+/* === BARRE DE STATUT === */
+.status-bar {
+  background: var(--gray-50);
+  border-top: 1px solid var(--gray-200);
+  padding: var(--space-2) var(--space-4);
+  font-size: 0.875rem;
+}
+
+.dim-label {
+  opacity: 0.6;
+  font-size: 0.85rem;
+}
+
+.text-small {
+  font-size: 0.75rem;
+}
+
+/* === ÉLÉMENTS MÉTADONNÉES === */
+.meta-year {
+  background: var(--primary-100);
+  color: var(--primary-700);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.meta-tracks {
+  color: var(--gray-500);
+  font-size: 0.7rem;
+}
+
+.meta-genre {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+/* === NAVIGATION === */
+.nav-button {
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  padding: var(--space-2);
+  color: var(--gray-600);
+  transition: var(--transition);
+}
+
+.nav-button:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+}
+
+.nav-button.active {
+  background: var(--primary-100);
+  color: var(--primary-700);
+}
+
+/* === INPUTS MODERNES === */
+.modern-entry {
+  padding: var(--space-3);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  background: white;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+
+.modern-entry:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+/* === SCROLLBARS MODERNES === */
+scrollbar {
+  background: transparent;
+  width: 8px;
+}
+
+scrollbar slider {
+  background: var(--gray-300);
+  border-radius: var(--radius);
+  border: none;
+  min-height: 40px;
+}
+
+scrollbar slider:hover {
+  background: var(--gray-400);
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.fade-in {
+  animation: fadeIn 300ms ease-out;
+}
+
+.slide-in {
+  animation: slideIn 300ms ease-out;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .startup-container {
+    padding: var(--space-8);
+  }
+  
+  .startup-title {
+    font-size: 2rem;
+  }
+  
+  .album-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-4);
+    padding: var(--space-4);
+  }
+}
+
+/* === MODES SOMBRES (optionnel) === */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gray-50: #1f2937;
+    --gray-100: #374151;
+    --gray-900: #f9fafb;
+  }
+  
+  window {
+    background: var(--gray-800);
+    color: var(--gray-100);
+  }
+  
+  .modern-card {
+    background: var(--gray-700);
+    border-color: var(--gray-600);
+  }
+}
+
+/* === FENÊTRE D'ÉDITION (PLEIN ÉCRAN) === */
+.edit-window {
+  background: var(--gray-50);
+}
+
+.edit-headerbar {
+  background: var(--primary);
+  color: white;
+}
+
+.sidebar {
+  background: var(--white);
+  border-right: 1px solid var(--gray-200);
+  min-width: 300px;
+}
+
+.album-list row {
+  border-radius: 0;
+  padding: var(--space-2);
+  margin: 0;
+}
+
+.album-list row:hover {
+  background: var(--gray-100);
+}
+
+.album-list row:selected {
+  background: var(--primary-100);
+  color: var(--primary-900);
+}
+
+.modified-indicator {
+  color: var(--warning);
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.edit-area {
+  background: var(--gray-50);
+  min-width: 600px;
+}
+
+.bottom-toolbar {
+  background: var(--white);
+  border-top: 1px solid var(--gray-200);
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* === TABLEAU DES PISTES === */
+.tracks-header {
+  background: var(--gray-100);
+  border-radius: var(--radius) var(--radius) 0 0;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.header-label {
+  font-weight: 600;
+  color: var(--gray-700);
+  font-size: 0.85rem;
+}
+
+.tracks-list {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.tracks-list row {
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.tracks-list row:last-child {
+  border-bottom: none;
+}
+
+.tracks-list row:hover {
+  background: var(--gray-50);
+}
+
+.track-number {
+  text-align: center;
+  font-weight: 500;
+}
+
+.track-duration {
+  text-align: center;
+  font-family: monospace;
+}
+
+/* Styles pour les champs d'édition des pistes */
+.tracks-list entry {
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.tracks-list entry:focus {
+  border-color: var(--primary-500);
+  background: var(--white);
+}
+
+/* === TABLEAU DES PISTES === */
+.tracks-header {
+  background: var(--gray-100);
+  border-radius: var(--radius) var(--radius) 0 0;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.header-label {
+  font-weight: 600;
+  color: var(--gray-700);
+  font-size: 0.85rem;
+}
+
+.tracks-list {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.tracks-list row {
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.tracks-list row:last-child {
+  border-bottom: none;
+}
+
+.tracks-list row:hover {
+  background: var(--gray-50);
+}
+
+.track-number {
+  text-align: center;
+  font-weight: 500;
+}
+
+.track-duration {
+  text-align: center;
+  font-family: monospace;
+}
+
+/* Styles pour les champs d'édition des pistes */
+.tracks-list entry {
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.tracks-list entry:focus {
+  border-color: var(--primary-500);
+  background: var(--white);
+}
+
+/* Responsive pour le plein écran */
+@media (min-width: 1400px) {
+  .edit-area {
+    min-width: 800px;
+  }
+  
+  .sidebar {
+    min-width: 350px;
+  }
+}
+
+/* === NOUVEAUX STYLES POUR FONCTIONNALITÉS === */
+
+/* Boutons d'action sur les cards */
+.album-actions {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.action-button {
+    min-height: 28px;
+    padding: 4px 8px;
+    font-size: 11px;
+    margin: 2px;
+    border-radius: 6px;
+}
+
+.action-button.suggested-action {
+    background: #3584e4;
+    color: white;
+    border: none;
+}
+
+.action-button.destructive-action {
+    background: #e01b24;
+    color: white;
+    border: none;
+}
+
+/* Cases à cocher sur les cards */
+.selection-checkbox {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    padding: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Badges de statut sur les cards */
+.status-badge {
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+/* Barre d'outils moderne */
+.modern-toolbar {
+    background: rgba(246, 245, 244, 0.8);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    font-weight: 600;
+    color: #2e3436;
+}
+
+.selection-info {
+    font-size: 13px;
+    color: #9a9996;
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fade-in 0.3s ease-out;
+}

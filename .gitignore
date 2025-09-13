@@ -1,0 +1,44 @@
+# Environnements virtuels Python
+.venv/
+venv/
+env/
+.env
+
+# Fichiers Python compilés
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Logs
+logs/
+*.log
+
+# Fichiers temporaires
+.tmp/
+temp/
+*.tmp
+
+# Fichiers de cache
+.cache/
+.pytest_cache/
+
+# Fichiers IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Base de données locale
+*.db
+*.sqlite
+*.sqlite3
+
+# Fichiers de configuration locaux
+config_local.py
+settings_local.py
