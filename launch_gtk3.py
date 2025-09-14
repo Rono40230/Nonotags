@@ -15,7 +15,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 
 from gi.repository import Gtk, Gdk
-from ui.simple_gtk3_app import SimpleNonotagsApp
+from ui.simple_gtk3_app import NonotagsApp
 
 def main():
     """Point d'entrée principal pour l'UI GTK3"""
@@ -72,7 +72,7 @@ def main():
     )
     
     # Crée et lance l'application
-    app = SimpleNonotagsApp()
+    app = NonotagsApp()
     app.run()
 
 if __name__ == "__main__":
