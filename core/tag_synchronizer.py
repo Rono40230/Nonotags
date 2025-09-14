@@ -17,7 +17,7 @@ try:
     from mutagen.mp3 import MP3
     from mutagen.id3 import ID3, APIC, TIT2, TPE1, TALB, TYER, TCON, TRCK, TPE2, TLEN
     from mutagen.id3._util import ID3NoHeaderError
-    from support.logger import AppLogger
+    from support.logger import get_logger
     from support.config_manager import ConfigManager
     from support.state_manager import StateManager
     from support.validator import MetadataValidator, ValidationResult
@@ -87,7 +87,7 @@ class TagSynchronizer:
         """Initialise le module de synchronisation."""
         try:
             # Initialisation des modules de support
-            self.logger = AppLogger(__name__)
+            self.logger = get_logger().main_logger
             self.config_manager = ConfigManager()
             self.state_manager = StateManager()
             self.validator = MetadataValidator()

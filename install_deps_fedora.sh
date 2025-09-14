@@ -117,7 +117,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath('launch_gtk3.py')))
 try:
-    from ui.simple_gtk3_app import SimpleNonotagsApp
+    from ui.simple_gtk3_app import NonotagsApp
     print('✅ Modules Nonotags importés avec succès')
 except Exception as e:
     print(f'❌ Erreur d\\'import: {e}')

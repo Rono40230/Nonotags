@@ -8,8 +8,8 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 @dataclass
-class CaseException:
-    """Modèle pour les exceptions de casse."""
+class CaseExceptionModel:
+    """Modèle de base de données pour les exceptions de casse."""
     id: Optional[int] = None
     word: str = ""
     preserved_case: str = ""

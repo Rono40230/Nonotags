@@ -73,14 +73,15 @@ class FileRenamer:
         """Initialise le module de renommage."""
         try:
             # Initialisation des modules de support
-            self.logger = AppLogger().get_logger(__name__)
+            from support.logger import get_logger
+            self.logger = get_logger().main_logger
             self.config_manager = ConfigManager()
             self.state_manager = StateManager()
             self.validator = MetadataValidator()
             self.db_manager = DatabaseManager()
             
             # Configuration du module
-            self.config = self.config_manager.get_processing_config()
+            self.config = self.config_manager.processing
             
             # Caractères interdits dans les noms de fichiers
             self.invalid_chars = r'[<>:"/\\|?*]'

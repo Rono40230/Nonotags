@@ -15,7 +15,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 
 from gi.repository import Gtk, Gdk
-from ui.simple_gtk3_app import NonotagsApp
+from ui.main_app import NonotagsApp
 
 def main():
     """Point d'entrée principal pour l'UI GTK3"""

@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from support.logger import AppLogger
 from support.config_manager import ConfigManager
 from support.state_manager import StateManager
-from ui.main_window import MainWindow
+from ui.main_app import NonotagsApp
 
 def main():
     """Point d'entrée principal de l'application."""
@@ -26,7 +26,7 @@ def main():
     
     try:
         # Lancement de l'interface graphique
-        app = MainWindow(config, state, logger)
+        app = NonotagsApp()
         app.run()
         
     except Exception as e:

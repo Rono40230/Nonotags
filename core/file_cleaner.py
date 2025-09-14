@@ -72,14 +72,15 @@ class FileCleaner:
     def __init__(self):
         """Initialise le nettoyeur de fichiers avec les modules de support."""
         # Intégration modules de support
-        self.logger = AppLogger().get_logger('file_cleaner')
+        from support.logger import get_logger
+        self.logger = get_logger().main_logger
         self.config = ConfigManager()
         self.state = StateManager()
         self.validator = FileValidator()
         
         # Configuration des fichiers indésirables (personnalisable)
-        self._unwanted_files = self.config.get_processing_config().unwanted_files
-        self._cover_rename_patterns = self.config.get_processing_config().cover_rename_patterns
+        self._unwanted_files = self.config.processing.unwanted_files
+        self._cover_rename_patterns = self.config.processing.cover_rename_patterns
         
         self.logger.info("FileCleaner initialisé avec succès")
     

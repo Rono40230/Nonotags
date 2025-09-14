@@ -162,7 +162,7 @@ import sys
 import os
 sys.path.insert(0, '.')
 try:
-    from ui.simple_gtk3_app import SimpleNonotagsApp
+    from ui.simple_gtk3_app import NonotagsApp
     print('Modules OK')
 except Exception as e:
     print(f'Erreur: {e}')

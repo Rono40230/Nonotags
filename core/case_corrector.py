@@ -65,14 +65,15 @@ class CaseCorrector:
     def __init__(self):
         """Initialise le correcteur de casse."""
         # Initialisation des modules de support
-        self.logger = AppLogger().get_logger(__name__)
+        from support.logger import get_logger
+        self.logger = get_logger().main_logger
         self.config_manager = ConfigManager()
         self.state_manager = StateManager()
         self.validator = MetadataValidator()
         self.db_manager = DatabaseManager()
         
         # Configuration du module
-        self.processing_config = self.config_manager.get_processing_config()
+        self.processing_config = self.config_manager.processing
         
         # Chargement des exceptions depuis la base de données
         self.case_exceptions = self._load_case_exceptions()

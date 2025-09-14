@@ -103,7 +103,8 @@ class MetadataCleaner:
     def __init__(self):
         """Initialise le nettoyeur de métadonnées avec les modules de support."""
         # Intégration modules de support
-        self.logger = AppLogger().get_logger('metadata_cleaner')
+        from support.logger import get_logger
+        self.logger = get_logger().main_logger
         self.config = ConfigManager()
         self.state = StateManager()
         self.validator = MetadataValidator()
@@ -119,7 +120,7 @@ class MetadataCleaner:
     
     def _load_cleaning_rules(self):
         """Charge les règles de nettoyage depuis la configuration."""
-        processing_config = self.config.get_processing_config()
+        processing_config = self.config.processing
         
         # Caractères spéciaux à supprimer (configurables)
         self._special_chars_pattern = r'[^\w\s\-\.\,\(\)\[\]\'\"\&\!\?]'
@@ -566,19 +567,21 @@ class RulesEngine:
     
     def __init__(self):
         from support.logger import get_logger
-        self.logger = get_logger()
+        self.logger = get_logger().main_logger
         self.logger.info("RulesEngine module placeholder initialized")
 
 class ExceptionsManager:
     """Gestionnaire d'exceptions (Module 5)."""
     
     def __init__(self):
-        self.logger = get_logger()
+        from support.logger import get_logger
+        self.logger = get_logger().main_logger
         self.logger.info("ExceptionsManager module placeholder initialized")
 
 class SyncManager:
     """Gestionnaire de synchronisation (Module 6)."""
     
     def __init__(self):
-        self.logger = get_logger()
+        from support.logger import get_logger
+        self.logger = get_logger().main_logger
         self.logger.info("SyncManager module placeholder initialized")
