@@ -266,7 +266,8 @@ class FileRenamer:
                 
                 if min_year != max_year:
                     rules_applied.append(RenamingRule.HANDLE_MULTI_YEAR)
-                    result = f"{min_year}-{max_year}"
+                    # Format compilation : (Année la plus ancienne-2 derniers chiffres de l'année la plus récente)
+                    result = f"{min_year}-{str(max_year)[-2:]}"
                     self.honest_logger.success(f"🎯 [RÈGLE 17] Plage créée: '{year}' → '{result}' (compilation {len(year_ints)} années)")
                     return result, rules_applied
                 else:
@@ -739,21 +740,55 @@ class FileRenamer:
                 mp3_files.extend(album_dir.glob(pattern))
             mp3_files = list(set(mp3_files))
             
-            # Collecte des métadonnées pour l'album (du premier fichier)
+            # Collecte des métadonnées pour l'album (analyse de tous les fichiers pour compilations)
             album_metadata = {}
+            all_years = set()  # Pour collecter toutes les années uniques
+            
             if mp3_files and MUTAGEN_AVAILABLE:
+                # Analyse du premier fichier pour l'album et l'artiste
                 try:
                     audio_file = MP3(str(mp3_files[0]))
                     if audio_file and audio_file.tags:
                         tags = audio_file.tags
                         if 'TALB' in tags:
                             album_metadata['album'] = str(tags['TALB'])
-                        if 'TYER' in tags:
-                            album_metadata['year'] = str(tags['TYER'])
-                        elif 'TDRC' in tags:
-                            album_metadata['year'] = str(tags['TDRC'])
+                        if 'TPE1' in tags:
+                            album_metadata['artist'] = str(tags['TPE1'])
                 except Exception as e:
                     self.honest_logger.warning(f"Erreur extraction métadonnées album: {e}")
+                
+                # Collecte de toutes les années de tous les fichiers pour détecter les compilations
+                for mp3_file in mp3_files:
+                    try:
+                        audio_file = MP3(str(mp3_file))
+                        if audio_file and audio_file.tags:
+                            tags = audio_file.tags
+                            year = None
+                            if 'TYER' in tags:
+                                year = str(tags['TYER']).strip()
+                            elif 'TDRC' in tags:
+                                year = str(tags['TDRC']).strip()
+                            
+                            if year:
+                                # Extraction des années du tag (peut contenir plusieurs années)
+                                import re
+                                years_found = re.findall(r'\b\d{4}\b', year)
+                                for y in years_found:
+                                    if 1900 <= int(y) <= 2100:
+                                        all_years.add(y)
+                    except Exception as e:
+                        self.honest_logger.debug(f"Erreur extraction année {mp3_file}: {e}")
+                
+                # Construction de la string d'années pour la compilation
+                if all_years:
+                    if len(all_years) == 1:
+                        album_metadata['year'] = list(all_years)[0]
+                    else:
+                        # Compilation détectée : assemblage de toutes les années
+                        sorted_years = sorted(all_years)
+                        year_string = ', '.join(sorted_years)
+                        album_metadata['year'] = year_string
+                        self.honest_logger.info(f"📀 Compilation détectée: {len(all_years)} années différentes ({sorted_years[0]}-{sorted_years[-1]})")
             
             # Renommage des fichiers
             file_results = []
@@ -809,7 +844,7 @@ class FileRenamer:
             # Renommage du dossier (optionnel)
             folder_result = None
             folder_renamed = False
-            if album_metadata:
+            if album_metadata and self.config.rename_folders:
                 try:
                     folder_result = self.rename_folder(current_album_path, album_metadata)
                     if folder_result.renamed:

@@ -28,6 +28,9 @@ class ProcessingConfig:
     max_parallel_imports: int = 4
     timeout_per_file: int = 30  # secondes
     
+    # Configuration FileRenamer (Module 5)
+    rename_folders: bool = True  # Activer le renommage des dossiers d'albums
+    
     # Configuration FileCleaner (Module 1)
     unwanted_files: List[str] = None
     cover_rename_patterns: Dict[str, str] = None

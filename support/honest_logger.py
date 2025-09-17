@@ -159,6 +159,10 @@ class HonestLogger:
     def info(self, message: str):
         """Log d'information"""
         self._write_log(LogLevel.INFO, message)
+    
+    def debug(self, message: str):
+        """Log de debug"""
+        self._write_log(LogLevel.DEBUG, message)
 
 # Instance globale
 honest_logger = HonestLogger()
