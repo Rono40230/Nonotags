@@ -565,17 +565,17 @@ class NonotagsApp:
             message = f"🎉 Traitement automatique terminé avec succès!\n{processed}/{total} albums traités et optimisés."
             print(f"✅ {message}")
             
-            # Dialog de succès
-            dialog = Gtk.MessageDialog(
-                transient_for=self.main_window,
-                flags=0,
-                message_type=Gtk.MessageType.INFO,
-                buttons=Gtk.ButtonsType.OK,
-                text="Traitement automatique terminé"
-            )
-            dialog.format_secondary_text(f"✅ {processed}/{total} albums ont été automatiquement traités et optimisés.\n\nVos albums sont maintenant prêts à l'usage !")
-            dialog.run()
-            dialog.destroy()
+            # Dialog de succès - DÉSACTIVÉ sur demande utilisateur
+            # dialog = Gtk.MessageDialog(
+            #     transient_for=self.main_window,
+            #     flags=0,
+            #     message_type=Gtk.MessageType.INFO,
+            #     buttons=Gtk.ButtonsType.OK,
+            #     text="Traitement automatique terminé"
+            # )
+            # dialog.format_secondary_text(f"✅ {processed}/{total} albums ont été automatiquement traités et optimisés.\n\nVos albums sont maintenant prêts à l'usage !")
+            # dialog.run()
+            # dialog.destroy()
         else:
             message = f"⚠️ Traitement automatique interrompu.\n{processed}/{total} albums traités."
             print(f"⚠️ {message}")

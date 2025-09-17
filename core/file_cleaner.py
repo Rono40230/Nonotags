@@ -304,7 +304,7 @@ class FileCleaner:
             return True
         
         # Vérification des extensions indésirables
-        unwanted_extensions = ['.tmp', '.temp', '.bak', '.log', '.txt', '.m3u', '.nfo', '.sfv', '.md5', '.pdf', '.doc', '.docx']
+        unwanted_extensions = ['.tmp', '.temp', '.bak', '.log', '.txt', '.m3u', '.nfo', '.sfv', '.md5', '.pdf', '.doc', '.docx', '.png']
         if extension in unwanted_extensions:
             return True
         
@@ -313,9 +313,9 @@ class FileCleaner:
         if any(pattern in filename for pattern in unwanted_patterns):
             return True
             
-        # Vérification des fichiers images non-pochettes
-        if extension in ['.png', '.gif', '.bmp'] and not filename.startswith('cover'):
-            # Fichiers images qui ne sont pas des pochettes (comme "Fichier HTML.png")
+        # Vérification des fichiers images non-pochettes (GIF, BMP uniquement)
+        if extension in ['.gif', '.bmp'] and not filename.startswith('cover'):
+            # Fichiers images qui ne sont pas des pochettes
             if not any(word in filename for word in ['cover', 'front', 'album', 'artwork']):
                 return True
         
@@ -326,8 +326,8 @@ class FileCleaner:
         filename = file_path.name.lower()
         extension = file_path.suffix.lower()
         
-        # Vérification que c'est bien une image
-        if extension not in ['.jpg', '.jpeg', '.png', '.bmp', '.gif']:
+        # Vérification que c'est bien une image (PNG exclus car supprimés)
+        if extension not in ['.jpg', '.jpeg', '.bmp', '.gif']:
             return None
         
         # Recherche dans les patterns de renommage
