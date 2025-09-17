@@ -177,7 +177,7 @@ class FileRenamer:
         clean_title, title_rules = self.sanitize_filename(title)
         rules_applied.extend(title_rules)
         
-        # Construction du nom de fichier
+        # Construction du nom de fichier AVEC extension (nécessaire pour les vrais fichiers)
         filename = f"{track_number} - {clean_title}{extension}"
         
         rules_applied.append(RenamingRule.FORMAT_TRACK_FILENAME)
@@ -298,6 +298,16 @@ class FileRenamer:
             # Récupération des métadonnées nécessaires
             track_number = metadata.get('TRCK', metadata.get('track_number', '1'))
             title = metadata.get('TIT2', metadata.get('title', 'Unknown Title'))
+            
+            # 🔧 CORRECTION : Forcer le formatage du numéro de piste avec zéro initial
+            if track_number and str(track_number).isdigit():
+                if len(str(track_number)) == 1:
+                    track_number = f"0{track_number}"
+            elif track_number and '/' in str(track_number):
+                # Format "1/12" → "01/12"
+                parts = str(track_number).split('/')
+                if parts[0].isdigit() and len(parts[0]) == 1:
+                    track_number = f"0{parts[0]}/{parts[1]}"
             
             # Formatage du nouveau nom
             new_name, rules = self.format_track_filename(track_number, title, extension)

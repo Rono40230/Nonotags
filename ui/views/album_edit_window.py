@@ -313,15 +313,25 @@ class AlbumEditWindow(Gtk.Window):
                 # Vérifier si pochette associée
                 has_cover = "✅" if self._has_embedded_cover(file_path) else "❌"
                 
+                # Formatage nom fichier SANS extension pour affichage
+                display_filename = os.path.splitext(os.path.basename(file_path))[0]
+                
+                # Formatage numéro piste avec zéro initial pour affichage
+                track_num = metadata.get('track', '')
+                if track_num and '/' in str(track_num):
+                    track_num = str(track_num).split('/')[0]
+                if track_num and str(track_num).isdigit() and len(str(track_num)) == 1:
+                    track_num = f"0{track_num}"
+                
                 self.metadata_store.append([
                     has_cover,                                    # Cover
-                    os.path.basename(file_path),                 # Nom fichier
+                    display_filename,                            # Nom fichier SANS extension
                     metadata.get('title', ''),                  # Titre
                     metadata.get('performer', ''),              # Interprète
                     metadata.get('artist', ''),                 # Artiste
                     metadata.get('album', ''),                  # Album
                     str(metadata.get('year', '')),              # Année
-                    str(metadata.get('track', '')),             # N° piste
+                    str(track_num),                             # N° piste AVEC zéro initial
                     metadata.get('genre', ''),                  # Genre
                     file_path                                    # Path (caché)
                 ])
