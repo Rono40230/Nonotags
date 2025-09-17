@@ -316,8 +316,14 @@ class AlbumCard(Gtk.Box):
         """Met à jour les données de l'album"""
         self.album = album
         
+        # Titre = nom du dossier actuel (lecture directe filesystem)
+        if hasattr(album, 'folder_path') and album.folder_path and os.path.exists(album.folder_path):
+            display_title = os.path.basename(album.folder_path)
+        else:
+            display_title = album.title
+            
         # Met à jour l'affichage
-        self.title_label.set_text(album.title)
+        self.title_label.set_text(display_title)
         self.artist_label.set_text(album.display_artist)
         self._update_status_badge()
         self._load_cover_image()

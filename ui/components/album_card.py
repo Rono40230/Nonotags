@@ -10,6 +10,15 @@ from gi.repository import Gtk, Pango, GdkPixbuf, GdkPixbuf
 from typing import Dict
 import os
 from pathlib import Path
+import glob
+
+# Import pour lecture métadonnées
+try:
+    from mutagen.mp3 import MP3
+    from mutagen.id3 import ID3NoHeaderError
+    MUTAGEN_AVAILABLE = True
+except ImportError:
+    MUTAGEN_AVAILABLE = False
 
 # États visuels des cartes d'albums après traitement automatique
 CARD_STATES = {
@@ -94,8 +103,27 @@ class AlbumCard(Gtk.Frame):
         artist_label.set_max_width_chars(25)
         info_box.pack_start(artist_label, False, False, 0)
         
-        # Ligne 2 : Année et titre de l'album
-        year_title_text = f"{album_data.get('year', '----')} - {album_data.get('album', 'Album Sans Titre')}"
+        # Ligne 2 : Année et titre de l'album (lecture directe du nom de dossier)
+        # LOG: Debug pour comprendre le problème de synchronisation
+        print(f"🔍 CARD INIT - album_data keys: {list(album_data.keys())}")
+        print(f"🔍 CARD INIT - album_data: {album_data}")
+        
+        folder_path = album_data.get('folder_path', '')
+        print(f"🔍 CARD INIT - folder_path: {folder_path}")
+        
+        if folder_path and os.path.exists(folder_path):
+            # Lecture directe du nom du dossier depuis le filesystem
+            album_title = os.path.basename(folder_path)
+            print(f"✅ CARD INIT - Titre lu depuis filesystem: {album_title}")
+        else:
+            # Fallback sur les données d'album
+            album_title = album_data.get('title', 'Album Inconnu')
+            print(f"❌ CARD INIT - Fallback album_data: {album_title}")
+        
+        print(f"📝 CARD INIT - Texte final: {album_title}")
+        
+        # Année et titre de l'album
+        year_title_text = album_title
         year_title_label = Gtk.Label()
         year_title_label.set_text(year_title_text)
         year_title_label.set_halign(Gtk.Align.CENTER)
@@ -179,10 +207,24 @@ class AlbumCard(Gtk.Frame):
                         if "🎤" in subchild.get_text():  # Label artiste
                             subchild.set_markup(f"<b>🎤 {self.album_data.get('artist', 'Artiste inconnu')}</b>")
                         elif "📅" in subchild.get_text():  # Label année-titre
+                            print(f"🔄 UPDATE_DISPLAY appelée pour: {self.album_data.get('path', 'AUCUN_PATH')}")
                             year = self.album_data.get('year', '')
-                            album = self.album_data.get('album', 'Album inconnu')
+                            
+                            # LECTURE DIRECTE DU NOM DE DOSSIER (même logique que __init__)
+                            folder_path = self.album_data.get('path', '')
+                            print(f"🔍 UPDATE_DISPLAY - folder_path: {folder_path}")
+                            
+                            if folder_path and os.path.exists(folder_path):
+                                album = os.path.basename(folder_path)
+                                print(f"✅ UPDATE_DISPLAY - Titre du dossier: {album}")
+                            else:
+                                album = self.album_data.get('album', 'Album inconnu')
+                                print(f"❌ UPDATE_DISPLAY - Fallback album_data: {album}")
+                                
                             year_text = f"{year} - " if year else ""
-                            subchild.set_markup(f"<b>📅 {year_text}{album}</b>")
+                            final_text = f"📅 {year_text}{album}"
+                            print(f"📝 UPDATE_DISPLAY - Texte final: {final_text}")
+                            subchild.set_markup(f"<b>{final_text}</b>")
                         elif "🎼" in subchild.get_text():  # Label genre
                             subchild.set_markup(f"🎼 {self.album_data.get('genre', 'Genre inconnu')}")
                         elif "🎵" in subchild.get_text():  # Label pistes

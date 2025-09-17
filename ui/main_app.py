@@ -34,7 +34,8 @@ class NonotagsApp:
         
         # Albums chargés
         self.loaded_albums = []
-        
+        self.current_folder = None  # Dossier actuellement affiché
+    
     def run(self):
         """Lance l'application avec la fenêtre de démarrage"""
         self.startup_window = StartupWindow(self)
@@ -56,6 +57,10 @@ class NonotagsApp:
     def _scan_folder(self, folder_path):
         """Scanne un dossier et ajoute les albums trouvés"""
         try:
+            # Stocker le dossier actuel pour rescans futurs
+            self.current_folder = folder_path
+            print(f"🔍 SCAN - Scanning: {folder_path}")
+            
             from services.music_scanner import MusicScanner
             scanner = MusicScanner()
             albums = scanner.scan_directory(folder_path)
@@ -86,6 +91,9 @@ class NonotagsApp:
                 print("✅ Traitement automatique démarré")
             else:
                 print("❌ Impossible de démarrer le traitement automatique")
+            
+            # Sauvegarder le dossier actuel
+            self.current_folder = folder_path
             
         except Exception as e:
             print(f"❌ Erreur lors du scan: {e}")
@@ -265,33 +273,18 @@ class NonotagsApp:
             error_dialog.destroy()
     
     def _update_albums_display(self, albums: List[Dict]):
-        """Met à jour l'affichage avec les vrais albums scannés"""
-        if albums:
-            for child in self.albums_grid.get_children():
-                self.albums_grid.remove(child)
-            
-            for album_data in albums:
-                card = AlbumCard(album_data)
-                self.albums_grid.add(card)
-            
-            # Sauvegarder les albums et préparer le traitement
-            self.loaded_albums = albums
-            self.orchestrator.clear_queue()
-            self.orchestrator.add_albums(albums)
-            
-            # ✅ TRAITEMENT AUTOMATIQUE : Démarrer immédiatement le traitement
-            print("🚀 Démarrage automatique du traitement...")
-            print(f"📊 Albums en queue: {len(self.orchestrator.albums_queue)}")
-            print(f"📊 Total albums: {self.orchestrator.total_albums}")
-            if self.orchestrator.start_processing():
-                print("✅ Traitement automatique démarré")
-            else:
-                print("❌ Impossible de démarrer le traitement automatique")
-                print(f"   État actuel: {self.orchestrator.current_state}")
-                print(f"   Albums dans queue: {len(self.orchestrator.albums_queue)}")
+        """Met à jour l'affichage des albums"""
+        print(f"🔄 _update_albums_display appelée avec {len(albums)} albums")
         
-        self.albums_grid.show_all()
-        self.update_cards_per_line()
+        # Vider la grille actuelle
+        if self.albums_grid:
+            for child in self.albums_grid.get_children():
+                child.destroy()
+        
+        # Ajouter les nouvelles cartes
+        for album_data in albums:
+            print(f"📋 Création card pour: {album_data.get('path', 'AUCUN_PATH')}")
+            card = AlbumCard(album_data)
 
     def on_import_clicked(self, button):
         """Gestion de l'import de fichiers avec traitement automatique"""
@@ -565,6 +558,46 @@ class NonotagsApp:
             message = f"🎉 Traitement automatique terminé avec succès!\n{processed}/{total} albums traités et optimisés."
             print(f"✅ {message}")
             
+            # RESCAN pour rafraîchir les cards avec les nouveaux noms
+            print("🔄 Rafraîchissement des cartes après traitement...")
+            print(f"🔍 DEBUG - current_folder disponible: {hasattr(self, 'current_folder')}")
+            if hasattr(self, 'current_folder') and self.current_folder:
+                # SOLUTION: Chercher le nouveau nom du dossier après renommage
+                old_folder = self.current_folder
+                print(f"🔍 DEBUG - Ancien dossier: {old_folder}")
+                
+                # Si l'ancien dossier n'existe plus, chercher le nouveau nom
+                if not os.path.exists(old_folder):
+                    parent_dir = os.path.dirname(old_folder)
+                    print(f"🔍 DEBUG - Recherche dans parent: {parent_dir}")
+                    
+                    # Chercher un dossier qui commence par une parenthèse (format RÈGLE 17)
+                    new_folder = None
+                    if os.path.exists(parent_dir):
+                        for item in os.listdir(parent_dir):
+                            item_path = os.path.join(parent_dir, item)
+                            if os.path.isdir(item_path) and item.startswith('('):
+                                # Vérifier si ce dossier contient des MP3
+                                try:
+                                    mp3_files = [f for f in os.listdir(item_path) if f.lower().endswith('.mp3')]
+                                    if mp3_files:
+                                        new_folder = item_path
+                                        print(f"✅ DEBUG - Dossier RÈGLE 17 trouvé: {item}")
+                                        break
+                                except PermissionError:
+                                    continue
+                    
+                    if new_folder:
+                        self.current_folder = new_folder
+                        print(f"✅ DEBUG - Nouveau dossier configuré: {new_folder}")
+                    else:
+                        print("❌ DEBUG - Aucun dossier RÈGLE 17 trouvé")
+                
+                print(f"🔍 DEBUG - Rescanning: {self.current_folder}")
+                GLib.idle_add(self._scan_folder, self.current_folder)
+            else:
+                print("❌ DEBUG - Pas de current_folder pour rescan")
+            
             # Dialog de succès - DÉSACTIVÉ sur demande utilisateur
             # dialog = Gtk.MessageDialog(
             #     transient_for=self.main_window,
@@ -584,3 +617,21 @@ class NonotagsApp:
         if self.progress_bar:
             self.progress_bar.set_fraction(0.0)
             self.progress_bar.set_text("Prêt")
+    
+    def _refresh_albums_display(self):
+        """Rafraîchit l'affichage des albums en rescannant le dossier actuel"""
+        try:
+            # Récupère le dossier actuellement affiché
+            if hasattr(self, 'current_folder') and self.current_folder:
+                # Rescanne le dossier pour récupérer les noms mis à jour
+                from services.music_scanner import MusicScanner
+                scanner = MusicScanner()
+                updated_albums = scanner.scan_directory(self.current_folder)
+                
+                # Met à jour l'affichage avec les nouvelles données
+                self._update_albums_display(updated_albums)
+                print(f"🔄 Affichage rafraîchi: {len(updated_albums)} albums")
+            else:
+                print("❌ Pas de dossier actuel pour rafraîchissement")
+        except Exception as e:
+            print(f"❌ Erreur lors du rafraîchissement: {e}")
