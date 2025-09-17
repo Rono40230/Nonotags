@@ -6,7 +6,7 @@ Fenêtre d'édition conforme au cahier des charges avec 4 blocs
 import gi
 gi.require_version('Gtk', '3.0')
 
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk, GLib, GdkPixbuf
 import os
 from mutagen.id3 import ID3, TIT2, TPE1, TALB, TDRC, TCON
 from mutagen.mp3 import MP3
@@ -88,7 +88,10 @@ class AlbumEditWindow(Gtk.Window):
         # Image de la pochette 250×250
         self.cover_image = Gtk.Image()
         self.cover_image.set_size_request(250, 250)
-        self.cover_image.set_from_icon_name("image-x-generic", Gtk.IconSize.DIALOG)
+        
+        # Charger la vraie pochette si elle existe
+        self._load_album_cover()
+        
         vbox.pack_start(self.cover_image, False, False, 0)
         
         # Bouton "Chercher une pochette"
@@ -375,6 +378,43 @@ class AlbumEditWindow(Gtk.Window):
             pass
         return False
     
+    def _load_album_cover(self):
+        """Charge et affiche la pochette d'album si elle existe"""
+        album_path = self.album_data.get('path') or self.album_data.get('folder_path')
+        
+        if album_path and os.path.exists(album_path):
+            cover_path = self._find_cover_file(album_path)
+            
+            if cover_path and os.path.exists(cover_path):
+                try:
+                    # Charger et redimensionner l'image à 250x250
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                        cover_path, 250, 250, True
+                    )
+                    self.cover_image.set_from_pixbuf(pixbuf)
+                    return
+                except Exception as e:
+                    print(f"Erreur chargement pochette {cover_path}: {e}")
+        
+        # Fallback: icône par défaut
+        self.cover_image.set_from_icon_name("image-x-generic", Gtk.IconSize.DIALOG)
+    
+    def _find_cover_file(self, album_path):
+        """Cherche un fichier de pochette dans le dossier d'album"""
+        cover_names = [
+            'cover.jpg', 'cover.jpeg', 'cover.png',
+            'folder.jpg', 'folder.jpeg', 'folder.png',
+            'front.jpg', 'front.jpeg', 'front.png',
+            'album.jpg', 'album.jpeg', 'album.png'
+        ]
+        
+        for cover_name in cover_names:
+            cover_path = os.path.join(album_path, cover_name)
+            if os.path.exists(cover_path):
+                return cover_path
+        
+        return None
+
     # === CALLBACKS CHAMPS DE SAISIE ===
     def on_album_changed(self, entry):
         """Mise à jour en temps réel de la colonne Album"""
@@ -676,3 +716,40 @@ class AlbumEditWindow(Gtk.Window):
             GLib.source_remove(self.position_timer)
         
         return False
+    
+    def _load_album_cover(self):
+        """Charge et affiche la pochette d'album si elle existe"""
+        album_path = self.album_data.get('path') or self.album_data.get('folder_path')
+        
+        if album_path and os.path.exists(album_path):
+            cover_path = self._find_cover_file(album_path)
+            
+            if cover_path and os.path.exists(cover_path):
+                try:
+                    # Charger et redimensionner l'image à 250x250
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                        cover_path, 250, 250, True
+                    )
+                    self.cover_image.set_from_pixbuf(pixbuf)
+                    return
+                except Exception as e:
+                    print(f"Erreur chargement pochette {cover_path}: {e}")
+        
+        # Fallback: icône par défaut
+        self.cover_image.set_from_icon_name("image-x-generic", Gtk.IconSize.DIALOG)
+    
+    def _find_cover_file(self, album_path):
+        """Cherche un fichier de pochette dans le dossier d'album"""
+        cover_names = [
+            'cover.jpg', 'cover.jpeg', 'cover.png',
+            'folder.jpg', 'folder.jpeg', 'folder.png',
+            'front.jpg', 'front.jpeg', 'front.png',
+            'album.jpg', 'album.jpeg', 'album.png'
+        ]
+        
+        for cover_name in cover_names:
+            cover_path = os.path.join(album_path, cover_name)
+            if os.path.exists(cover_path):
+                return cover_path
+        
+        return None

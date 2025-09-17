@@ -6,8 +6,10 @@ Widget représentant une carte d'album dans l'interface
 import gi
 gi.require_version('Gtk', '3.0')
 
-from gi.repository import Gtk, Pango
+from gi.repository import Gtk, Pango, GdkPixbuf, GdkPixbuf
 from typing import Dict
+import os
+from pathlib import Path
 
 # États visuels des cartes d'albums après traitement automatique
 CARD_STATES = {
@@ -73,11 +75,9 @@ class AlbumCard(Gtk.Frame):
         cover_frame.set_size_request(300, 300)
         cover_frame.set_halign(Gtk.Align.CENTER)
         
-        # Placeholder coloré avec emoji
-        cover_label = Gtk.Label()
-        cover_label.set_markup(f'<span font="48">{album_data.get("emoji", "🎵")}</span>')
-        cover_label.get_style_context().add_class(f"cover-{album_data.get('color', 'blue')}")
-        cover_frame.add(cover_label)
+        # Affichage de la pochette d'album (vraie image ou placeholder)
+        self.cover_widget = self._create_cover_widget()
+        cover_frame.add(self.cover_widget)
         
         vbox.pack_start(cover_frame, False, False, 0)
         
@@ -235,3 +235,57 @@ class AlbumCard(Gtk.Frame):
             
             # Ajouter la classe CSS correspondante
             self.status_label.get_style_context().add_class(css_class)
+
+    def _create_cover_widget(self):
+        """Crée le widget de pochette - vraie image ou placeholder"""
+        album_path = self.album_data.get('path') or self.album_data.get('folder_path')
+        
+        if album_path and os.path.exists(album_path):
+            # Chercher une pochette dans le dossier
+            cover_path = self._find_cover_file(album_path)
+            
+            if cover_path and os.path.exists(cover_path):
+                # Charger et afficher la vraie pochette
+                return self._create_cover_image(cover_path)
+        
+        # Fallback: placeholder avec emoji
+        return self._create_cover_placeholder()
+    
+    def _find_cover_file(self, album_path):
+        """Cherche un fichier de pochette dans le dossier d'album"""
+        cover_names = [
+            'cover.jpg', 'cover.jpeg', 'cover.png',
+            'folder.jpg', 'folder.jpeg', 'folder.png',
+            'front.jpg', 'front.jpeg', 'front.png',
+            'album.jpg', 'album.jpeg', 'album.png'
+        ]
+        
+        for cover_name in cover_names:
+            cover_path = os.path.join(album_path, cover_name)
+            if os.path.exists(cover_path):
+                return cover_path
+        
+        return None
+    
+    def _create_cover_image(self, cover_path):
+        """Crée un widget Gtk.Image avec la pochette redimensionnée"""
+        try:
+            # Charger et redimensionner l'image à 300x300
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                cover_path, 300, 300, True
+            )
+            
+            image = Gtk.Image()
+            image.set_from_pixbuf(pixbuf)
+            return image
+            
+        except Exception as e:
+            print(f"Erreur chargement pochette {cover_path}: {e}")
+            return self._create_cover_placeholder()
+    
+    def _create_cover_placeholder(self):
+        """Crée le placeholder coloré avec emoji"""
+        cover_label = Gtk.Label()
+        cover_label.set_markup(f'<span font="48">{self.album_data.get("emoji", "🎵")}</span>')
+        cover_label.get_style_context().add_class(f"cover-{self.album_data.get('color', 'blue')}")
+        return cover_label
