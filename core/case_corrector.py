@@ -96,10 +96,13 @@ class CaseCorrector:
         Returns:
             Dict avec les résultats de correction pour chaque fichier
         """
+        from support.honest_logger import honest_logger
+        
+        honest_logger.info(f"🔤 GROUPE 3 - Début correction casse album : {album_path}")
         self.logger.info(f"Début correction casse album : {album_path}")
         
         # Mise à jour du statut
-        self.state_manager.update_status("correcting_case")
+        self.state_manager.update_album_processing_status(album_path, "correcting_case")
         
         try:
             # Validation du répertoire
@@ -129,7 +132,7 @@ class CaseCorrector:
                     results[mp3_file] = file_results
             
             # Mise à jour du statut
-            self.state_manager.update_status("case_correction_completed")
+            self.state_manager.update_album_processing_status(album_path, "case_correction_completed")
             
             # Sauvegarde en base de données
             self._save_correction_history(album_path, results)
@@ -139,7 +142,7 @@ class CaseCorrector:
             
         except Exception as e:
             self.logger.error(f"Erreur lors de la correction casse : {e}")
-            self.state_manager.update_status("case_correction_error")
+            self.state_manager.update_album_processing_status(album_path, "case_correction_error")
             return {}
     
     def correct_text_case(self, text: str, text_type: str = "title", artist_name: str = None) -> CaseCorrectionResult:
@@ -263,33 +266,69 @@ class CaseCorrector:
     
     def _apply_case_rules(self, text: str, text_type: str, artist_name: str = None) -> Tuple[str, List[CaseCorrectionRule]]:
         """Applique les règles de correction de casse."""
+        from support.honest_logger import honest_logger
+        
         rules_applied = []
         result_text = text
+        original_text = text
         
-        # Règle 1 : Title Case de base
+        honest_logger.info(f"🔤 GROUPE 3 - Début correction casse {text_type}: '{original_text}'")
+        
+        # RÈGLE 9-10 : Title Case de base (selon type)
+        step_text = result_text
         result_text = self._apply_title_case(result_text)
+        if result_text != step_text:
+            honest_logger.info(f"✅ RÈGLES 9-10 - Title case appliqué: '{step_text}' → '{result_text}'")
+        else:
+            honest_logger.info(f"ℹ️ RÈGLES 9-10 - Casse déjà correcte: '{step_text}'")
         rules_applied.append(CaseCorrectionRule.TITLE_CASE)
         
-        # Règle 2 : Gestion des prépositions (après title case)
-        result_text = self._handle_prepositions(result_text)
-        rules_applied.append(CaseCorrectionRule.HANDLE_PREPOSITIONS)
-        
-        # Règle 3 : Protection des chiffres romains
+        # RÈGLE 11 : Protection des chiffres romains  
+        step_text = result_text
         result_text = self._protect_roman_numerals(result_text)
+        if result_text != step_text:
+            honest_logger.info(f"✅ RÈGLE 11 - Chiffres romains protégés: '{step_text}' → '{result_text}'")
+        else:
+            honest_logger.info(f"ℹ️ RÈGLE 11 - Aucun chiffre romain trouvé: '{step_text}'")
         rules_applied.append(CaseCorrectionRule.PROTECT_ROMAN_NUMERALS)
         
-        # Règle 4 : Protection du "I" isolé
+        # RÈGLE 18 : Protection du "I" isolé
+        step_text = result_text
         result_text = self._protect_single_i(result_text)
+        if result_text != step_text:
+            honest_logger.info(f"✅ RÈGLE 18 - 'I' isolé protégé: '{step_text}' → '{result_text}'")
+        else:
+            honest_logger.info(f"ℹ️ RÈGLE 18 - Aucun 'I' isolé trouvé: '{step_text}'")
         rules_applied.append(CaseCorrectionRule.PROTECT_SINGLE_I)
         
-        # Règle 5 : Protection des abréviations
+        # Gestion des prépositions
+        step_text = result_text
+        result_text = self._handle_prepositions(result_text)
+        if result_text != step_text:
+            honest_logger.info(f"✅ Prépositions gérées: '{step_text}' → '{result_text}'")
+        rules_applied.append(CaseCorrectionRule.HANDLE_PREPOSITIONS)
+        
+        # Protection des abréviations
+        step_text = result_text
         result_text = self._protect_abbreviations(result_text)
+        if result_text != step_text:
+            honest_logger.info(f"✅ Abréviations protégées: '{step_text}' → '{result_text}'")
         rules_applied.append(CaseCorrectionRule.PROTECT_ABBREVIATIONS)
         
-        # Règle 6 : Protection artiste dans album (si applicable)
+        # RÈGLE 12 : Protection artiste dans album (si applicable)
         if text_type == "album" and artist_name:
+            step_text = result_text
             result_text = self._protect_artist_in_album(result_text, artist_name)
+            if result_text != step_text:
+                honest_logger.info(f"✅ RÈGLE 12 - Artiste protégé dans album: '{step_text}' → '{result_text}'")
+            else:
+                honest_logger.info(f"ℹ️ RÈGLE 12 - Artiste '{artist_name}' non trouvé dans album: '{step_text}'")
             rules_applied.append(CaseCorrectionRule.PROTECT_ARTIST_IN_ALBUM)
+        
+        if result_text != original_text:
+            honest_logger.success(f"🎯 GROUPE 3 - Correction terminée: '{original_text}' → '{result_text}'")
+        else:
+            honest_logger.info(f"ℹ️ GROUPE 3 - Aucune correction nécessaire: '{original_text}'")
         
         return result_text, rules_applied
     
@@ -483,6 +522,32 @@ class CaseCorrector:
             
         except Exception as e:
             self.logger.error(f"Erreur sauvegarde historique : {e}")
+    
+    def correct_album_metadata(self, album_path: str) -> bool:
+        """
+        Méthode de compatibilité pour processing_orchestrator.py.
+        Corrige la casse des métadonnées d'un album.
+        
+        Args:
+            album_path: Chemin vers le dossier de l'album
+            
+        Returns:
+            bool: True si la correction a réussi, False sinon
+        """
+        try:
+            results = self.correct_album_case(album_path)
+            success = len(results) > 0 and all(result.corrected != result.original for result in results.values())
+            
+            if success:
+                self.logger.info(f"Correction de casse réussie pour : {album_path}")
+            else:
+                self.logger.warning(f"Aucune correction nécessaire pour : {album_path}")
+            
+            return True  # Toujours retourner True même si aucune correction n'était nécessaire
+            
+        except Exception as e:
+            self.logger.error(f"Erreur lors de la correction de casse pour {album_path}: {str(e)}", exc_info=True)
+            return False
 
 
 # Alias pour compatibilité

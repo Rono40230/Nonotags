@@ -463,6 +463,53 @@ class Validator:
         is_valid = len(all_errors) == 0
         return ValidationResult(is_valid, all_errors, all_warnings, details)
     
+    def validate_directory_for_deletion(self, dir_path: str) -> ValidationResult:
+        """
+        Valide un répertoire pour suppression (pas besoin de MP3).
+        
+        Args:
+            dir_path: Chemin du répertoire à supprimer
+            
+        Returns:
+            Résultat de validation
+        """
+        errors = []
+        warnings = []
+        details = {}
+        
+        try:
+            path = Path(dir_path)
+            
+            # Vérification de l'existence
+            if not path.exists():
+                warnings.append(f"Directory already deleted: {dir_path}")
+                return ValidationResult(True, errors, warnings, details)  # OK si déjà supprimé
+            
+            if not path.is_dir():
+                errors.append(f"Path is not a directory: {dir_path}")
+                return ValidationResult(False, errors, warnings, details)
+            
+            # Vérification des permissions de suppression
+            parent_dir = path.parent
+            if not os.access(parent_dir, os.W_OK):
+                errors.append(f"Cannot delete directory - parent not writable: {dir_path}")
+            
+            # Calcul de la taille pour statistiques
+            try:
+                total_size = sum(f.stat().st_size for f in path.rglob('*') if f.is_file())
+                details['total_size'] = total_size
+                details['file_count'] = len([f for f in path.rglob('*') if f.is_file()])
+                details['dir_count'] = len([f for f in path.rglob('*') if f.is_dir()])
+            except Exception as e:
+                warnings.append(f"Could not calculate directory size: {e}")
+                details['total_size'] = 0
+                
+        except Exception as e:
+            errors.append(f"Error validating directory for deletion: {e}")
+        
+        is_valid = len(errors) == 0
+        return ValidationResult(is_valid, errors, warnings, details)
+    
     def get_validation_summary(self) -> Dict[str, Any]:
         """
         Retourne un résumé des capacités de validation.

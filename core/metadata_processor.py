@@ -36,7 +36,8 @@ except ImportError:
 from support.logger import AppLogger
 from support.config_manager import ConfigManager
 from support.state_manager import StateManager
-from support.validator import MetadataValidator, ValidationResult
+from support.validator import FileValidator, MetadataValidator, ValidationResult
+from support.honest_logger import honest_logger, ProcessingResult
 from database.db_manager import DatabaseManager
 
 
@@ -107,7 +108,8 @@ class MetadataCleaner:
         self.logger = get_logger().main_logger
         self.config = ConfigManager()
         self.state = StateManager()
-        self.validator = MetadataValidator()
+        self.validator = FileValidator()  # ✅ Utiliser FileValidator qui a validate_directory()
+        self.metadata_validator = MetadataValidator()  # Pour les validations spécifiques 
         self.db = DatabaseManager()
         
         # Configuration des règles de nettoyage
@@ -154,13 +156,13 @@ class MetadataCleaner:
         Returns:
             AlbumCleaningStats: Statistiques du nettoyage
         """
-        self.logger.info(f"Début du nettoyage des métadonnées : {album_path}")
+        honest_logger.info(f"🎵 DÉBUT NETTOYAGE MÉTADONNÉES: {album_path}")
         
         # Validation du dossier d'album
         validation = self.validator.validate_directory(album_path)
         if not validation.is_valid:
             error_msg = f"Dossier invalide : {', '.join(validation.errors)}"
-            self.logger.error(error_msg)
+            honest_logger.error(error_msg)
             stats = AlbumCleaningStats(album_path)
             stats.total_errors = 1
             return stats
@@ -173,13 +175,20 @@ class MetadataCleaner:
             
             # Recherche des fichiers MP3
             mp3_files = self._find_mp3_files(album_path)
-            self.logger.info(f"Trouvé {len(mp3_files)} fichiers MP3 à traiter")
+            honest_logger.info(f"🔍 Trouvé {len(mp3_files)} fichiers MP3 à traiter")
+            
+            if len(mp3_files) == 0:
+                honest_logger.warning(f"⚠️ Aucun fichier MP3 trouvé dans {album_path}")
+                return stats
             
             import time
             start_time = time.time()
             
             # Traitement de chaque fichier MP3
-            for mp3_file in mp3_files:
+            for i, mp3_file in enumerate(mp3_files, 1):
+                file_name = Path(mp3_file).name
+                honest_logger.info(f"🎼 Traitement fichier {i}/{len(mp3_files)}: {file_name}")
+                
                 file_result = self.clean_file_metadata(mp3_file)
                 stats.files_processed += 1
                 
@@ -188,37 +197,56 @@ class MetadataCleaner:
                         stats.files_modified += 1
                         stats.total_changes += len(file_result.changes)
                         
-                        # Mise à jour des statistiques par règle
+                        honest_logger.success(f"✅ {len(file_result.changes)} corrections appliquées: {file_name}")
+                        
+                        # Log détaillé des changements
                         for change in file_result.changes:
                             rule = change.rule_applied
+                            honest_logger.info(f"   🔧 Règle {rule}: '{change.old_value}' → '{change.new_value}'")
                             stats.rule_stats[rule] = stats.rule_stats.get(rule, 0) + 1
                         
                         # Sauvegarde en base de données
                         self._save_changes_to_db(file_result)
+                    else:
+                        honest_logger.info(f"ℹ️ Aucune correction nécessaire: {file_name}")
+                else:
+                    error_msg = '; '.join(file_result.errors) if file_result.errors else "Erreur inconnue"
+                    honest_logger.error(f"❌ Échec traitement: {file_name} - {error_msg}")
+                    stats.total_errors += 1
                 
                 stats.total_errors += len(file_result.errors)
                 stats.total_warnings += len(file_result.warnings)
             
-            stats.processing_time = time.time() - start_time
+            # Calcul du temps d'exécution
+            processing_time = time.time() - start_time
+            stats.processing_time = processing_time
             
-            # Logging des résultats
-            self.logger.info(
-                f"Nettoyage métadonnées terminé pour {album_path} : "
-                f"{stats.files_processed} fichiers traités, "
-                f"{stats.files_modified} fichiers modifiés, "
-                f"{stats.total_changes} changements, "
-                f"{stats.total_errors} erreurs"
-            )
-            
-            # Mise à jour de l'état
+            # Mise à jour de l'état final
             if stats.total_errors > 0:
                 self.state.update_album_processing_status(album_path, "metadata_cleaning_completed_with_errors")
             else:
                 self.state.update_album_processing_status(album_path, "metadata_cleaning_completed")
             
+            # Rapport final avec vérité absolue
+            honest_logger.info(f"🏁 BILAN MÉTADONNÉES: {album_path}")
+            honest_logger.info(f"📁 Fichiers traités: {stats.files_processed}/{len(mp3_files)}")
+            honest_logger.info(f"🔧 Fichiers modifiés: {stats.files_modified}")
+            honest_logger.info(f"⚡ Corrections appliquées: {stats.total_changes}")
+            honest_logger.info(f"⏱️ Temps traitement: {processing_time:.2f}s")
+            
+            if stats.rule_stats:
+                honest_logger.info("📊 Règles appliquées:")
+                for rule, count in stats.rule_stats.items():
+                    honest_logger.info(f"   • {rule}: {count} fois")
+            
+            if stats.total_errors > 0:
+                honest_logger.error(f"❌ Erreurs rencontrées: {stats.total_errors}")
+            else:
+                honest_logger.success(f"✅ Nettoyage métadonnées terminé sans erreur")
+            
         except Exception as e:
             error_msg = f"Erreur lors du nettoyage métadonnées de {album_path} : {str(e)}"
-            self.logger.error(error_msg, exc_info=True)
+            honest_logger.error(f"❌ ERREUR CRITIQUE MÉTADONNÉES: {e}")
             stats.total_errors += 1
             self.state.update_album_processing_status(album_path, "metadata_cleaning_failed")
         
@@ -263,9 +291,25 @@ class MetadataCleaner:
             # Application des règles de nettoyage
             changes_made = False
             
+            honest_logger.info(f"🎵 Traitement métadonnées: {Path(file_path).name}")
+            
+            # RÈGLE 4 : Suppression des commentaires (tags COMM)
+            comment_tags = [tag for tag in audio_file.tags.keys() if tag.startswith('COMM')]
+            if comment_tags:
+                honest_logger.info(f"💬 RÈGLE 4 - {len(comment_tags)} commentaires détectés à supprimer")
+                for comment_tag in comment_tags:
+                    del audio_file.tags[comment_tag]
+                    honest_logger.success(f"✅ RÈGLE 4 - Commentaire supprimé: {comment_tag}")
+                changes_made = True
+            else:
+                honest_logger.info(f"ℹ️ RÈGLE 4 - Aucun commentaire trouvé")
+            
+            # Nettoyage des champs texte (règles 5-8)
             for field_name in self._metadata_fields:
                 if field_name in audio_file.tags:
                     original_value = str(audio_file.tags[field_name].text[0])
+                    honest_logger.info(f"🏷️ Traitement champ {field_name}: '{original_value}'")
+                    
                     cleaned_value = self._apply_cleaning_rules(original_value)
                     
                     if cleaned_value != original_value:
@@ -287,10 +331,11 @@ class MetadataCleaner:
                         
                         changes_made = True
                         
-                        self.logger.debug(
-                            f"Métadonnée modifiée dans {file_path} - "
-                            f"{field_name}: '{original_value}' → '{cleaned_value}'"
+                        honest_logger.success(
+                            f"✅ Métadonnée modifiée: {field_name}: '{original_value}' → '{cleaned_value}'"
                         )
+                    else:
+                        honest_logger.info(f"ℹ️ Champ {field_name} déjà propre: '{original_value}'")
             
             # Sauvegarde des modifications
             if changes_made:
@@ -320,30 +365,63 @@ class MetadataCleaner:
         if not text:
             return text
         
+        original_text = text
         cleaned = text
         
-        # Règle 1 : Suppression des commentaires (tags COMM)
-        # Note: Les commentaires sont gérés séparément via les tags COMM
+        honest_logger.info(f"🧹 GROUPE 2 - Début nettoyage: '{original_text}'")
         
-        # Règle 2 : Suppression des parenthèses et contenu
+        # RÈGLE 4 : Suppression des commentaires (tags COMM)
+        # Note: Les commentaires sont gérés séparément via les tags COMM
+        # Cette règle est appliquée au niveau des tags, pas du texte
+        
+        # RÈGLE 5 : Suppression des parenthèses et contenu
+        step_cleaned = cleaned
         for pattern in self._parentheses_patterns:
             cleaned = re.sub(pattern, '', cleaned)
         
-        # Règle 3 : Nettoyage des espaces en trop
+        if cleaned != step_cleaned:
+            honest_logger.info(f"✅ RÈGLE 5 - Parenthèses supprimées: '{step_cleaned}' → '{cleaned}'")
+        else:
+            honest_logger.info(f"ℹ️ RÈGLE 5 - Aucune parenthèse trouvée dans: '{step_cleaned}'")
+        
+        # RÈGLE 6 : Nettoyage des espaces en trop
+        step_cleaned = cleaned
         cleaned = re.sub(r'\s+', ' ', cleaned)  # Espaces multiples → un seul
         cleaned = cleaned.strip()  # Suppression espaces début/fin
         
-        # Règle 4 : Suppression des caractères spéciaux
+        if cleaned != step_cleaned:
+            honest_logger.info(f"✅ RÈGLE 6 - Espaces nettoyés: '{step_cleaned}' → '{cleaned}'")
+        else:
+            honest_logger.info(f"ℹ️ RÈGLE 6 - Espaces déjà propres: '{step_cleaned}'")
+        
+        # RÈGLE 7 : Suppression des caractères spéciaux
+        step_cleaned = cleaned
         cleaned = re.sub(self._special_chars_pattern, '', cleaned)
         
-        # Règle 5 : Normalisation des conjonctions
+        if cleaned != step_cleaned:
+            honest_logger.info(f"✅ RÈGLE 7 - Caractères spéciaux supprimés: '{step_cleaned}' → '{cleaned}'")
+        else:
+            honest_logger.info(f"ℹ️ RÈGLE 7 - Aucun caractère spécial trouvé: '{step_cleaned}'")
+        
+        # RÈGLE 8 : Normalisation des conjonctions
+        step_cleaned = cleaned
         for pattern, replacement in self._conjunction_patterns.items():
             cleaned = re.sub(pattern, replacement, cleaned, flags=re.IGNORECASE)
         
-        # Nettoyage final des espaces
-        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+        if cleaned != step_cleaned:
+            honest_logger.info(f"✅ RÈGLE 8 - Conjonctions normalisées: '{step_cleaned}' → '{cleaned}'")
+        else:
+            honest_logger.info(f"ℹ️ RÈGLE 8 - Aucune conjonction à normaliser: '{step_cleaned}'")
         
-        return cleaned
+        # Nettoyage final des espaces
+        final_cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+        
+        if final_cleaned != original_text:
+            honest_logger.success(f"🎯 GROUPE 2 - Nettoyage terminé: '{original_text}' → '{final_cleaned}'")
+        else:
+            honest_logger.info(f"ℹ️ GROUPE 2 - Aucun changement nécessaire: '{original_text}'")
+        
+        return final_cleaned
     
     def _identify_applied_rules(self, original: str, cleaned: str) -> List[CleaningRule]:
         """

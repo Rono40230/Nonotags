@@ -281,10 +281,14 @@ class NonotagsApp:
             
             # ✅ TRAITEMENT AUTOMATIQUE : Démarrer immédiatement le traitement
             print("🚀 Démarrage automatique du traitement...")
+            print(f"📊 Albums en queue: {len(self.orchestrator.albums_queue)}")
+            print(f"📊 Total albums: {self.orchestrator.total_albums}")
             if self.orchestrator.start_processing():
                 print("✅ Traitement automatique démarré")
             else:
                 print("❌ Impossible de démarrer le traitement automatique")
+                print(f"   État actuel: {self.orchestrator.current_state}")
+                print(f"   Albums dans queue: {len(self.orchestrator.albums_queue)}")
         
         self.albums_grid.show_all()
         self.update_cards_per_line()
@@ -373,7 +377,7 @@ class NonotagsApp:
                     "year": "2023",
                     "genre": "Inconnu",
                     "tracks": 1,
-                    "path": filename,
+                    "path": os.path.dirname(filename),  # ✅ DOSSIER de l'album, pas le fichier MP3
                     "emoji": "🎵",
                     "color": "green"
                 }

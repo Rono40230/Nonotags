@@ -12,11 +12,20 @@ from typing import List, Dict, Optional, Tuple, Set
 from enum import Enum
 import time
 
+# Import Mutagen pour les métadonnées
+try:
+    from mutagen.mp3 import MP3
+    from mutagen.id3 import ID3NoHeaderError
+    MUTAGEN_AVAILABLE = True
+except ImportError:
+    MUTAGEN_AVAILABLE = False
+
 try:
     from support.logger import AppLogger
+    from support.honest_logger import HonestLogger
     from support.config_manager import ConfigManager
     from support.state_manager import StateManager
-    from support.validator import MetadataValidator, ValidationResult
+    from support.validator import MetadataValidator, ValidationResult, FileValidator
     from database.db_manager import DatabaseManager
 except ImportError as e:
     print(f"Erreur d'import des modules de support : {e}")
@@ -75,9 +84,11 @@ class FileRenamer:
             # Initialisation des modules de support
             from support.logger import get_logger
             self.logger = get_logger().main_logger
+            self.honest_logger = HonestLogger("FileRenamer")
             self.config_manager = ConfigManager()
             self.state_manager = StateManager()
-            self.validator = MetadataValidator()
+            self.file_validator = FileValidator()  # Pour validate_directory
+            self.metadata_validator = MetadataValidator()  # Pour les métadonnées
             self.db_manager = DatabaseManager()
             
             # Configuration du module
@@ -167,7 +178,7 @@ class FileRenamer:
         rules_applied.extend(title_rules)
         
         # Construction du nom de fichier
-        filename = f"({track_number}) - {clean_title}{extension}"
+        filename = f"{track_number} - {clean_title}{extension}"
         
         rules_applied.append(RenamingRule.FORMAT_TRACK_FILENAME)
         rules_applied.append(RenamingRule.PRESERVE_EXTENSION)
@@ -216,29 +227,37 @@ class FileRenamer:
         Returns:
             Tuple[str, List[RenamingRule]]: Année formatée et règles appliquées
         """
+        self.honest_logger.info(f"🔍 [RÈGLE 17] HANDLE_MULTI_YEAR - Analyse année: '{year}'")
         rules_applied = []
         
         if not year or not year.strip():
+            self.honest_logger.warning(f"❌ [RÈGLE 17] Année vide ou None - Pas de traitement")
             return "", []
         
         year = year.strip()
+        self.honest_logger.debug(f"📝 [RÈGLE 17] Année nettoyée: '{year}'")
         
         # Si c'est déjà une plage formatée (ex: "1995-2000")
         if re.match(r'^\d{4}-\d{4}$', year):
             rules_applied.append(RenamingRule.HANDLE_MULTI_YEAR)
+            self.honest_logger.success(f"✅ [RÈGLE 17] Plage déjà formatée détectée: '{year}'")
             return year, rules_applied
         
         # Extraction des années individuelles
         years = re.findall(r'\b\d{4}\b', year)
+        self.honest_logger.debug(f"🔍 [RÈGLE 17] Années extraites: {years}")
         
         if not years:
+            self.honest_logger.warning(f"❌ [RÈGLE 17] Aucune année valide détectée dans: '{year}'")
             return year, []  # Retourne tel quel si pas d'années détectées
         
         # Conversion en entiers et tri
         try:
             year_ints = sorted([int(y) for y in years if 1900 <= int(y) <= 2100])
+            self.honest_logger.debug(f"📊 [RÈGLE 17] Années triées: {year_ints}")
             
             if len(year_ints) == 1:
+                self.honest_logger.info(f"ℹ️ [RÈGLE 17] Année unique: {year_ints[0]} - Pas de modification")
                 return str(year_ints[0]), []
             elif len(year_ints) >= 2:
                 # Utilise la première et dernière année pour la plage
@@ -247,12 +266,17 @@ class FileRenamer:
                 
                 if min_year != max_year:
                     rules_applied.append(RenamingRule.HANDLE_MULTI_YEAR)
-                    return f"{min_year}-{max_year}", rules_applied
+                    result = f"{min_year}-{max_year}"
+                    self.honest_logger.success(f"🎯 [RÈGLE 17] Plage créée: '{year}' → '{result}' (compilation {len(year_ints)} années)")
+                    return result, rules_applied
                 else:
+                    self.honest_logger.info(f"ℹ️ [RÈGLE 17] Toutes les années identiques: {min_year}")
                     return str(min_year), []
-        except ValueError:
+        except ValueError as e:
+            self.honest_logger.error(f"❌ [RÈGLE 17] Erreur conversion années: {e}")
             pass
         
+        self.honest_logger.warning(f"⚠️ [RÈGLE 17] Retour valeur originale: '{year}'")
         return year, []
     
     def preview_file_renaming(self, file_path: str, metadata: Dict[str, str]) -> RenamingResult:
@@ -373,16 +397,20 @@ class FileRenamer:
         Returns:
             RenamingResult: Résultat du renommage
         """
+        self.honest_logger.info(f"🔍 [RÈGLE 15] RENAME_FILE - Renommage fichier: '{Path(file_path).name}'")
         try:
             # Prévisualisation pour obtenir le nouveau nom
             preview = self.preview_file_renaming(file_path, metadata)
             
             if preview.error:
+                self.honest_logger.error(f"❌ [RÈGLE 15] Erreur preview: {preview.error}")
                 return preview
             
             if not preview.renamed:
-                self.logger.debug(f"Pas de renommage nécessaire pour : {file_path}")
+                self.honest_logger.info(f"ℹ️ [RÈGLE 15] Pas de renommage nécessaire pour : {Path(file_path).name}")
                 return preview
+            
+            self.honest_logger.info(f"📝 [RÈGLE 15] Nouveau nom proposé: '{Path(preview.new_path).name}'")
             
             # Gestion des conflits de noms
             new_path = preview.new_path
@@ -396,19 +424,25 @@ class FileRenamer:
                 suffix = path_obj.suffix
                 new_path = str(path_obj.parent / f"{stem} ({counter}){suffix}")
                 counter += 1
+                self.honest_logger.debug(f"🔄 [RÈGLE 15] Conflit détecté, tentative: '{Path(new_path).name}' (#{counter})")
                 
                 if counter > 100:  # Protection contre boucle infinie
-                    raise Exception("Trop de fichiers avec le même nom")
+                    error_msg = "Trop de fichiers avec le même nom"
+                    self.honest_logger.error(f"❌ [RÈGLE 15] {error_msg}")
+                    raise Exception(error_msg)
             
             # Effectuer le renommage
             if new_path != file_path:
                 shutil.move(file_path, new_path)
-                self.logger.info(f"Fichier renommé : {Path(file_path).name} → {Path(new_path).name}")
+                old_name = Path(file_path).name
+                new_name = Path(new_path).name
+                self.honest_logger.success(f"🎯 [RÈGLE 15] Fichier renommé: '{old_name}' → '{new_name}'")
                 
                 # Mise à jour des règles si conflit résolu
                 rules = preview.rules_applied.copy()
                 if new_path != original_new_path:
                     rules.append(RenamingRule.HANDLE_DUPLICATE_NAME)
+                    self.honest_logger.info(f"🔧 [RÈGLE 15] Règle duplicate name ajoutée")
                 
                 return RenamingResult(
                     original_path=file_path,
@@ -422,7 +456,7 @@ class FileRenamer:
             
         except Exception as e:
             error_msg = f"Erreur lors du renommage de {file_path} : {e}"
-            self.logger.error(error_msg)
+            self.honest_logger.error(f"❌ [RÈGLE 15] {error_msg}")
             return RenamingResult(
                 original_path=file_path,
                 new_path=file_path,
@@ -443,16 +477,20 @@ class FileRenamer:
         Returns:
             RenamingResult: Résultat du renommage
         """
+        self.honest_logger.info(f"🔍 [RÈGLE 16] RENAME_FOLDER - Renommage dossier: '{Path(folder_path).name}'")
         try:
             # Prévisualisation pour obtenir le nouveau nom
             preview = self.preview_folder_renaming(folder_path, album_metadata)
             
             if preview.error:
+                self.honest_logger.error(f"❌ [RÈGLE 16] Erreur preview: {preview.error}")
                 return preview
             
             if not preview.renamed:
-                self.logger.debug(f"Pas de renommage nécessaire pour : {folder_path}")
+                self.honest_logger.info(f"ℹ️ [RÈGLE 16] Pas de renommage nécessaire pour : {Path(folder_path).name}")
                 return preview
+            
+            self.honest_logger.info(f"📝 [RÈGLE 16] Nouveau nom proposé: '{Path(preview.new_path).name}'")
             
             # Gestion des conflits de noms
             new_path = preview.new_path
@@ -464,19 +502,25 @@ class FileRenamer:
                 path_obj = Path(original_new_path)
                 new_path = str(path_obj.parent / f"{path_obj.name} ({counter})")
                 counter += 1
+                self.honest_logger.debug(f"🔄 [RÈGLE 16] Conflit dossier détecté, tentative: '{Path(new_path).name}' (#{counter})")
                 
                 if counter > 100:  # Protection contre boucle infinie
-                    raise Exception("Trop de dossiers avec le même nom")
+                    error_msg = "Trop de dossiers avec le même nom"
+                    self.honest_logger.error(f"❌ [RÈGLE 16] {error_msg}")
+                    raise Exception(error_msg)
             
             # Effectuer le renommage
             if new_path != folder_path:
                 shutil.move(folder_path, new_path)
-                self.logger.info(f"Dossier renommé : {Path(folder_path).name} → {Path(new_path).name}")
+                old_name = Path(folder_path).name
+                new_name = Path(new_path).name
+                self.honest_logger.success(f"🎯 [RÈGLE 16] Dossier renommé: '{old_name}' → '{new_name}'")
                 
                 # Mise à jour des règles si conflit résolu
                 rules = preview.rules_applied.copy()
                 if new_path != original_new_path:
                     rules.append(RenamingRule.HANDLE_DUPLICATE_NAME)
+                    self.honest_logger.info(f"🔧 [RÈGLE 16] Règle duplicate name ajoutée")
                 
                 return RenamingResult(
                     original_path=folder_path,
@@ -490,7 +534,7 @@ class FileRenamer:
             
         except Exception as e:
             error_msg = f"Erreur lors du renommage de {folder_path} : {e}"
-            self.logger.error(error_msg)
+            self.honest_logger.error(f"❌ [RÈGLE 16] {error_msg}")
             return RenamingResult(
                 original_path=folder_path,
                 new_path=folder_path,
@@ -514,7 +558,7 @@ class FileRenamer:
         
         try:
             # Validation du dossier
-            validation_result = self.validator.validate_directory(album_path)
+            validation_result = self.file_validator.validate_directory(album_path)
             if not validation_result.is_valid:
                 return AlbumRenamingResult(
                     album_path=album_path,
@@ -529,7 +573,7 @@ class FileRenamer:
                 )
             
             # Mise à jour du statut
-            self.state_manager.set_status("renaming_files")
+            self.state_manager.update_album_processing_status(album_path, "renaming_files")
             
             # Recherche des fichiers MP3
             album_dir = Path(album_path)
@@ -543,7 +587,7 @@ class FileRenamer:
             # Collecte des métadonnées pour l'album (du premier fichier)
             album_metadata = {}
             if mp3_files:
-                first_file_validation = self.validator.validate_mp3_file(str(mp3_files[0]))
+                first_file_validation = self.file_validator.validate_mp3_file(str(mp3_files[0]))
                 if first_file_validation.is_valid and first_file_validation.metadata:
                     album_metadata = first_file_validation.metadata
             
@@ -552,12 +596,42 @@ class FileRenamer:
             files_to_rename = 0
             
             for mp3_file in mp3_files:
-                file_validation = self.validator.validate_mp3_file(str(mp3_file))
-                if file_validation.is_valid and file_validation.metadata:
-                    result = self.preview_file_renaming(str(mp3_file), file_validation.metadata)
-                    file_results.append(result)
-                    if result.renamed:
-                        files_to_rename += 1
+                # Validation basique du fichier
+                file_validation = self.file_validator.validate_mp3_file(str(mp3_file))
+                if file_validation.is_valid:
+                    # Extraction directe des métadonnées avec Mutagen
+                    metadata = {}
+                    try:
+                        if MUTAGEN_AVAILABLE:
+                            audio_file = MP3(str(mp3_file))
+                            if audio_file and audio_file.tags:
+                                tags = audio_file.tags
+                                # Numéro de piste
+                                if 'TRCK' in tags:
+                                    track = str(tags['TRCK'])
+                                    if '/' in track:
+                                        track = track.split('/')[0]
+                                    metadata['track_number'] = track
+                                # Titre
+                                if 'TIT2' in tags:
+                                    metadata['title'] = str(tags['TIT2'])
+                    except Exception as e:
+                        self.honest_logger.warning(f"Erreur extraction métadonnées {mp3_file}: {e}")
+                    
+                    # Utilisation des métadonnées extraites
+                    if metadata:
+                        result = self.preview_file_renaming(str(mp3_file), metadata)
+                        file_results.append(result)
+                        if result.renamed:
+                            files_to_rename += 1
+                    else:
+                        # Pas de métadonnées, utilisation de valeurs par défaut
+                        default_metadata = {
+                            'track_number': '01',
+                            'title': Path(mp3_file).stem
+                        }
+                        result = self.preview_file_renaming(str(mp3_file), default_metadata)
+                        file_results.append(result)
                 else:
                     # Fichier invalide, mais on l'inclut dans les résultats
                     result = RenamingResult(
@@ -623,12 +697,7 @@ class FileRenamer:
     def rename_album(self, album_path: str) -> AlbumRenamingResult:
         """
         Renomme tous les fichiers et le dossier d'un album.
-        
-        Args:
-            album_path: Chemin du dossier d'album
-            
-        Returns:
-            AlbumRenamingResult: Résultat du renommage complet
+        Version corrigée sans dépendance aux métadonnées des validators.
         """
         start_time = time.time()
         
@@ -636,10 +705,10 @@ class FileRenamer:
             self.logger.info(f"Début du renommage de l'album : {album_path}")
             
             # Mise à jour du statut
-            self.state_manager.set_status("renaming_files")
+            self.state_manager.update_album_processing_status(album_path, "renaming_files")
             
             # Validation du dossier
-            validation_result = self.validator.validate_directory(album_path)
+            validation_result = self.file_validator.validate_directory(album_path)
             if not validation_result.is_valid:
                 return AlbumRenamingResult(
                     album_path=album_path,
@@ -656,64 +725,98 @@ class FileRenamer:
             # Recherche des fichiers MP3
             album_dir = Path(album_path)
             mp3_files = []
-            # Recherche avec différentes casses pour l'extension
             for pattern in ['*.mp3', '*.MP3', '*.Mp3', '*.mP3']:
                 mp3_files.extend(album_dir.glob(pattern))
-            # Supprime les doublons potentiels
             mp3_files = list(set(mp3_files))
             
             # Collecte des métadonnées pour l'album (du premier fichier)
             album_metadata = {}
-            if mp3_files:
-                first_file_validation = self.validator.validate_mp3_file(str(mp3_files[0]))
-                if first_file_validation.is_valid and first_file_validation.metadata:
-                    album_metadata = first_file_validation.metadata
+            if mp3_files and MUTAGEN_AVAILABLE:
+                try:
+                    audio_file = MP3(str(mp3_files[0]))
+                    if audio_file and audio_file.tags:
+                        tags = audio_file.tags
+                        if 'TALB' in tags:
+                            album_metadata['album'] = str(tags['TALB'])
+                        if 'TYER' in tags:
+                            album_metadata['year'] = str(tags['TYER'])
+                        elif 'TDRC' in tags:
+                            album_metadata['year'] = str(tags['TDRC'])
+                except Exception as e:
+                    self.honest_logger.warning(f"Erreur extraction métadonnées album: {e}")
             
             # Renommage des fichiers
             file_results = []
             files_renamed = 0
-            current_album_path = album_path  # Peut changer si le dossier est renommé
+            current_album_path = album_path
             
             for mp3_file in mp3_files:
-                file_validation = self.validator.validate_mp3_file(str(mp3_file))
-                if file_validation.is_valid and file_validation.metadata:
-                    result = self.rename_file(str(mp3_file), file_validation.metadata)
+                # Validation basique
+                file_validation = self.file_validator.validate_mp3_file(str(mp3_file))
+                if file_validation.is_valid:
+                    # Extraction métadonnées directe
+                    metadata = {}
+                    try:
+                        if MUTAGEN_AVAILABLE:
+                            audio_file = MP3(str(mp3_file))
+                            if audio_file and audio_file.tags:
+                                tags = audio_file.tags
+                                # Numéro de piste
+                                if 'TRCK' in tags:
+                                    track = str(tags['TRCK'])
+                                    if '/' in track:
+                                        track = track.split('/')[0]
+                                    metadata['track_number'] = track
+                                # Titre
+                                if 'TIT2' in tags:
+                                    metadata['title'] = str(tags['TIT2'])
+                    except Exception as e:
+                        self.honest_logger.warning(f"Erreur extraction métadonnées {mp3_file}: {e}")
+                    
+                    # Utilisation des métadonnées ou valeurs par défaut
+                    if not metadata:
+                        metadata = {
+                            'track_number': '01',
+                            'title': Path(mp3_file).stem
+                        }
+                    
+                    result = self.rename_file(str(mp3_file), metadata)
                     file_results.append(result)
                     if result.renamed:
                         files_renamed += 1
                 else:
-                    # Fichier invalide, mais on l'inclut dans les résultats
+                    # Fichier invalide
                     result = RenamingResult(
                         original_path=str(mp3_file),
                         new_path=str(mp3_file),
                         renamed=False,
                         rules_applied=[],
                         warnings=[],
-                        error="Fichier MP3 invalide ou métadonnées manquantes"
+                        error="Fichier MP3 invalide"
                     )
                     file_results.append(result)
             
-            # Renommage du dossier (après les fichiers pour éviter les problèmes de chemins)
+            # Renommage du dossier (optionnel)
             folder_result = None
             folder_renamed = False
-            
             if album_metadata:
-                folder_result = self.rename_folder(current_album_path, album_metadata)
-                folder_renamed = folder_result.renamed
-                if folder_renamed:
-                    current_album_path = folder_result.new_path
+                try:
+                    folder_result = self.rename_folder(current_album_path, album_metadata)
+                    if folder_result.renamed:
+                        folder_renamed = True
+                        current_album_path = folder_result.new_path
+                except Exception as e:
+                    self.honest_logger.warning(f"Erreur renommage dossier: {e}")
             
             processing_time = time.time() - start_time
             
             # Collecte des erreurs et avertissements
             errors = []
             warnings = []
-            
             for result in file_results:
                 if result.error:
                     errors.append(result.error)
                 warnings.extend(result.warnings)
-            
             if folder_result and folder_result.error:
                 errors.append(folder_result.error)
             if folder_result:
@@ -727,22 +830,19 @@ class FileRenamer:
             )
             
             # Mise à jour du statut
-            self.state_manager.set_status("file_renaming_completed")
+            self.state_manager.update_album_processing_status(current_album_path, "file_renaming_completed")
             
             # Enregistrement en base
             try:
                 self.db_manager.add_import_history(
                     folder_path=current_album_path,
-                    action="rename_album",
-                    details={
-                        "files_renamed": files_renamed,
-                        "folder_renamed": folder_renamed,
-                        "total_files": len(mp3_files),
-                        "processing_time": processing_time
-                    }
+                    import_type="file_renaming",
+                    status="completed" if files_renamed > 0 else "no_changes",
+                    files_processed=len(mp3_files),
+                    processing_time=processing_time
                 )
             except Exception as e:
-                self.logger.warning(f"Erreur lors de l'enregistrement en base : {e}")
+                self.honest_logger.warning(f"Erreur enregistrement base: {e}")
             
             return AlbumRenamingResult(
                 album_path=current_album_path,
@@ -757,8 +857,10 @@ class FileRenamer:
             )
             
         except Exception as e:
-            error_msg = f"Erreur lors du renommage de l'album {album_path} : {e}"
+            error_msg = f"Erreur lors du renommage de l'album {album_path} : {str(e)}"
             self.logger.error(error_msg)
+            self.honest_logger.error(error_msg)
+            
             return AlbumRenamingResult(
                 album_path=album_path,
                 files_renamed=0,
@@ -770,3 +872,66 @@ class FileRenamer:
                 errors=[error_msg],
                 warnings=[]
             )
+    
+    def rename_album_files(self, album_path: str) -> bool:
+        """
+        Méthode de compatibilité pour processing_orchestrator.py.
+        Renomme les fichiers d'un album.
+        
+        Args:
+            album_path: Chemin vers le dossier de l'album
+            
+        Returns:
+            bool: True si le renommage a réussi, False sinon
+        """
+        try:
+            result = self.rename_album(album_path)
+            success = len(result.errors) == 0
+            
+            if success:
+                self.logger.info(f"Renommage réussi pour : {album_path}")
+            else:
+                self.logger.error(f"Erreurs lors du renommage de : {album_path}")
+                for error in result.errors:
+                    self.logger.error(f"  - {error}")
+            
+            return success
+            
+        except Exception as e:
+            self.logger.error(f"Erreur critique lors du renommage de {album_path}: {str(e)}", exc_info=True)
+            return False
+    
+    def get_mp3_metadata(self, file_path: str) -> Dict[str, str]:
+        """
+        Extrait les métadonnées d'un fichier MP3.
+        
+        Args:
+            file_path: Chemin vers le fichier MP3
+            
+        Returns:
+            Dictionnaire des métadonnées
+        """
+        metadata = {}
+        
+        if not MUTAGEN_AVAILABLE:
+            return metadata
+            
+        try:
+            audio_file = MP3(file_path)
+            if audio_file is not None:
+                # Extraction des métadonnées principales
+                metadata['TRCK'] = str(audio_file.get('TRCK', [''])[0])
+                metadata['TIT2'] = str(audio_file.get('TIT2', [''])[0])
+                metadata['TALB'] = str(audio_file.get('TALB', [''])[0])
+                metadata['TPE1'] = str(audio_file.get('TPE1', [''])[0])
+                metadata['TDRC'] = str(audio_file.get('TDRC', [''])[0])
+                
+                # Nettoyage des valeurs vides
+                for key in list(metadata.keys()):
+                    if not metadata[key] or metadata[key] == 'None':
+                        del metadata[key]
+                        
+        except Exception as e:
+            self.logger.warning(f"Erreur extraction métadonnées {file_path}: {e}")
+            
+        return metadata

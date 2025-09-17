@@ -280,17 +280,30 @@ class AlbumEditWindow(Gtk.Window):
                     break
         
         # Charger les pistes dans le tableau
-        folder_path = self.album_data.get('path', '')
+        # ✅ FIX: Le scanner utilise 'folder_path', pas 'path'
+        folder_path = self.album_data.get('folder_path') or self.album_data.get('path', '')
         if folder_path and os.path.exists(folder_path):
             self._load_tracks_to_table(folder_path)
     
     def _load_tracks_to_table(self, folder_path):
         """Charge les pistes dans le tableau des métadonnées"""
+        if not folder_path or not os.path.exists(folder_path):
+            print(f"❌ Chemin album invalide: {folder_path}")
+            return
+            
+        # Si c'est un fichier, prendre le dossier parent
+        if os.path.isfile(folder_path):
+            folder_path = os.path.dirname(folder_path)
+            
         audio_files = []
         for file in os.listdir(folder_path):
             if file.lower().endswith(('.mp3', '.flac', '.m4a', '.ogg')):
                 audio_files.append(os.path.join(folder_path, file))
         
+        if not audio_files:
+            print(f"⚠️ Aucun fichier audio trouvé dans: {folder_path}")
+            return
+            
         audio_files.sort()
         
         for file_path in audio_files:

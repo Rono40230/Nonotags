@@ -9,16 +9,17 @@ from enum import Enum
 from typing import List, Dict, Callable, Optional
 from gi.repository import GLib
 
-# Imports des modules core
-from core.file_cleaner import FileCleaner
-from core.metadata_processor import MetadataProcessor  
-from core.case_corrector import CaseCorrector
-from core.metadata_formatter import MetadataFormatter
-from core.file_renamer import FileRenamer
-from core.tag_synchronizer import TagSynchronizer
+# Import des modules core (règles hardcodées)
+from core.file_cleaner import FileCleaner  # GROUPE 1 - Nettoyage des fichiers
+from core.case_corrector import CaseCorrector  # GROUPE 2 - Correction de la casse
+from core.metadata_processor import MetadataProcessor  # GROUPE 3 - Traitement métadonnées
+from core.metadata_formatter import MetadataFormatter  # GROUPE 4 - Formatage métadonnées  
+from core.file_renamer import FileRenamer  # GROUPE 5 - Renommage des fichiers
+from core.tag_synchronizer import TagSynchronizer  # GROUPE 6 - Synchronisation
 
 # Imports des modules support
 from support.logger import AppLogger
+from support.honest_logger import honest_logger
 from support.config_manager import ConfigManager
 from support.state_manager import StateManager
 from support.validator import Validator
@@ -68,6 +69,14 @@ class ProcessingOrchestrator:
         self.metadata_formatter = MetadataFormatter()
         self.file_renamer = FileRenamer()
         self.tag_synchronizer = TagSynchronizer()
+        
+        # Partage de l'instance StateManager avec tous les modules
+        self.file_cleaner.state = self.state_manager
+        self.metadata_processor.state = self.state_manager
+        self.case_corrector.state_manager = self.state_manager
+        self.metadata_formatter.state_manager = self.state_manager
+        self.file_renamer.state_manager = self.state_manager
+        self.tag_synchronizer.state_manager = self.state_manager
         
         # Thread de traitement
         self.processing_thread = None
@@ -202,7 +211,8 @@ class ProcessingOrchestrator:
         Returns:
             bool: True si le traitement a réussi
         """
-        album_path = album.get('path')
+        # ✅ FIX: Le scanner utilise 'folder_path', pas 'path'
+        album_path = album.get('folder_path') or album.get('path')
         if not album_path or not os.path.exists(album_path):
             self.logger.error(f"Chemin album invalide: {album_path}")
             return False
@@ -214,7 +224,7 @@ class ProcessingOrchestrator:
             GLib.idle_add(self._notify_step_changed, ProcessingStep.FILE_CLEANING, album_number)
             
             if not self._execute_step(
-                lambda: self.file_cleaner.clean_directory(album_path),
+                lambda: self.file_cleaner.clean_album_folder(album_path),
                 f"Nettoyage fichiers - Album {album_number}"
             ):
                 return False
@@ -223,7 +233,7 @@ class ProcessingOrchestrator:
             GLib.idle_add(self._notify_step_changed, ProcessingStep.METADATA_CLEANING, album_number)
             
             if not self._execute_step(
-                lambda: self.metadata_processor.clean_metadata(album_path),
+                lambda: self.metadata_processor.clean_album_metadata(album_path),
                 f"Nettoyage métadonnées - Album {album_number}"
             ):
                 return False
@@ -232,7 +242,7 @@ class ProcessingOrchestrator:
             GLib.idle_add(self._notify_step_changed, ProcessingStep.CASE_CORRECTION, album_number)
             
             if not self._execute_step(
-                lambda: self.rules_engine.apply_case_rules(album_path),
+                lambda: self.case_corrector.correct_album_metadata(album_path),
                 f"Correction casse - Album {album_number}"
             ):
                 return False
@@ -241,7 +251,7 @@ class ProcessingOrchestrator:
             GLib.idle_add(self._notify_step_changed, ProcessingStep.FORMATTING, album_number)
             
             if not self._execute_step(
-                lambda: self.rules_engine.apply_formatting_rules(album_path),
+                lambda: self.metadata_formatter.format_album_metadata(album_path),
                 f"Formatage - Album {album_number}"
             ):
                 return False
@@ -250,7 +260,7 @@ class ProcessingOrchestrator:
             GLib.idle_add(self._notify_step_changed, ProcessingStep.RENAMING, album_number)
             
             if not self._execute_step(
-                lambda: self.rules_engine.apply_renaming_rules(album_path),
+                lambda: self.file_renamer.rename_album_files(album_path),
                 f"Renommage - Album {album_number}"
             ):
                 return False
@@ -259,12 +269,13 @@ class ProcessingOrchestrator:
             GLib.idle_add(self._notify_step_changed, ProcessingStep.SYNCHRONIZATION, album_number)
             
             if not self._execute_step(
-                lambda: self.sync_manager.synchronize_album(album_path),
+                lambda: self.tag_synchronizer.synchronize_album_tags(album_path),
                 f"Synchronisation - Album {album_number}"
             ):
                 return False
             
             self.logger.info(f"Album {album_number} traité avec succès")
+            honest_logger.success(f"✅ ALBUM TRAITÉ AVEC SUCCÈS: {album.get('title', 'Sans titre')}")
             return True
             
         except Exception as e:
@@ -298,10 +309,29 @@ class ProcessingOrchestrator:
             # Exécuter l'étape
             result = step_function()
             
-            # Vérifier le résultat
-            if hasattr(result, 'success') and not result.success:
-                self.logger.warning(f"Étape échouée: {step_description}")
-                return False
+            # Vérifier le résultat avec critères honnêtes
+            if hasattr(result, 'success'):
+                # Pour les objets avec .success (comme CleaningResult)
+                if not result.success:
+                    honest_logger.error(f"❌ ÉTAPE ÉCHOUÉE: {step_description}")
+                    self.logger.warning(f"Étape échouée: {step_description}")
+                    return False
+            elif hasattr(result, 'total_errors'):
+                # Pour les objets Stats (CleaningStats, AlbumCleaningStats) 
+                if result.total_errors > 0:
+                    honest_logger.error(f"❌ ÉTAPE ÉCHOUÉE: {step_description} - {result.total_errors} erreurs")
+                    self.logger.warning(f"Étape échouée avec {result.total_errors} erreurs: {step_description}")
+                    return False
+                else:
+                    honest_logger.success(f"✅ ÉTAPE RÉUSSIE: {step_description}")
+            elif isinstance(result, bool):
+                # Pour les retours booléens simples
+                if not result:
+                    honest_logger.error(f"❌ ÉTAPE ÉCHOUÉE: {step_description}")
+                    self.logger.warning(f"Étape échouée: {step_description}")
+                    return False
+                else:
+                    honest_logger.success(f"✅ ÉTAPE RÉUSSIE: {step_description}")
             
             self.logger.debug(f"Étape réussie: {step_description}")
             return True

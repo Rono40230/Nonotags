@@ -18,6 +18,7 @@ try:
     from mutagen.id3 import ID3, APIC, TIT2, TPE1, TALB, TYER, TCON, TRCK, TPE2, TLEN
     from mutagen.id3._util import ID3NoHeaderError
     from support.logger import get_logger
+    from support.honest_logger import HonestLogger
     from support.config_manager import ConfigManager
     from support.state_manager import StateManager
     from support.validator import MetadataValidator, ValidationResult
@@ -88,6 +89,7 @@ class TagSynchronizer:
         try:
             # Initialisation des modules de support
             self.logger = get_logger().main_logger
+            self.honest_logger = HonestLogger("TagSynchronizer")
             self.config_manager = ConfigManager()
             self.state_manager = StateManager()
             self.validator = MetadataValidator()
@@ -209,34 +211,48 @@ class TagSynchronizer:
         Returns:
             CoverAssociationResult: Résultat de l'association
         """
+        self.honest_logger.info(f"🔍 [RÈGLE 19] ASSOCIATE_COVER - Association pochette '{Path(cover_path).name}' → '{Path(mp3_path).name}'")
         try:
             if not cover_path:
+                self.honest_logger.warning(f"❌ [RÈGLE 19] Pas de pochette fournie")
                 return CoverAssociationResult.COVER_NOT_FOUND
             
             # Validation de l'image
             is_valid, warnings = self.validate_cover_image(cover_path)
+            self.honest_logger.debug(f"🖼️ [RÈGLE 19] Validation image: {is_valid}, warnings: {warnings}")
             if not is_valid:
-                self.logger.warning(f"Image invalide {cover_path} : {warnings}")
+                self.honest_logger.error(f"❌ [RÈGLE 19] Image invalide {Path(cover_path).name} : {warnings}")
                 return CoverAssociationResult.INVALID_FORMAT
             
             # Chargement du fichier MP3
             try:
                 audio_file = MP3(mp3_path, ID3=ID3)
+                self.honest_logger.debug(f"📁 [RÈGLE 19] MP3 chargé avec tags existants")
             except ID3NoHeaderError:
                 # Création d'un nouveau header ID3 si absent
                 audio_file = MP3(mp3_path)
                 audio_file.add_tags()
+                self.honest_logger.info(f"🏷️ [RÈGLE 19] Nouveau header ID3 créé")
             
             # Vérification si une pochette existe déjà
+            existing_covers = 0
             if audio_file.tags:
                 for key in audio_file.tags:
                     if key.startswith('APIC'):
-                        self.logger.debug(f"Pochette existante trouvée dans {mp3_path}")
-                        return CoverAssociationResult.ALREADY_EXISTS
+                        existing_covers += 1
+                        
+            if existing_covers > 0:
+                self.honest_logger.warning(f"⚠️ [RÈGLE 19] {existing_covers} pochette(s) existante(s) trouvée(s) dans {Path(mp3_path).name}")
+                return CoverAssociationResult.ALREADY_EXISTS
+            
+            self.honest_logger.info(f"✅ [RÈGLE 19] Pas de pochette existante, procédure d'ajout")
             
             # Lecture de l'image
             with open(cover_path, 'rb') as img_file:
                 img_data = img_file.read()
+            
+            img_size = len(img_data)
+            self.honest_logger.debug(f"📊 [RÈGLE 19] Taille image: {img_size} bytes")
             
             # Détermination du type MIME
             cover_ext = Path(cover_path).suffix.lower()
@@ -248,6 +264,7 @@ class TagSynchronizer:
                 '.gif': 'image/gif'
             }
             mime_type = mime_types.get(cover_ext, 'image/jpeg')
+            self.honest_logger.debug(f"🔧 [RÈGLE 19] Type MIME détecté: {mime_type}")
             
             # Ajout de la pochette
             audio_file.tags.add(
@@ -263,11 +280,11 @@ class TagSynchronizer:
             # Sauvegarde
             audio_file.save()
             
-            self.logger.info(f"Pochette associée avec succès : {mp3_path}")
+            self.honest_logger.success(f"🎯 [RÈGLE 19] Pochette associée avec succès: '{Path(cover_path).name}' → '{Path(mp3_path).name}' ({img_size} bytes, {mime_type})")
             return CoverAssociationResult.SUCCESS
             
         except Exception as e:
-            self.logger.error(f"Erreur lors de l'association de pochette à {mp3_path} : {e}")
+            self.honest_logger.error(f"❌ [RÈGLE 19] Erreur association pochette à {Path(mp3_path).name} : {e}")
             return CoverAssociationResult.ERROR
     
     def update_mp3_tags(self, mp3_path: str, metadata: Dict[str, str]) -> bool:
@@ -281,14 +298,17 @@ class TagSynchronizer:
         Returns:
             bool: Succès de la mise à jour
         """
+        self.honest_logger.info(f"🔍 [RÈGLE 20] UPDATE_MP3_TAGS - Synchronisation tags '{Path(mp3_path).name}' avec {len(metadata)} métadonnées")
         try:
             # Chargement du fichier MP3
             try:
                 audio_file = MP3(mp3_path, ID3=ID3)
+                self.honest_logger.debug(f"📁 [RÈGLE 20] MP3 chargé avec tags existants")
             except ID3NoHeaderError:
                 # Création d'un nouveau header ID3 si absent
                 audio_file = MP3(mp3_path)
                 audio_file.add_tags()
+                self.honest_logger.info(f"🏷️ [RÈGLE 20] Nouveau header ID3 créé")
             
             # Mise à jour des tags selon les métadonnées fournies
             tag_mapping = {
@@ -303,6 +323,7 @@ class TagSynchronizer:
             }
             
             updated_tags = []
+            skipped_tags = []
             
             for tag_name, value in metadata.items():
                 if tag_name in tag_mapping and value:
@@ -310,20 +331,29 @@ class TagSynchronizer:
                         tag_obj = tag_mapping[tag_name](str(value))
                         audio_file.tags.add(tag_obj)
                         updated_tags.append(tag_name)
+                        self.honest_logger.debug(f"✅ [RÈGLE 20] Tag {tag_name} mis à jour: '{value}'")
                     except Exception as e:
-                        self.logger.warning(f"Erreur lors de la mise à jour du tag {tag_name} : {e}")
+                        self.honest_logger.warning(f"⚠️ [RÈGLE 20] Erreur mise à jour tag {tag_name} : {e}")
+                elif tag_name in tag_mapping:
+                    skipped_tags.append(f"{tag_name}(vide)")
+                    self.honest_logger.debug(f"⏭️ [RÈGLE 20] Tag {tag_name} ignoré (valeur vide)")
+                else:
+                    skipped_tags.append(f"{tag_name}(non mappé)")
+                    self.honest_logger.debug(f"⏭️ [RÈGLE 20] Tag {tag_name} ignoré (non mappé)")
             
             # Sauvegarde si des tags ont été mis à jour
             if updated_tags:
                 audio_file.save()
-                self.logger.info(f"Tags mis à jour dans {mp3_path} : {', '.join(updated_tags)}")
+                self.honest_logger.success(f"🎯 [RÈGLE 20] {len(updated_tags)} tags synchronisés dans '{Path(mp3_path).name}' : {', '.join(updated_tags)}")
+                if skipped_tags:
+                    self.honest_logger.info(f"⏭️ [RÈGLE 20] {len(skipped_tags)} tags ignorés : {', '.join(skipped_tags)}")
                 return True
             else:
-                self.logger.debug(f"Aucun tag à mettre à jour dans {mp3_path}")
+                self.honest_logger.warning(f"❌ [RÈGLE 20] Aucun tag valide à synchroniser dans '{Path(mp3_path).name}' ({len(skipped_tags)} ignorés)")
                 return False
                 
         except Exception as e:
-            self.logger.error(f"Erreur lors de la mise à jour des tags de {mp3_path} : {e}")
+            self.honest_logger.error(f"❌ [RÈGLE 20] Erreur synchronisation tags de '{Path(mp3_path).name}' : {e}")
             return False
     
     def synchronize_file(self, mp3_path: str, metadata: Optional[Dict[str, str]] = None) -> SynchronizationResult:
@@ -337,6 +367,7 @@ class TagSynchronizer:
         Returns:
             SynchronizationResult: Résultat de la synchronisation
         """
+        self.honest_logger.info(f"🔄 [GROUPE 6] SYNCHRONIZE_FILE - Synchronisation complète '{Path(mp3_path).name}'")
         start_time = time.time()
         
         try:
@@ -349,25 +380,45 @@ class TagSynchronizer:
             tags_updated = False
             cover_result = None
             
-            # 1. Association de la pochette
+            # 1. Association de la pochette (RÈGLE 19)
+            self.honest_logger.info(f"🖼️ [GROUPE 6] Étape 1/2 - Recherche pochette dans: {directory.name}")
             cover_path = self.find_cover_image(str(directory))
             if cover_path:
+                self.honest_logger.info(f"🔍 [GROUPE 6] Pochette trouvée: {Path(cover_path).name}")
                 cover_result = self.associate_cover_to_mp3(mp3_path, cover_path)
                 if cover_result == CoverAssociationResult.SUCCESS:
                     cover_associated = True
                     actions_performed.append(SynchronizationAction.ASSOCIATE_COVER)
+                    self.honest_logger.success(f"✅ [GROUPE 6] RÈGLE 19 - Pochette associée avec succès")
                 elif cover_result == CoverAssociationResult.ALREADY_EXISTS:
-                    warnings.append("Pochette déjà présente")
+                    warning_msg = "Pochette déjà présente"
+                    warnings.append(warning_msg)
+                    self.honest_logger.info(f"ℹ️ [GROUPE 6] RÈGLE 19 - {warning_msg}")
                 else:
-                    warnings.append(f"Association de pochette échouée : {cover_result.value}")
+                    warning_msg = f"Association de pochette échouée : {cover_result.value}"
+                    warnings.append(warning_msg)
+                    self.honest_logger.error(f"❌ [GROUPE 6] RÈGLE 19 - {warning_msg}")
             else:
                 cover_result = CoverAssociationResult.COVER_NOT_FOUND
-                warnings.append("Aucune pochette trouvée dans le dossier")
+                warning_msg = "Aucune pochette trouvée dans le dossier"
+                warnings.append(warning_msg)
+                self.honest_logger.warning(f"⚠️ [GROUPE 6] RÈGLE 19 - {warning_msg}")
             
-            # 2. Mise à jour des tags
+            # 2. Mise à jour des tags (RÈGLE 20)
+            self.honest_logger.info(f"🏷️ [GROUPE 6] Étape 2/2 - Synchronisation tags")
             if metadata:
+                self.honest_logger.debug(f"📊 [GROUPE 6] Métadonnées à synchroniser: {list(metadata.keys())}")
                 tags_updated = self.update_mp3_tags(mp3_path, metadata)
                 if tags_updated:
+                    actions_performed.append(SynchronizationAction.UPDATE_TAGS)
+                    self.honest_logger.success(f"✅ [GROUPE 6] RÈGLE 20 - Tags synchronisés avec succès")
+                else:
+                    self.honest_logger.warning(f"⚠️ [GROUPE 6] RÈGLE 20 - Aucun tag mis à jour")
+            else:
+                self.honest_logger.info(f"ℹ️ [GROUPE 6] RÈGLE 20 - Pas de métadonnées fournies, tags non modifiés")
+            
+            # Résumé de la synchronisation
+            if actions_performed:
                     actions_performed.append(SynchronizationAction.UPDATE_TAGS)
             
             processing_time = time.time() - start_time
@@ -572,4 +623,32 @@ class TagSynchronizer:
             
         except Exception as e:
             self.logger.error(f"Erreur lors de la restauration de {backup_path} : {e}")
+            return False
+    
+    def synchronize_album_tags(self, album_path: str) -> bool:
+        """
+        Méthode de compatibilité pour processing_orchestrator.py.
+        Synchronise les tags d'un album.
+        
+        Args:
+            album_path: Chemin vers le dossier de l'album
+            
+        Returns:
+            bool: True si la synchronisation a réussi, False sinon
+        """
+        try:
+            result = self.synchronize_album(album_path)
+            success = len(result.errors) == 0
+            
+            if success:
+                self.logger.info(f"Synchronisation réussie pour : {album_path}")
+            else:
+                self.logger.error(f"Erreurs lors de la synchronisation de : {album_path}")
+                for error in result.errors:
+                    self.logger.error(f"  - {error}")
+            
+            return success
+            
+        except Exception as e:
+            self.logger.error(f"Erreur critique lors de la synchronisation de {album_path}: {str(e)}", exc_info=True)
             return False

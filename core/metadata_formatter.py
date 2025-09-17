@@ -98,11 +98,14 @@ class MetadataFormatter:
         Returns:
             Résultat du formatage de l'album
         """
+        from support.honest_logger import honest_logger
+        
         start_time = datetime.now()
+        honest_logger.info(f"📊 GROUPE 4 - Début formatage métadonnées album : {album_path}")
         self.logger.info(f"Début formatage métadonnées album : {album_path}")
         
         # Mise à jour du statut
-        self.state_manager.update_status("formatting_metadata")
+        self.state_manager.update_album_processing_status(album_path, "formatting_metadata")
         
         try:
             # Validation du répertoire
@@ -167,7 +170,7 @@ class MetadataFormatter:
             )
             
             # Mise à jour du statut
-            self.state_manager.update_status("metadata_formatting_completed")
+            self.state_manager.update_album_processing_status(album_path, "metadata_formatting_completed")
             
             # Sauvegarde en base de données
             self._save_formatting_history(result)
@@ -177,7 +180,7 @@ class MetadataFormatter:
             
         except Exception as e:
             self.logger.error(f"Erreur lors du formatage : {e}")
-            self.state_manager.update_status("metadata_formatting_error")
+            self.state_manager.update_album_processing_status(album_path, "metadata_formatting_error")
             return self._create_error_result(album_path, [str(e)])
     
     def format_metadata_field(self, field_name: str, field_value: Any, metadata_context: Dict = None) -> FormattingResult:
@@ -199,24 +202,39 @@ class MetadataFormatter:
         formatted_value = field_value
         rules_applied = []
         warnings = []
-        
+
         # Application des règles selon le type de champ
         if field_name == "TRCK":  # Numéro de piste
+            self.logger.info(f"🎵 [GROUPE 4] Application RÈGLE 14 sur piste TRCK: '{field_value}'")
             formatted_value, track_rules = self._format_track_number(field_value)
             rules_applied.extend(track_rules)
+            if track_rules:
+                self.logger.success(f"✅ [GROUPE 4] RÈGLE 14 appliquée avec succès")
+            else:
+                self.logger.warning(f"⚠️ [GROUPE 4] RÈGLE 14 non appliquée")
             
         elif field_name == "TPE2":  # Artiste de l'album (interprète)
+            self.logger.info(f"👤 [GROUPE 4] Application RÈGLE 13 sur albumartist TPE2: '{field_value}'")
             formatted_value, artist_rules = self._copy_artist_to_albumartist(
                 field_value, metadata_context.get("TPE1")
             )
             rules_applied.extend(artist_rules)
+            if artist_rules:
+                self.logger.success(f"✅ [GROUPE 4] RÈGLE 13 appliquée avec succès")
+            else:
+                self.logger.info(f"ℹ️ [GROUPE 4] RÈGLE 13 non appliquée (conditions non remplies)")
             
         elif field_name == "TYER" or field_name == "TDRC":  # Année
+            self.logger.info(f"📅 [GROUPE 4] Application RÈGLE 21 sur année {field_name}: '{field_value}'")
             formatted_value, year_rules, year_warnings = self._handle_compilation_year(
                 field_value, metadata_context
             )
             rules_applied.extend(year_rules)
             warnings.extend(year_warnings)
+            if year_rules:
+                self.logger.success(f"✅ [GROUPE 4] RÈGLE 21 appliquée avec succès")
+            else:
+                self.logger.info(f"ℹ️ [GROUPE 4] RÈGLE 21 non appliquée (année standard)")
             
         elif field_name == "TCON":  # Genre
             formatted_value, genre_rules = self._normalize_genre(field_value)
@@ -294,24 +312,35 @@ class MetadataFormatter:
     
     def _format_track_number(self, track_value: Any) -> Tuple[str, List[FormattingRule]]:
         """Formate le numéro de piste (01, 02, 03...)."""
+        self.logger.info(f"🔍 [RÈGLE 14] FORMAT_TRACK_NUMBERS - Analyse piste: '{track_value}'")
+        
         if not track_value:
+            self.logger.warning(f"❌ [RÈGLE 14] Valeur piste vide ou None - Pas de formatage")
             return track_value, []
         
         # Extraction du numéro de piste
         track_str = str(track_value)
+        self.logger.debug(f"📝 [RÈGLE 14] Piste convertie en string: '{track_str}'")
         
         # Pattern pour extraire le numéro de piste (ex: "1/12" → "1")
         match = re.match(r'^(\d+)', track_str)
         if not match:
+            self.logger.error(f"❌ [RÈGLE 14] Pattern numérique non trouvé dans: '{track_str}'")
             return track_value, []
         
         track_number = int(match.group(1))
+        self.logger.debug(f"🔢 [RÈGLE 14] Numéro extrait: {track_number}")
         
         # Formatage avec zéro initial si nécessaire
-        if self.formatting_config.get('track_zero_padding', True):
+        zero_padding = self.formatting_config.get('track_zero_padding', True)
+        self.logger.debug(f"⚙️ [RÈGLE 14] Zero padding activé: {zero_padding}")
+        
+        if zero_padding:
             formatted_track = f"{track_number:02d}"
+            self.logger.info(f"✅ [RÈGLE 14] Formatage avec zéro: '{track_str}' → '{formatted_track}'")
         else:
             formatted_track = str(track_number)
+            self.logger.info(f"✅ [RÈGLE 14] Formatage simple: '{track_str}' → '{formatted_track}'")
         
         # Préservation du total si présent (ex: "01/12")
         if '/' in track_str:
@@ -319,58 +348,82 @@ class MetadataFormatter:
             if total_match:
                 total_tracks = total_match.group(1)
                 formatted_track += f"/{total_tracks}"
+                self.logger.info(f"📊 [RÈGLE 14] Total préservé: '{formatted_track}' (total: {total_tracks})")
+            else:
+                self.logger.warning(f"⚠️ [RÈGLE 14] Slash détecté mais total non extrait de: '{track_str}'")
         
+        self.logger.success(f"🎯 [RÈGLE 14] Formatage piste terminé: '{track_value}' → '{formatted_track}'")
         return formatted_track, [FormattingRule.FORMAT_TRACK_NUMBERS]
     
     def _copy_artist_to_albumartist(self, albumartist_value: Any, artist_value: Any) -> Tuple[str, List[FormattingRule]]:
         """Copie l'artiste vers le champ interprète si vide."""
+        self.logger.info(f"🔍 [RÈGLE 13] COPY_ARTIST_TO_ALBUMARTIST - Analyse albumartist: '{albumartist_value}', artist: '{artist_value}'")
+        
         if albumartist_value and albumartist_value.strip():
             # Le champ interprète existe déjà
+            self.logger.info(f"✅ [RÈGLE 13] AlbumArtist déjà rempli: '{albumartist_value}' - Pas de copie")
             return albumartist_value, []
         
         if not artist_value or not artist_value.strip():
             # Pas d'artiste source
+            self.logger.warning(f"❌ [RÈGLE 13] Artiste source vide ou None: '{artist_value}' - Impossible de copier")
             return albumartist_value, []
         
         # Copie de l'artiste vers interprète
-        return artist_value.strip(), [FormattingRule.COPY_ARTIST_TO_ALBUMARTIST]
+        result = artist_value.strip()
+        self.logger.success(f"🎯 [RÈGLE 13] Copie artiste → albumartist: '{artist_value}' → '{result}'")
+        return result, [FormattingRule.COPY_ARTIST_TO_ALBUMARTIST]
     
     def _handle_compilation_year(self, year_value: Any, metadata_context: Dict) -> Tuple[Any, List[FormattingRule], List[str]]:
         """Gère les années de compilation."""
+        self.logger.info(f"🔍 [RÈGLE 21] HANDLE_COMPILATION_YEAR - Analyse année: '{year_value}'")
         warnings = []
         
         if not year_value:
+            self.logger.warning(f"❌ [RÈGLE 21] Valeur année vide ou None - Pas de traitement")
             return year_value, [], warnings
         
         year_str = str(year_value).strip()
+        self.logger.debug(f"📝 [RÈGLE 21] Année convertie: '{year_str}'")
         
         # Détection d'une compilation (plusieurs années)
         year_pattern = r'(\d{4})'
         years = re.findall(year_pattern, year_str)
+        self.logger.debug(f"🔍 [RÈGLE 21] Années détectées: {years}")
         
         if len(years) > 1:
             # Compilation détectée
             min_year = min(years)
             max_year = max(years)
+            self.logger.info(f"📀 [RÈGLE 21] Compilation détectée: {len(years)} années ({min_year}-{max_year})")
             
             if min_year != max_year:
                 # Format compilation : "1995-2000"
                 formatted_year = f"{min_year}-{max_year}"
-                warnings.append(f"Compilation détectée : années {min_year} à {max_year}")
+                warning_msg = f"Compilation détectée : années {min_year} à {max_year}"
+                warnings.append(warning_msg)
+                self.logger.success(f"🎯 [RÈGLE 21] Format compilation: '{year_str}' → '{formatted_year}'")
                 return formatted_year, [FormattingRule.HANDLE_COMPILATION_YEAR], warnings
         
         elif len(years) == 1:
             # Année unique, validation de la plage
             year = int(years[0])
             current_year = datetime.now().year
+            self.logger.debug(f"📅 [RÈGLE 21] Validation année unique: {year} (actuelle: {current_year})")
             
             if year < 1900 or year > current_year + 1:
-                warnings.append(f"Année suspecte : {year}")
+                warning_msg = f"Année suspecte : {year}"
+                warnings.append(warning_msg)
+                self.logger.warning(f"⚠️ [RÈGLE 21] {warning_msg}")
+            else:
+                self.logger.info(f"✅ [RÈGLE 21] Année valide: {year}")
             
             return years[0], [], warnings
         
         # Année non détectable
-        warnings.append(f"Format d'année non reconnu : {year_str}")
+        warning_msg = f"Format d'année non reconnu : {year_str}"
+        warnings.append(warning_msg)
+        self.logger.error(f"❌ [RÈGLE 21] {warning_msg}")
         return year_value, [], warnings
     
     def _normalize_genre(self, genre_value: Any) -> Tuple[str, List[FormattingRule]]:

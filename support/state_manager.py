@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from threading import Lock
 import time
+import os
 from support.logger import get_logger
 
 class ApplicationState(Enum):
@@ -439,3 +440,34 @@ class StateManager:
         
         self.logger.info("Statistics reset")
         self._emit_event('statistics_reset', {})
+    
+    def update_album_processing_status(self, album_path: str, status: str) -> bool:
+        """
+        Met à jour le statut de traitement d'un album.
+        
+        Args:
+            album_path: Chemin vers l'album
+            status: Nouveau statut (cleaning_files, processing, completed, failed, etc.)
+            
+        Returns:
+            True si mis à jour avec succès
+        """
+        try:
+            # Trouver l'album par path ou créer une entrée temporaire
+            album_id = os.path.basename(album_path)
+            
+            # Log du changement de statut
+            self.logger.debug(f"Album {album_path} status: {status}")
+            
+            # Émettre un événement pour notifier l'UI
+            self._emit_event('album_status_changed', {
+                'album_path': album_path,
+                'status': status,
+                'timestamp': time.time()
+            })
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Erreur mise à jour statut album {album_path}: {e}")
+            return False
