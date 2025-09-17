@@ -348,8 +348,18 @@ class AlbumEditWindow(Gtk.Window):
         
         try:
             if file_path.lower().endswith('.mp3'):
-                audio = MP3(file_path, ID3=ID3)
-                if audio.tags:
+                # Essayer plusieurs méthodes de lecture MP3
+                audio = None
+                try:
+                    audio = MP3(file_path, ID3=ID3)
+                except:
+                    try:
+                        audio = MP3(file_path)
+                    except:
+                        # Fichier MP3 corrompu - utiliser valeurs par défaut
+                        pass
+                
+                if audio and audio.tags:
                     metadata['title'] = str(audio.tags.get('TIT2', '')) if audio.tags.get('TIT2') else ''
                     metadata['artist'] = str(audio.tags.get('TPE1', '')) if audio.tags.get('TPE1') else ''
                     metadata['performer'] = str(audio.tags.get('TPE1', '')) if audio.tags.get('TPE1') else ''  # Copie artiste vers interprète
@@ -360,6 +370,9 @@ class AlbumEditWindow(Gtk.Window):
                     
         except Exception as e:
             print(f"Erreur extraction métadonnées {file_path}: {e}")
+            
+        # Valeurs par défaut si extraction échoue
+        if not metadata:
             metadata = {
                 'title': os.path.splitext(os.path.basename(file_path))[0],
                 'artist': '', 'performer': '', 'album': '',
@@ -372,10 +385,34 @@ class AlbumEditWindow(Gtk.Window):
         """Vérifie si une pochette est intégrée dans le fichier"""
         try:
             if file_path.lower().endswith('.mp3'):
-                audio = MP3(file_path, ID3=ID3)
-                return audio.tags and 'APIC:' in audio.tags
-        except:
+                # Essayer plusieurs méthodes de lecture
+                try:
+                    audio = MP3(file_path, ID3=ID3)
+                except:
+                    try:
+                        audio = MP3(file_path)
+                    except:
+                        return False
+                
+                if audio.tags:
+                    # Chercher toutes les tags APIC (Attached Picture)
+                    for key in audio.tags.keys():
+                        if key.startswith('APIC:'):
+                            return True
+                return False
+                
+            elif file_path.lower().endswith('.flac'):
+                audio = FLAC(file_path)
+                return len(audio.pictures) > 0
+                
+            elif file_path.lower().endswith(('.m4a', '.mp4')):
+                audio = MP4(file_path)
+                return 'covr' in audio.tags if audio.tags else False
+                
+        except Exception as e:
+            # Erreur de lecture du fichier - pas de pochette détectable
             pass
+            
         return False
     
     def _load_album_cover(self):
