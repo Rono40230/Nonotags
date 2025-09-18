@@ -62,20 +62,42 @@ class NonotagsApp:
             scanner = MusicScanner()
             albums = scanner.scan_directory(folder_path)
             
-            # Effacer les albums de démonstration
-            if self.albums_grid:
+            # MODIFICATION: Ne plus effacer les albums existants
+            # Initialiser les listes si elles n'existent pas
+            if not hasattr(self, 'loaded_albums') or self.loaded_albums is None:
+                self.loaded_albums = []
+            
+            # Vérifier si on a des albums existants dans la grille
+            existing_albums_count = len(self.albums_grid.get_children()) if self.albums_grid else 0
+            
+            # Si c'est le premier import ET que la grille contient des albums de démo
+            # (détecté par le fait qu'il n'y a pas encore de loaded_albums réels)
+            if existing_albums_count > 0 and len(self.loaded_albums) == 0:
+                # Effacer seulement les albums de démonstration
                 for child in self.albums_grid.get_children():
                     child.destroy()
+                # Nettoyer aussi la queue de l'orchestrator pour le premier import
+                self.orchestrator.clear_queue()
                     
-            # Ajouter les vrais albums
+            # Ajouter les nouveaux albums sans dupliquer
+            new_albums_added = []
             for album in albums:
-                card = AlbumCard(album, self)
-                self.albums_grid.add(card)
+                # Vérifier si l'album n'est pas déjà dans la liste (éviter les doublons)
+                album_path = album.get('folder_path') or album.get('path', '')
+                already_exists = any(
+                    existing.get('folder_path') == album_path or existing.get('path') == album_path 
+                    for existing in self.loaded_albums
+                )
                 
-            # Sauvegarder les albums pour le traitement
-            self.loaded_albums = albums
-            self.orchestrator.clear_queue()
-            self.orchestrator.add_albums(albums)
+                if not already_exists:
+                    card = AlbumCard(album, self)
+                    self.albums_grid.add(card)
+                    self.loaded_albums.append(album)
+                    new_albums_added.append(album)
+                    
+            # Ajouter SEULEMENT les nouveaux albums à l'orchestrator
+            if new_albums_added:
+                self.orchestrator.add_albums(new_albums_added)
                 
             self.albums_grid.show_all()
             self.update_cards_per_line()
@@ -94,6 +116,36 @@ class NonotagsApp:
             # En cas d'erreur, garder les albums de démo
         
         return False  # Pour GLib.idle_add
+    
+    def remove_album_from_list(self, album_data):
+        """
+        Supprime un album de toutes les structures de données
+        
+        Args:
+            album_data: Les données de l'album à supprimer
+        """
+        try:
+            # Supprimer de loaded_albums
+            if hasattr(self, 'loaded_albums') and self.loaded_albums:
+                album_path = album_data.get('folder_path') or album_data.get('path', '')
+                self.loaded_albums = [
+                    album for album in self.loaded_albums 
+                    if (album.get('folder_path') or album.get('path', '')) != album_path
+                ]
+            
+            # Supprimer de la queue de l'orchestrator
+            if hasattr(self, 'orchestrator') and self.orchestrator:
+                album_path = album_data.get('folder_path') or album_data.get('path', '')
+                self.orchestrator.albums_queue = [
+                    album for album in self.orchestrator.albums_queue 
+                    if (album.get('folder_path') or album.get('path', '')) != album_path
+                ]
+                self.orchestrator.total_albums = len(self.orchestrator.albums_queue)
+                
+            print(f"✅ Album supprimé des structures de données: {album_data.get('title', 'Album')}")
+            
+        except Exception as e:
+            print(f"❌ Erreur lors de la suppression de l'album: {e}")
         
     def create_main_window(self):
         """Crée la fenêtre principale après le démarrage"""
@@ -197,25 +249,33 @@ class NonotagsApp:
             dialog.destroy()
     
     def _update_albums_display(self, albums: List[Dict]):
-        """Met à jour l'affichage des albums"""
+        """Met à jour l'affichage des albums en conservant les cards existantes"""
         
-        # Vider la grille actuelle
-        if self.albums_grid:
-            for child in self.albums_grid.get_children():
-                child.destroy()
+        # Au lieu de vider et recréer, mettre à jour les cards existantes
+        existing_cards = self.albums_grid.get_children()
         
-        # Ajouter les nouvelles cartes
-        for album_data in albums:
-            card = AlbumCard(album_data, self)
-            self.albums_grid.add(card)
+        # Créer un dictionnaire des albums par chemin pour mise à jour
+        albums_by_path = {}
+        for album in albums:
+            album_path = album.get('folder_path') or album.get('path', '')
+            if album_path:
+                albums_by_path[album_path] = album
         
-        # Sauvegarder les albums pour le traitement
+        # Mettre à jour les cards existantes avec les nouvelles métadonnées
+        for card in existing_cards:
+            if hasattr(card, 'album_data'):
+                card_path = card.album_data.get('folder_path') or card.album_data.get('path', '')
+                if card_path in albums_by_path:
+                    # Mettre à jour les données de la card
+                    card.album_data.update(albums_by_path[card_path])
+                    # Mettre à jour l'affichage de la card
+                    card._update_display()
+        
+        # Sauvegarder la liste mise à jour (remplacer, pas ajouter)
         self.loaded_albums = albums
-        self.orchestrator.clear_queue()
-        self.orchestrator.add_albums(albums)
-            
+        
+        # Pas besoin de recréer les cards ou d'ajouter à l'orchestrator
         self.albums_grid.show_all()
-        self.update_cards_per_line()
     
     def on_edit_selection_clicked(self, button):
         """Ouvre l'édition groupée pour les albums sélectionnés"""
@@ -389,7 +449,9 @@ class NonotagsApp:
                     if new_folder:
                         self.current_folder = new_folder
                 
-                GLib.idle_add(self._scan_folder, self.current_folder)
+                # Au lieu de rescanner avec _scan_folder (qui ajoute des doublons),
+                # utiliser _refresh_albums_display pour mettre à jour les cards existantes
+                GLib.idle_add(self._refresh_albums_display)
             
             # Dialog de succès - DÉSACTIVÉ sur demande utilisateur
             # dialog = Gtk.MessageDialog(

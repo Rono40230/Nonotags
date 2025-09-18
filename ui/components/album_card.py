@@ -208,7 +208,11 @@ class AlbumCard(Gtk.Frame):
         try:
             album_title = self.album_data.get('title') or self.album_data.get('album', 'Album')
             
-            # Retirer de la grille parent directement sans confirmation
+            # Notifier l'application parent pour supprimer des structures de données
+            if self.parent_app and hasattr(self.parent_app, 'remove_album_from_list'):
+                self.parent_app.remove_album_from_list(self.album_data)
+            
+            # Retirer de la grille parent directement
             if self.get_parent():
                 self.get_parent().remove(self)
                 self._show_success(f"Album '{album_title}' retiré de la liste")
