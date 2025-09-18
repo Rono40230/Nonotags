@@ -32,10 +32,6 @@ class StartupWindow(Gtk.Window):
         main_box.set_valign(Gtk.Align.CENTER)
         self.add(main_box)
         
-        # Séparateur
-        separator = Gtk.Separator()
-        main_box.pack_start(separator, False, False, 0)
-        
         # Boutons d'action selon cahier des charges
         buttons_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         
