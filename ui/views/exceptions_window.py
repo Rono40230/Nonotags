@@ -233,7 +233,7 @@ class ExceptionsWindow(Gtk.Window):
         left_box.pack_start(scrolled, True, True, 5)
         
         # TreeView pour les exceptions
-        self.exceptions_store = Gtk.ListStore(int, str, str, str, str)  # ID, Word, Type, Category, Created
+        self.exceptions_store = Gtk.ListStore(int, str, str, str, str)  # ID, Word, Type, Category, Result
         self.exceptions_view = Gtk.TreeView(model=self.exceptions_store)
         
         # Colonnes
@@ -241,7 +241,7 @@ class ExceptionsWindow(Gtk.Window):
             ("Mot", 1, True),
             ("Type", 2, False),
             ("Catégorie", 3, False),
-            ("Créé le", 4, False)
+            ("Résultat", 4, False)
         ]
         
         for title, col_id, editable in columns:
@@ -311,9 +311,20 @@ class ExceptionsWindow(Gtk.Window):
         # Type d'exception
         form_grid.attach(Gtk.Label("Type:"), 0, 1, 1, 1)
         self.type_combo = Gtk.ComboBoxText()
-        exception_types = ["uppercase", "lowercase", "titlecase", "preserve"]
-        for ex_type in exception_types:
-            self.type_combo.append_text(ex_type)
+        
+        # Mapping des types avec traductions françaises
+        self.exception_types_map = {
+            "MAJUSCULES": "uppercase",
+            "minuscules": "lowercase", 
+            "Première Majuscule": "titlecase",
+            "Préserver Casse": "preserve"
+        }
+        
+        # Mapping inverse pour la conversion
+        self.exception_types_reverse = {v: k for k, v in self.exception_types_map.items()}
+        
+        for display_name in self.exception_types_map.keys():
+            self.type_combo.append_text(display_name)
         form_grid.attach(self.type_combo, 1, 1, 2, 1)
         
         # Catégorie
@@ -356,10 +367,10 @@ class ExceptionsWindow(Gtk.Window):
         
         help_text = """
 <b>Types d'exceptions :</b>
-• <b>uppercase</b> : Force en MAJUSCULES (ex: USA, DJ)
-• <b>lowercase</b> : Force en minuscules (ex: and, of, the)
-• <b>titlecase</b> : Force la première lettre en majuscule
-• <b>preserve</b> : Conserve la casse exacte (ex: eMule, iPhone)
+• <b>MAJUSCULES</b> : Force en MAJUSCULES (ex: USA, DJ)
+• <b>minuscules</b> : Force en minuscules (ex: and, of, the)
+• <b>Première Majuscule</b> : Force la première lettre en majuscule
+• <b>Préserver Casse</b> : Conserve la casse exacte (ex: eMule, iPhone)
 
 <b>Exemples courants :</b>
 • Chiffres romains : I, II, III, IV, V, VI, VII, VIII, IX, X
@@ -406,16 +417,25 @@ class ExceptionsWindow(Gtk.Window):
         """Charge les exceptions depuis la base de données"""
         try:
             self.exceptions_store.clear()
-            exceptions = self.db_manager.get_all_case_exceptions()
+            exceptions_dict = self.db_manager.get_all_case_exceptions()
             
-            for exception in exceptions:
+            exception_id = 1  # Compteur pour ID numérique
+            for word, preserved_case in exceptions_dict.items():
+                # Détecter le type à partir de la casse
+                internal_type = self._detect_type_from_case(word, preserved_case)
+                display_type = self._get_display_type(internal_type)
+                
+                # Générer le texte "Avant → Après"
+                result_text = self._generate_result_text(word, preserved_case)
+                
                 self.exceptions_store.append([
-                    exception.id,
-                    exception.word,
-                    exception.exception_type,
-                    exception.category or "Non classé",
-                    exception.created_at.strftime("%d/%m/%Y") if exception.created_at else ""
+                    exception_id,  # ID numérique requis par GTK
+                    word,
+                    display_type,
+                    "Non classé",  # Catégorie par défaut
+                    result_text  # Résultat "avant → après"
                 ])
+                exception_id += 1
             
             self._update_count_label()
             self._update_status("Exceptions chargées", "success")
@@ -435,6 +455,50 @@ class ExceptionsWindow(Gtk.Window):
         
         # Ajouter la nouvelle classe
         style_context.add_class(f"status-{status_type}")
+    
+    def _get_internal_type(self, display_type):
+        """Convertit le type affiché en français vers le type interne en anglais"""
+        return self.exception_types_map.get(display_type, display_type)
+    
+    def _get_display_type(self, internal_type):
+        """Convertit le type interne en anglais vers le type affiché en français"""
+        return self.exception_types_reverse.get(internal_type, internal_type)
+    
+    def _detect_type_from_case(self, word, preserved_case):
+        """Détecte le type d'exception à partir du mot et de sa casse préservée"""
+        if preserved_case == word.upper():
+            return "uppercase"
+        elif preserved_case == word.lower():
+            return "lowercase"
+        elif preserved_case == word.capitalize():
+            return "titlecase"
+        else:
+            return "preserve"
+    
+    def _generate_result_text(self, word, preserved_case):
+        """Génère le texte 'avant → après' pour montrer l'effet de l'exception"""
+        # Simuler ce qui se passerait sans exception selon les règles sentence case
+        word_lower = word.lower()
+        
+        # Règle sentence case : première lettre majuscule, reste en minuscules
+        # SAUF pour certains mots spéciaux (prépositions, etc.)
+        prepositions = ['of', 'in', 'on', 'at', 'by', 'for', 'with', 'and', 'or', 'but', 'the', 'a', 'an']
+        
+        if word_lower in prepositions:
+            # Les prépositions restent en minuscules (sauf en début)
+            without_exception = word_lower
+        else:
+            # Première lettre majuscule
+            without_exception = word.capitalize()
+        
+        # Avec l'exception
+        with_exception = preserved_case
+        
+        # Si c'est identique, pas besoin de flèche
+        if without_exception == with_exception:
+            return f"✓ {without_exception}"
+        
+        return f"{without_exception} → {with_exception}"
     
     def _update_count_label(self):
         """Met à jour le compteur d'exceptions"""
@@ -459,51 +523,55 @@ class ExceptionsWindow(Gtk.Window):
         if not iter:
             return
         
-        exception_id = model.get_value(iter, 0)
+        word = model.get_value(iter, 1)  # Le mot est en colonne 1
         
         try:
-            exception = self.db_manager.get_case_exception(exception_id)
-            if exception:
-                self.word_entry.set_text(exception.word)
+            # Récupérer la casse préservée depuis la base
+            preserved_case = self.db_manager.get_case_exception(word)
+            if preserved_case:
+                self.word_entry.set_text(word)
                 
-                # Sélectionner le type
+                # Détecter et sélectionner le type
+                internal_type = self._detect_type_from_case(word, preserved_case)
+                display_type = self._get_display_type(internal_type)
                 type_model = self.type_combo.get_model()
                 for i in range(len(type_model)):
-                    if type_model[i][0] == exception.exception_type:
+                    if type_model[i][0] == display_type:
                         self.type_combo.set_active(i)
                         break
                 
-                # Sélectionner la catégorie
-                if exception.category:
-                    category_model = self.category_combo.get_model()
-                    for i in range(len(category_model)):
-                        if category_model[i][0] == exception.category:
-                            self.category_combo.set_active(i)
-                            break
+                # Catégorie par défaut
+                self.category_combo.set_active(0)
                 
-                self.description_entry.set_text(exception.description or "")
-                self.current_exception_id = exception_id
+                self.description_entry.set_text("")
+                self.current_exception_id = word  # Utiliser le mot comme ID
                 
         except Exception as e:
-            self.logger.error(f"Erreur chargement exception {exception_id}: {e}")
+            self.logger.error(f"Erreur chargement exception {word}: {e}")
     
     def _validate_form(self):
         """Valide le formulaire"""
         word = self.word_entry.get_text().strip()
         exception_type = self.type_combo.get_active_text()
         
+        self.logger.info(f"🔍 DEBUG - Validation: word='{word}', type='{exception_type}'")
+        
         if not word:
+            self.logger.warning("❌ DEBUG - Validation: mot vide")
             self._update_status("Le mot est requis", "warning")
             return False
         
         if not exception_type:
+            self.logger.warning("❌ DEBUG - Validation: type vide")
             self._update_status("Le type est requis", "warning")
             return False
         
-        if not self.validator.is_valid_case_exception_word(word):
+        if not self.validator.input_validator.validate_exception_word(word).is_valid:
+            self.logger.warning(f"❌ DEBUG - Validation: mot invalide '{word}'")
             self._update_status("Mot invalide (caractères spéciaux non autorisés)", "warning")
             return False
         
+        self.logger.info("✅ DEBUG - Validation réussie")
         return True
     
     # === CALLBACKS ===
@@ -522,10 +590,10 @@ class ExceptionsWindow(Gtk.Window):
 Les exceptions de casse permettent de définir des mots qui ne suivent pas les règles automatiques de formatage.
 
 Types d'exceptions :
-• uppercase : Force en MAJUSCULES (ex: USA, DJ, MC)
-• lowercase : Force en minuscules (ex: and, of, the, in)  
-• titlecase : Force la première lettre en majuscule
-• preserve : Conserve la casse exacte (ex: iPhone, eMule)
+• MAJUSCULES : Force en MAJUSCULES (ex: USA, DJ, MC)
+• minuscules : Force en minuscules (ex: and, of, the, in)  
+• Première Majuscule : Force la première lettre en majuscule
+• Préserver Casse : Conserve la casse exacte (ex: iPhone, eMule)
 
 Exemples courants :
 • Chiffres romains : I, II, III, IV, V, VI, VII, VIII, IX, X
@@ -586,7 +654,7 @@ Les exceptions s'appliquent lors du formatage automatique des titres et albums.
         
         if response == Gtk.ResponseType.YES:
             try:
-                self.db_manager.delete_case_exception(exception_id)
+                self.db_manager.remove_case_exception(word)
                 self._load_exceptions()
                 self._clear_form()
                 self._update_status(f"Exception '{word}' supprimée", "success")
@@ -597,24 +665,61 @@ Les exceptions s'appliquent lors du formatage automatique des titres et albums.
     
     def on_save_clicked(self, button):
         """Sauvegarder l'exception"""
+        self.logger.info(f"🔄 DEBUG - Début sauvegarde, form_mode: {self.form_mode}")
+        
         if not self._validate_form():
+            self.logger.warning("❌ DEBUG - Validation formulaire échouée")
             return
         
         word = self.word_entry.get_text().strip()
-        exception_type = self.type_combo.get_active_text()
+        exception_type_display = self.type_combo.get_active_text()
+        exception_type = self._get_internal_type(exception_type_display)
         category = self.category_combo.get_active_text()
         description = self.description_entry.get_text().strip() or None
         
+        self.logger.info(f"📝 DEBUG - Données: word='{word}', type_display='{exception_type_display}', type_internal='{exception_type}'")
+        
         try:
+            # Pour l'instant, on utilise l'API simple de DatabaseManager
+            # Le type détermine comment formater le preserved_case
+            word_lower = word.lower()
+            
+            if exception_type == "uppercase":
+                preserved_case = word.upper()
+            elif exception_type == "lowercase":
+                preserved_case = word.lower()
+            elif exception_type == "titlecase":
+                preserved_case = word.capitalize()
+            elif exception_type == "preserve":
+                preserved_case = word  # Garder la casse telle que saisie
+            else:
+                preserved_case = word
+            
             if self.form_mode == 'new':
-                self.db_manager.add_case_exception(word, exception_type, category, description)
-                self._update_status(f"Exception '{word}' créée", "success")
+                self.logger.info(f"💾 DEBUG - Mode nouveau: word_lower='{word_lower}', preserved_case='{preserved_case}'")
+                success = self.db_manager.add_case_exception(word_lower, preserved_case)
+                self.logger.info(f"💾 DEBUG - Résultat add_case_exception: {success}")
+                if success:
+                    self._update_status(f"Exception '{word}' créée", "success")
+                else:
+                    self._update_status(f"Erreur lors de la création de '{word}'", "error")
+                    return
                 
             elif self.form_mode == 'edit' and self.current_exception_id:
-                self.db_manager.update_case_exception(
-                    self.current_exception_id, word, exception_type, category, description
-                )
-                self._update_status(f"Exception '{word}' modifiée", "success")
+                self.logger.info(f"✏️ DEBUG - Mode édition: current_id='{self.current_exception_id}'")
+                # Pour l'édition, on supprime l'ancienne et on recrée
+                # (limitation de l'API actuelle)
+                self.db_manager.remove_case_exception(word_lower)
+                success = self.db_manager.add_case_exception(word_lower, preserved_case)
+                if success:
+                    self._update_status(f"Exception '{word}' modifiée", "success")
+                else:
+                    self._update_status(f"Erreur lors de la modification de '{word}'", "error")
+                    return
+            else:
+                self.logger.warning(f"⚠️ DEBUG - Mode non reconnu: form_mode='{self.form_mode}', current_id='{self.current_exception_id}'")
+                self._update_status("Mode de formulaire non valide", "error")
+                return
             
             self._load_exceptions()
             self._clear_form()

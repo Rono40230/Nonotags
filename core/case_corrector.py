@@ -99,6 +99,10 @@ class CaseCorrector:
         """
         from support.honest_logger import honest_logger
         
+        # IMPORTANT: Recharger les exceptions avant chaque traitement
+        self.case_exceptions = self._load_case_exceptions()
+        self.logger.info(f"🔄 Exceptions rechargées: {len(self.case_exceptions)} exceptions disponibles")
+        
         honest_logger.info(f"🔤 GROUPE 3 - Début correction casse album : {album_path}")
         self.logger.info(f"Début correction casse album : {album_path}")
         
@@ -506,22 +510,38 @@ class CaseCorrector:
     
     def _apply_case_exceptions(self, text: str) -> Tuple[str, List[CaseException]]:
         """Applique les exceptions de casse personnalisées."""
+        from support.honest_logger import honest_logger
+        
         exceptions_used = []
         result_text = text
         
+        honest_logger.info(f"🔍 EXCEPTIONS - Texte d'entrée: '{text}'")
+        honest_logger.info(f"🔍 EXCEPTIONS - {len(self.case_exceptions)} exceptions chargées")
+        
         for exception in self.case_exceptions:
+            honest_logger.info(f"🔍 EXCEPTION - Test: '{exception.original}' → '{exception.corrected}' dans '{result_text}'")
+            
             if exception.case_sensitive:
                 # Recherche sensible à la casse
                 if exception.original in result_text:
+                    old_text = result_text
                     result_text = result_text.replace(exception.original, exception.corrected)
                     exceptions_used.append(exception)
+                    honest_logger.success(f"✅ EXCEPTION APPLIQUÉE: '{old_text}' → '{result_text}'")
+                else:
+                    honest_logger.info(f"❌ EXCEPTION non trouvée (sensible casse): '{exception.original}' dans '{result_text}'")
             else:
                 # Recherche insensible à la casse
                 pattern = re.compile(re.escape(exception.original), re.IGNORECASE)
                 if pattern.search(result_text):
+                    old_text = result_text
                     result_text = pattern.sub(exception.corrected, result_text)
                     exceptions_used.append(exception)
+                    honest_logger.success(f"✅ EXCEPTION APPLIQUÉE (insensible casse): '{old_text}' → '{result_text}'")
+                else:
+                    honest_logger.info(f"❌ EXCEPTION non trouvée (insensible casse): '{exception.original}' dans '{result_text}'")
         
+        honest_logger.info(f"🔍 EXCEPTIONS - Texte final: '{result_text}', {len(exceptions_used)} exceptions utilisées")
         return result_text, exceptions_used
     
     def _find_mp3_files(self, directory: str) -> List[str]:
