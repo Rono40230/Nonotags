@@ -12,6 +12,7 @@ from typing import List, Dict
 from ui.startup_window import StartupWindow
 from ui.components.album_card import AlbumCard
 from ui.processing_orchestrator import ProcessingOrchestrator, ProcessingState, ProcessingStep
+from ui.views.exceptions_window import ExceptionsWindow
 
 
 class NonotagsApp:
@@ -129,11 +130,6 @@ class NonotagsApp:
         action_box.set_halign(Gtk.Align.CENTER)
         action_box.set_margin_top(10)
         
-        scan_btn = Gtk.Button.new_with_label("📁 Scanner des dossiers")
-        scan_btn.get_style_context().add_class("modern-button")
-        scan_btn.connect("clicked", self.on_scan_clicked)
-        action_box.pack_start(scan_btn, False, False, 0)
-        
         import_btn = Gtk.Button.new_with_label("📂 Importer des fichiers")
         import_btn.get_style_context().add_class("modern-button")
         import_btn.connect("clicked", self.on_import_clicked)
@@ -144,9 +140,11 @@ class NonotagsApp:
         edit_selection_btn.connect("clicked", self.on_edit_selection_clicked)
         action_box.pack_start(edit_selection_btn, False, False, 0)
         
-        settings_btn = Gtk.Button.new_with_label("⚙️ Paramètres")
-        settings_btn.connect("clicked", self.on_settings_clicked)
-        action_box.pack_start(settings_btn, False, False, 0)
+        # Bouton pour gérer les exceptions de casse
+        exceptions_btn = Gtk.Button.new_with_label("📝 Exceptions de casse")
+        exceptions_btn.get_style_context().add_class("modern-button")
+        exceptions_btn.connect("clicked", self.on_exceptions_clicked)
+        action_box.pack_start(exceptions_btn, False, False, 0)
         
         main_box.pack_start(action_box, False, False, 0)
         
@@ -184,93 +182,28 @@ class NonotagsApp:
         Gtk.main_quit()
         return False
     
-    def on_scan_clicked(self, button):
-        """Gestion du scan de dossiers"""
+    def on_import_clicked(self, button):
+        """Import de fichiers/albums individuels"""
+        print("📂 Import de fichiers/albums")
+        
         dialog = Gtk.FileChooserDialog(
-            title="Choisir le dossier à scanner",
+            title="Importer des fichiers musicaux ou des albums",
             parent=self.main_window,
             action=Gtk.FileChooserAction.SELECT_FOLDER
         )
         dialog.add_buttons(
             "Annuler", Gtk.ResponseType.CANCEL,
-            "Scanner", Gtk.ResponseType.OK
+            "Importer", Gtk.ResponseType.OK
         )
         
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             folder = dialog.get_filename()
             dialog.destroy()
-            self._start_scanning(folder)
+            # Utiliser la même fonction que pour le scan depuis la fenêtre de démarrage
+            self._scan_folder(folder)
         else:
             dialog.destroy()
-    
-    def _start_scanning(self, folder_path: str):
-        """Démarre le processus de scan avec progress dialog"""
-        progress_dialog = Gtk.Dialog(
-            title="Scan en cours...",
-            parent=self.main_window,
-            modal=True
-        )
-        progress_dialog.set_size_request(400, 150)
-        
-        content = progress_dialog.get_content_area()
-        content.set_margin_left(20)
-        content.set_margin_right(20)
-        content.set_margin_top(20)
-        content.set_margin_bottom(20)
-        
-        status_label = Gtk.Label()
-        status_label.set_text(f"Scan du dossier: {os.path.basename(folder_path)}")
-        content.pack_start(status_label, False, False, 0)
-        
-        progress_bar = Gtk.ProgressBar()
-        progress_bar.set_pulse_step(0.1)
-        content.pack_start(progress_bar, False, False, 10)
-        
-        details_label = Gtk.Label()
-        details_label.set_text("Recherche des fichiers musicaux...")
-        content.pack_start(details_label, False, False, 0)
-        
-        progress_dialog.show_all()
-        
-        def progress_callback(albums_count, current_album):
-            details_label.set_text(f"Albums trouvés: {albums_count} - {current_album}")
-            progress_bar.pulse()
-            while Gtk.events_pending():
-                Gtk.main_iteration()
-        
-        try:
-            from services.music_scanner import MusicScanner
-            scanner = MusicScanner()
-            albums = scanner.scan_directory(folder_path, progress_callback)
-            progress_dialog.destroy()
-            self._update_albums_display(albums)
-            
-            success_dialog = Gtk.MessageDialog(
-                parent=self.main_window,
-                modal=True,
-                message_type=Gtk.MessageType.INFO,
-                buttons=Gtk.ButtonsType.OK,
-                text=f"Scan terminé !"
-            )
-            success_dialog.format_secondary_text(
-                f"{len(albums)} albums ont été trouvés et ajoutés à votre collection."
-            )
-            success_dialog.run()
-            success_dialog.destroy()
-            
-        except Exception as e:
-            progress_dialog.destroy()
-            error_dialog = Gtk.MessageDialog(
-                parent=self.main_window,
-                modal=True,
-                message_type=Gtk.MessageType.ERROR,
-                buttons=Gtk.ButtonsType.OK,
-                text="Erreur lors du scan"
-            )
-            error_dialog.format_secondary_text(str(e))
-            error_dialog.run()
-            error_dialog.destroy()
     
     def _update_albums_display(self, albums: List[Dict]):
         """Met à jour l'affichage des albums"""
@@ -285,127 +218,15 @@ class NonotagsApp:
         for album_data in albums:
             print(f"📋 Création card pour: {album_data.get('path', 'AUCUN_PATH')}")
             card = AlbumCard(album_data)
-
-    def on_import_clicked(self, button):
-        """Gestion de l'import de fichiers avec traitement automatique"""
-        dialog = Gtk.FileChooserDialog(
-            title="Importer des fichiers musicaux",
-            parent=self.main_window,
-            action=Gtk.FileChooserAction.OPEN
-        )
-        dialog.add_buttons(
-            "Annuler", Gtk.ResponseType.CANCEL,
-            "Importer", Gtk.ResponseType.OK
-        )
+            self.albums_grid.add(card)
         
-        # Filtres pour fichiers audio
-        filter_audio = Gtk.FileFilter()
-        filter_audio.set_name("Fichiers audio")
-        filter_audio.add_pattern("*.mp3")
-        filter_audio.add_pattern("*.flac")
-        filter_audio.add_pattern("*.ogg")
-        filter_audio.add_pattern("*.wav")
-        filter_audio.add_pattern("*.m4a")
-        dialog.add_filter(filter_audio)
-        
-        filter_all = Gtk.FileFilter()
-        filter_all.set_name("Tous les fichiers")
-        filter_all.add_pattern("*")
-        dialog.add_filter(filter_all)
-        
-        dialog.set_select_multiple(True)
-        
-        response = dialog.run()
-        if response == Gtk.ResponseType.OK:
-            filenames = dialog.get_filenames()
-            dialog.destroy()
-            self._start_importing(filenames)
-        else:
-            dialog.destroy()
-    
-    def _start_importing(self, filenames: List[str]):
-        """Démarre l'import de fichiers avec traitement automatique"""
-        progress_dialog = Gtk.Dialog(
-            title="Import en cours...",
-            parent=self.main_window,
-            modal=True
-        )
-        progress_dialog.set_size_request(400, 150)
-        
-        content = progress_dialog.get_content_area()
-        content.set_margin_left(20)
-        content.set_margin_right(20)
-        content.set_margin_top(20)
-        content.set_margin_bottom(20)
-        
-        status_label = Gtk.Label()
-        status_label.set_text(f"Import de {len(filenames)} fichier(s)...")
-        content.pack_start(status_label, False, False, 0)
-        
-        progress_bar = Gtk.ProgressBar()
-        progress_bar.set_pulse_step(0.1)
-        content.pack_start(progress_bar, False, False, 10)
-        
-        details_label = Gtk.Label()
-        details_label.set_text("Traitement en cours...")
-        content.pack_start(details_label, False, False, 0)
-        
-        progress_dialog.show_all()
-        
-        try:
-            # Simuler l'import en créant des albums à partir des fichiers
-            albums = []
-            for i, filename in enumerate(filenames):
-                # Mettre à jour la progress bar
-                progress_bar.set_fraction((i + 1) / len(filenames))
-                details_label.set_text(f"Import: {os.path.basename(filename)}")
-                while Gtk.events_pending():
-                    Gtk.main_iteration()
-                
-                # Créer un album factice à partir du fichier
-                # (Dans la vraie implémentation, on utiliserait mutagen pour lire les métadonnées)
-                album_data = {
-                    "album": f"Album {i+1}",
-                    "artist": "Artiste importé",
-                    "year": "2023",
-                    "genre": "Inconnu",
-                    "tracks": 1,
-                    "path": os.path.dirname(filename),  # ✅ DOSSIER de l'album, pas le fichier MP3
-                    "emoji": "🎵",
-                    "color": "green"
-                }
-                albums.append(album_data)
+        # Sauvegarder les albums pour le traitement
+        self.loaded_albums = albums
+        self.orchestrator.clear_queue()
+        self.orchestrator.add_albums(albums)
             
-            progress_dialog.destroy()
-            
-            # Mettre à jour l'affichage avec traitement automatique
-            self._update_albums_display(albums)
-            
-            success_dialog = Gtk.MessageDialog(
-                parent=self.main_window,
-                modal=True,
-                message_type=Gtk.MessageType.INFO,
-                buttons=Gtk.ButtonsType.OK,
-                text=f"Import terminé !"
-            )
-            success_dialog.format_secondary_text(
-                f"{len(albums)} fichier(s) importé(s) et traitement automatique démarré."
-            )
-            success_dialog.run()
-            success_dialog.destroy()
-            
-        except Exception as e:
-            progress_dialog.destroy()
-            error_dialog = Gtk.MessageDialog(
-                parent=self.main_window,
-                modal=True,
-                message_type=Gtk.MessageType.ERROR,
-                buttons=Gtk.ButtonsType.OK,
-                text="Erreur lors de l'import"
-            )
-            error_dialog.format_secondary_text(str(e))
-            error_dialog.run()
-            error_dialog.destroy()
+        self.albums_grid.show_all()
+        self.update_cards_per_line()
     
     def on_edit_selection_clicked(self, button):
         """Ouvre l'édition groupée pour les albums sélectionnés"""
@@ -433,9 +254,14 @@ class NonotagsApp:
         for album in selected_albums:
             print(f"   - {album.get('artist', 'Artiste')} - {album.get('album', 'Titre')}")
     
-    def on_settings_clicked(self, button):
-        """Ouvre la fenêtre des paramètres"""
-        print("⚙️ Paramètres - Fonctionnalité à implémenter")
+    def on_exceptions_clicked(self, button):
+        """Ouvre la fenêtre de gestion des exceptions de casse"""
+        print("📝 Ouverture de la fenêtre des exceptions de casse")
+        try:
+            exceptions_window = ExceptionsWindow(parent=self.main_window)
+            exceptions_window.show_all()
+        except Exception as e:
+            print(f"❌ Erreur lors de l'ouverture de la fenêtre des exceptions: {e}")
     
     def calculate_cards_per_line(self, window_width=None):
         """Calcule le nombre optimal de cartes par ligne selon la largeur disponible"""

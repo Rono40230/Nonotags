@@ -45,12 +45,6 @@ class StartupWindow(Gtk.Window):
         import_btn.connect("clicked", self.on_import_clicked)
         buttons_box.pack_start(import_btn, False, False, 0)
         
-        scan_btn = Gtk.Button.new_with_label("📂 Scanner des dossiers")
-        scan_btn.get_style_context().add_class("modern-button")
-        scan_btn.set_size_request(250, 40)
-        scan_btn.connect("clicked", self.on_scan_clicked)
-        buttons_box.pack_start(scan_btn, False, False, 0)
-        
         exceptions_btn = Gtk.Button.new_with_label("⚙️ Ajouter des exceptions d'importation")
         exceptions_btn.get_style_context().add_class("modern-button")
         exceptions_btn.set_size_request(250, 40)
@@ -93,34 +87,6 @@ class StartupWindow(Gtk.Window):
         else:
             dialog.destroy()
     
-    def on_scan_clicked(self, button):
-        """Scanner des dossiers et ouvrir l'application avec les résultats"""
-        print("📂 Scanner des dossiers sélectionné")
-        
-        # Ouvrir le sélecteur de dossier
-        dialog = Gtk.FileChooserDialog(
-            title="Sélectionner un dossier à scanner",
-            parent=self,
-            action=Gtk.FileChooserAction.SELECT_FOLDER
-        )
-        dialog.add_buttons(
-            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-            Gtk.STOCK_OPEN, Gtk.ResponseType.OK
-        )
-        
-        response = dialog.run()
-        
-        if response == Gtk.ResponseType.OK:
-            folder_path = dialog.get_filename()
-            print(f"📂 Dossier sélectionné: {folder_path}")
-            dialog.destroy()
-            
-            # Ouvrir l'application principale avec le dossier
-            self.hide()
-            self.app.create_main_window_with_scan(folder_path)
-        else:
-            dialog.destroy()
-        
     def on_exceptions_clicked(self, button):
         """Ouvre la fenêtre des exceptions"""
         print("⚙️ Fenêtre des exceptions")
