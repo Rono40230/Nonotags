@@ -20,8 +20,18 @@ class AlbumEditWindow(Gtk.Window):
     """Fenêtre d'édition conforme au cahier des charges - 4 blocs"""
     
     def __init__(self, album_data, parent_card):
-        super().__init__(title="🎵 Édition d'album")
-        self.album_data = album_data
+        super().__init__(title="🎵 Édition d'albums")
+        
+        # Gérer les cas : un seul album ou liste d'albums
+        if isinstance(album_data, list):
+            self.selected_albums = album_data
+            self.album_data = album_data[0] if album_data else {}  # Premier album pour compatibilité
+            print(f"🎵 Fenêtre d'édition ouverte pour {len(album_data)} albums")
+        else:
+            self.selected_albums = [album_data]
+            self.album_data = album_data
+            print(f"🎵 Fenêtre d'édition ouverte pour 1 album")
+        
         self.parent_card = parent_card
         self.tracks = []
         
@@ -200,6 +210,10 @@ class AlbumEditWindow(Gtk.Window):
         # Double-clic sur nom de fichier = lecture
         self.metadata_view.connect("row-activated", self.on_row_activated)
         
+        # Changement de sélection = mise à jour de la pochette
+        selection = self.metadata_view.get_selection()
+        selection.connect("changed", self.on_selection_changed)
+        
         scrolled.add(self.metadata_view)
     
     def _create_audio_player_block(self, parent_box):
@@ -282,13 +296,19 @@ class AlbumEditWindow(Gtk.Window):
                     self.genre_combo.set_active(i)
                     break
         
-        # Charger les pistes dans le tableau
-        # ✅ FIX: Le scanner utilise 'folder_path', pas 'path'
-        folder_path = self.album_data.get('folder_path') or self.album_data.get('path', '')
-        if folder_path and os.path.exists(folder_path):
-            self._load_tracks_to_table(folder_path)
+        # Charger les pistes de tous les albums sélectionnés dans le tableau
+        self._load_all_selected_albums_tracks()
     
-    def _load_tracks_to_table(self, folder_path):
+    def _load_all_selected_albums_tracks(self):
+        """Charge les pistes de tous les albums sélectionnés dans le tableau"""
+        print(f"📋 Chargement des pistes pour {len(self.selected_albums)} albums...")
+        
+        for album_data in self.selected_albums:
+            folder_path = album_data.get('folder_path') or album_data.get('path', '')
+            if folder_path and os.path.exists(folder_path):
+                self._load_tracks_to_table(folder_path, album_data)
+    
+    def _load_tracks_to_table(self, folder_path, album_data=None):
         """Charge les pistes dans le tableau des métadonnées"""
         if not folder_path or not os.path.exists(folder_path):
             print(f"❌ Chemin album invalide: {folder_path}")
@@ -297,6 +317,11 @@ class AlbumEditWindow(Gtk.Window):
         # Si c'est un fichier, prendre le dossier parent
         if os.path.isfile(folder_path):
             folder_path = os.path.dirname(folder_path)
+        
+        # Utiliser album_data si fourni, sinon self.album_data
+        current_album = album_data or self.album_data
+        album_title = current_album.get('title', 'Album Inconnu')
+        album_artist = current_album.get('artist', 'Artiste Inconnu')
             
         audio_files = []
         for file in os.listdir(folder_path):
@@ -331,7 +356,7 @@ class AlbumEditWindow(Gtk.Window):
                     metadata.get('title', ''),                  # Titre
                     metadata.get('performer', ''),              # Interprète
                     metadata.get('artist', ''),                 # Artiste
-                    metadata.get('album', ''),                  # Album
+                    album_title,                                 # Album (utilise le titre de l'album sélectionné)
                     str(metadata.get('year', '')),              # Année
                     str(track_num),                             # N° piste AVEC zéro initial
                     metadata.get('genre', ''),                  # Genre
@@ -738,6 +763,40 @@ class AlbumEditWindow(Gtk.Window):
         error_label = Gtk.Label(f"Erreur de recherche: {error_msg}")
         content_area.pack_start(error_label, True, True, 0)
         dialog.show_all()
+    
+    def on_selection_changed(self, selection):
+        """Met à jour la pochette selon la piste sélectionnée"""
+        model, tree_iter = selection.get_selected()
+        if tree_iter is None:
+            return
+            
+        # Récupérer le chemin du fichier sélectionné (colonne cachée)
+        file_path = model[tree_iter][9]  # La colonne path est à l'index 9
+        if not file_path or not os.path.exists(file_path):
+            return
+            
+        # Obtenir le dossier de la piste pour chercher la pochette
+        track_folder = os.path.dirname(file_path)
+        
+        # Trouver et charger la pochette du dossier de cette piste
+        cover_path = self._find_cover_file(track_folder)
+        
+        if cover_path and os.path.exists(cover_path):
+            try:
+                # Charger et redimensionner l'image à 250x250
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                    cover_path, 250, 250, True
+                )
+                self.cover_image.set_from_pixbuf(pixbuf)
+                print(f"🖼️ Pochette mise à jour depuis: {cover_path}")
+            except Exception as e:
+                print(f"Erreur chargement pochette {cover_path}: {e}")
+                # Fallback: icône par défaut
+                self.cover_image.set_from_icon_name("image-x-generic", Gtk.IconSize.DIALOG)
+        else:
+            # Aucune pochette trouvée, utiliser l'icône par défaut
+            self.cover_image.set_from_icon_name("image-x-generic", Gtk.IconSize.DIALOG)
+            print(f"❌ Aucune pochette trouvée dans: {track_folder}")
     
     def on_startup_window_close(self, window, event):
         """Gestionnaire de fermeture de la fenêtre"""

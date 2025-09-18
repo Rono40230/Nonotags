@@ -280,9 +280,13 @@ class NonotagsApp:
     def on_edit_selection_clicked(self, button):
         """Ouvre l'édition groupée pour les albums sélectionnés"""
         selected_albums = []
-        for child in self.albums_grid.get_children():
-            if hasattr(child, 'selection_checkbox') and child.selection_checkbox.get_active():
-                selected_albums.append(child.album_data)
+        
+        # Parcourir les albums et collecter ceux qui sont sélectionnés
+        for flowbox_child in self.albums_grid.get_children():
+            album_card = flowbox_child.get_child()
+            if hasattr(album_card, 'selection_checkbox') and album_card.selection_checkbox.get_active():
+                if hasattr(album_card, 'album_data'):
+                    selected_albums.append(album_card.album_data)
         
         if not selected_albums:
             dialog = Gtk.MessageDialog(
@@ -299,9 +303,32 @@ class NonotagsApp:
             dialog.destroy()
             return
         
-        # Edition groupée demandée
-        for album in selected_albums:
-            pass  # Album sélectionné pour édition
+        # Edition groupée demandée - Passer TOUS les albums sélectionnés
+        try:
+            from ui.views.album_edit_window import AlbumEditWindow
+            
+            print(f"🎯 Ouverture de la fenêtre d'édition pour {len(selected_albums)} albums sélectionnés")
+            
+            # Créer la fenêtre d'édition avec tous les albums sélectionnés
+            edit_window = AlbumEditWindow(selected_albums, None)
+            edit_window.show_all()
+                
+        except Exception as e:
+            print(f"❌ Erreur lors de l'ouverture de la fenêtre d'édition: {e}")
+            import traceback
+            traceback.print_exc()
+            dialog = Gtk.MessageDialog(
+                parent=self.main_window,
+                modal=True,
+                message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.OK,
+                text="Erreur d'ouverture"
+            )
+            dialog.format_secondary_text(
+                f"Impossible d'ouvrir la fenêtre d'édition:\n{str(e)}"
+            )
+            dialog.run()
+            dialog.destroy()
     
     def on_exceptions_clicked(self, button):
         """Ouvre la fenêtre de gestion des exceptions de casse"""
