@@ -209,7 +209,7 @@ class MetadataFormatter:
             formatted_value, track_rules = self._format_track_number(field_value)
             rules_applied.extend(track_rules)
             if track_rules:
-                self.logger.success(f"✅ [GROUPE 4] RÈGLE 14 appliquée avec succès")
+                self.logger.info(f"✅ [GROUPE 4] RÈGLE 14 appliquée avec succès")
             else:
                 self.logger.warning(f"⚠️ [GROUPE 4] RÈGLE 14 non appliquée")
             
@@ -220,7 +220,7 @@ class MetadataFormatter:
             )
             rules_applied.extend(artist_rules)
             if artist_rules:
-                self.logger.success(f"✅ [GROUPE 4] RÈGLE 13 appliquée avec succès")
+                self.logger.info(f"✅ [GROUPE 4] RÈGLE 13 appliquée avec succès")
             else:
                 self.logger.info(f"ℹ️ [GROUPE 4] RÈGLE 13 non appliquée (conditions non remplies)")
             
@@ -232,7 +232,7 @@ class MetadataFormatter:
             rules_applied.extend(year_rules)
             warnings.extend(year_warnings)
             if year_rules:
-                self.logger.success(f"✅ [GROUPE 4] RÈGLE 21 appliquée avec succès")
+                self.logger.info(f"✅ [GROUPE 4] RÈGLE 21 appliquée avec succès")
             else:
                 self.logger.info(f"ℹ️ [GROUPE 4] RÈGLE 21 non appliquée (année standard)")
             
@@ -312,7 +312,6 @@ class MetadataFormatter:
     
     def _format_track_number(self, track_value: Any) -> Tuple[str, List[FormattingRule]]:
         """Formate le numéro de piste (01, 02, 03...)."""
-        self.logger.info(f"🔍 [RÈGLE 14] FORMAT_TRACK_NUMBERS - Analyse piste: '{track_value}'")
         
         if not track_value:
             self.logger.warning(f"❌ [RÈGLE 14] Valeur piste vide ou None - Pas de formatage")
@@ -352,16 +351,13 @@ class MetadataFormatter:
             else:
                 self.logger.warning(f"⚠️ [RÈGLE 14] Slash détecté mais total non extrait de: '{track_str}'")
         
-        self.logger.success(f"🎯 [RÈGLE 14] Formatage piste terminé: '{track_value}' → '{formatted_track}'")
         return formatted_track, [FormattingRule.FORMAT_TRACK_NUMBERS]
     
     def _copy_artist_to_albumartist(self, albumartist_value: Any, artist_value: Any) -> Tuple[str, List[FormattingRule]]:
         """Copie l'artiste vers le champ interprète si vide."""
-        self.logger.info(f"🔍 [RÈGLE 13] COPY_ARTIST_TO_ALBUMARTIST - Analyse albumartist: '{albumartist_value}', artist: '{artist_value}'")
         
         if albumartist_value and albumartist_value.strip():
             # Le champ interprète existe déjà
-            self.logger.info(f"✅ [RÈGLE 13] AlbumArtist déjà rempli: '{albumartist_value}' - Pas de copie")
             return albumartist_value, []
         
         if not artist_value or not artist_value.strip():
@@ -371,12 +367,10 @@ class MetadataFormatter:
         
         # Copie de l'artiste vers interprète
         result = artist_value.strip()
-        self.logger.success(f"🎯 [RÈGLE 13] Copie artiste → albumartist: '{artist_value}' → '{result}'")
         return result, [FormattingRule.COPY_ARTIST_TO_ALBUMARTIST]
     
     def _handle_compilation_year(self, year_value: Any, metadata_context: Dict) -> Tuple[Any, List[FormattingRule], List[str]]:
         """Gère les années de compilation."""
-        self.logger.info(f"🔍 [RÈGLE 21] HANDLE_COMPILATION_YEAR - Analyse année: '{year_value}'")
         warnings = []
         
         if not year_value:
@@ -389,20 +383,17 @@ class MetadataFormatter:
         # Détection d'une compilation (plusieurs années)
         year_pattern = r'(\d{4})'
         years = re.findall(year_pattern, year_str)
-        self.logger.debug(f"🔍 [RÈGLE 21] Années détectées: {years}")
         
         if len(years) > 1:
             # Compilation détectée
             min_year = min(years)
             max_year = max(years)
-            self.logger.info(f"📀 [RÈGLE 21] Compilation détectée: {len(years)} années ({min_year}-{max_year})")
             
             if min_year != max_year:
                 # Format compilation : "1995-2000"
                 formatted_year = f"{min_year}-{max_year}"
                 warning_msg = f"Compilation détectée : années {min_year} à {max_year}"
                 warnings.append(warning_msg)
-                self.logger.success(f"🎯 [RÈGLE 21] Format compilation: '{year_str}' → '{formatted_year}'")
                 return formatted_year, [FormattingRule.HANDLE_COMPILATION_YEAR], warnings
         
         elif len(years) == 1:

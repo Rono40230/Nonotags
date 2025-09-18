@@ -18,6 +18,7 @@ try:
     from mutagen.id3 import ID3, APIC, TIT2, TPE1, TALB, TYER, TCON, TRCK, TPE2, TLEN
     from mutagen.id3._util import ID3NoHeaderError
     from support.logger import get_logger
+    from support.state_manager import ApplicationState
     from support.honest_logger import HonestLogger
     from support.config_manager import ConfigManager
     from support.state_manager import StateManager
@@ -211,7 +212,6 @@ class TagSynchronizer:
         Returns:
             CoverAssociationResult: Résultat de l'association
         """
-        self.honest_logger.info(f"🔍 [RÈGLE 19] ASSOCIATE_COVER - Association pochette '{Path(cover_path).name}' → '{Path(mp3_path).name}'")
         try:
             if not cover_path:
                 self.honest_logger.warning(f"❌ [RÈGLE 19] Pas de pochette fournie")
@@ -280,7 +280,6 @@ class TagSynchronizer:
             # Sauvegarde
             audio_file.save()
             
-            self.honest_logger.success(f"🎯 [RÈGLE 19] Pochette associée avec succès: '{Path(cover_path).name}' → '{Path(mp3_path).name}' ({img_size} bytes, {mime_type})")
             return CoverAssociationResult.SUCCESS
             
         except Exception as e:
@@ -298,17 +297,14 @@ class TagSynchronizer:
         Returns:
             bool: Succès de la mise à jour
         """
-        self.honest_logger.info(f"🔍 [RÈGLE 20] UPDATE_MP3_TAGS - Synchronisation tags '{Path(mp3_path).name}' avec {len(metadata)} métadonnées")
         try:
             # Chargement du fichier MP3
             try:
                 audio_file = MP3(mp3_path, ID3=ID3)
-                self.honest_logger.debug(f"📁 [RÈGLE 20] MP3 chargé avec tags existants")
             except ID3NoHeaderError:
                 # Création d'un nouveau header ID3 si absent
                 audio_file = MP3(mp3_path)
                 audio_file.add_tags()
-                self.honest_logger.info(f"🏷️ [RÈGLE 20] Nouveau header ID3 créé")
             
             # Mise à jour des tags selon les métadonnées fournies
             tag_mapping = {
@@ -344,7 +340,6 @@ class TagSynchronizer:
             # Sauvegarde si des tags ont été mis à jour
             if updated_tags:
                 audio_file.save()
-                self.honest_logger.success(f"🎯 [RÈGLE 20] {len(updated_tags)} tags synchronisés dans '{Path(mp3_path).name}' : {', '.join(updated_tags)}")
                 if skipped_tags:
                     self.honest_logger.info(f"⏭️ [RÈGLE 20] {len(skipped_tags)} tags ignorés : {', '.join(skipped_tags)}")
                 return True
@@ -465,7 +460,7 @@ class TagSynchronizer:
             self.logger.info(f"Début de la synchronisation de l'album : {album_path}")
             
             # Mise à jour du statut
-            self.state_manager.set_status("synchronizing_tags")
+            self.state_manager.set_app_state(ApplicationState.PROCESSING)
             
             # Validation du dossier
             validation_result = self.validator.validate_directory(album_path)

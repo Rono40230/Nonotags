@@ -424,8 +424,6 @@ class ExceptionsWindow(Gtk.Window):
         before = self.before_entry.get_text().strip().lower()
         after = self.after_entry.get_text().strip()
         
-        self.logger.info(f"🔍 DEBUG - Validation: before='{before}', after='{after}'")
-        
         if not before:
             self.logger.warning("❌ DEBUG - Validation: mot 'avant' vide")
             self._update_status("Le mot 'Avant' est requis", "warning")

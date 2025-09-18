@@ -111,51 +111,31 @@ class CaseCorrector:
         
         try:
             # Validation du répertoire
-            print(f"🔤 DEBUG - Validation du répertoire: {album_path}")
-            print(f"🔤 DEBUG - Répertoire existe: {os.path.exists(album_path)}")
-            
             validation_result = self.validator.file_validator.validate_directory(album_path)
-            print(f"🔤 DEBUG - Validation résultat: valid={validation_result.is_valid}")
-            print(f"🔤 DEBUG - Validation erreurs: {validation_result.errors}")
-            print(f"🔤 DEBUG - Validation warnings: {validation_result.warnings}")
-            print(f"🔤 DEBUG - Validation details: {validation_result.details}")
             
             if not validation_result.is_valid:
-                print(f"🔤 DEBUG - Erreurs validation: {validation_result.errors}")
                 self.logger.error(f"Répertoire invalide : {validation_result.errors}")
                 return {}
             
             # Recherche des fichiers MP3
-            print(f"🔤 DEBUG - Recherche fichiers MP3 dans: {album_path}")
             mp3_files = self._find_mp3_files(album_path)
-            print(f"🔤 DEBUG - Fichiers MP3 trouvés: {len(mp3_files)}")
-            print(f"🔤 DEBUG - Liste fichiers: {mp3_files}")
             
             if not mp3_files:
                 self.logger.warning(f"Aucun fichier MP3 trouvé dans {album_path}")
-                print(f"🔤 DEBUG - RETOUR: Aucun fichier MP3 trouvé")
                 return {}
             
             results = {}
             
             for mp3_file in mp3_files:
-                print(f"🔤 DEBUG - Traitement fichier: {mp3_file}")
                 # Validation du fichier MP3
                 file_validation = self.validator.file_validator.validate_mp3_file(mp3_file)
-                print(f"🔤 DEBUG - Validation fichier: valid={file_validation.is_valid}")
-                print(f"🔤 DEBUG - Erreurs validation MP3: {file_validation.errors}")
-                print(f"🔤 DEBUG - Warnings validation MP3: {file_validation.warnings}")
                 
                 # NOTE: Temporairement on permet les fichiers avec erreurs de sync pour le test
                 if not file_validation.is_valid and not any("can't sync to MPEG frame" in error for error in file_validation.errors):
-                    print(f"🔤 DEBUG - Fichier invalide ignoré: {mp3_file}")
                     self.logger.warning(f"Fichier MP3 invalide ignoré : {mp3_file}")
                     continue
                 
-                print(f"🔤 DEBUG - Fichier accepté pour traitement (malgré sync error): {mp3_file}")
-                
                 # Correction de la casse pour ce fichier
-                print(f"🔤 DEBUG - Appel _correct_file_case pour: {mp3_file}")
                 file_results = self._correct_file_case(mp3_file, artist_name)
                 if file_results:
                     results[mp3_file] = file_results
@@ -219,12 +199,6 @@ class CaseCorrector:
             rules_applied=rules_applied,
             exceptions_used=exceptions_used
         )
-        
-        print(f"🔤 DEBUG - correct_text_case RÉSULTAT FINAL:")
-        print(f"   Original: '{result.original}'")
-        print(f"   Corrigé: '{result.corrected}'")
-        print(f"   Changé: {result.changed}")
-        print(f"   Règles: {[r.value for r in result.rules_applied]}")
         
         return result
     
@@ -305,80 +279,48 @@ class CaseCorrector:
         """Applique les règles de correction de casse."""
         from support.honest_logger import honest_logger
         
-        print(f"🔤 DEBUG - _apply_case_rules DÉBUT: '{text}' (type: {text_type})")
-        
         rules_applied = []
         result_text = text
         original_text = text
         
-        honest_logger.info(f"🔤 GROUPE 3 - Début correction casse {text_type}: '{original_text}'")
-        
-        # RÈGLE 9-10 : Sentence Case de base (selon type)
+# RÈGLE 9-10 : Sentence Case de base (selon type)
         step_text = result_text
-        print(f"🔤 DEBUG - Avant _apply_sentence_case: '{step_text}'")
         result_text = self._apply_sentence_case(result_text)
-        print(f"🔤 DEBUG - Après _apply_sentence_case: '{result_text}'")
         
-        if result_text != step_text:
-            honest_logger.info(f"✅ RÈGLES 9-10 - Sentence case appliqué: '{step_text}' → '{result_text}'")
-        else:
-            honest_logger.info(f"ℹ️ RÈGLES 9-10 - Casse déjà correcte: '{step_text}'")
         rules_applied.append(CaseCorrectionRule.SENTENCE_CASE)
         
         # RÈGLE 11 : Protection des chiffres romains  
         step_text = result_text
         result_text = self._protect_roman_numerals(result_text)
-        if result_text != step_text:
-            honest_logger.info(f"✅ RÈGLE 11 - Chiffres romains protégés: '{step_text}' → '{result_text}'")
-        else:
-            honest_logger.info(f"ℹ️ RÈGLE 11 - Aucun chiffre romain trouvé: '{step_text}'")
         rules_applied.append(CaseCorrectionRule.PROTECT_ROMAN_NUMERALS)
         
         # RÈGLE 18 : Protection du "I" isolé
         step_text = result_text
         result_text = self._protect_single_i(result_text)
-        if result_text != step_text:
-            honest_logger.info(f"✅ RÈGLE 18 - 'I' isolé protégé: '{step_text}' → '{result_text}'")
-        else:
-            honest_logger.info(f"ℹ️ RÈGLE 18 - Aucun 'I' isolé trouvé: '{step_text}'")
         rules_applied.append(CaseCorrectionRule.PROTECT_SINGLE_I)
         
         # Gestion des prépositions
         step_text = result_text
         result_text = self._handle_prepositions(result_text)
-        if result_text != step_text:
-            honest_logger.info(f"✅ Prépositions gérées: '{step_text}' → '{result_text}'")
         rules_applied.append(CaseCorrectionRule.HANDLE_PREPOSITIONS)
         
         # Protection des abréviations (seulement pour les albums et artistes, pas les titres normaux)
         if text_type != "title":
             step_text = result_text
             result_text = self._protect_abbreviations(result_text)
-            if result_text != step_text:
-                honest_logger.info(f"✅ Abréviations protégées: '{step_text}' → '{result_text}'")
             rules_applied.append(CaseCorrectionRule.PROTECT_ABBREVIATIONS)
         
         # RÈGLE 12 : Protection artiste dans album (si applicable)
         if text_type == "album" and artist_name:
             step_text = result_text
             result_text = self._protect_artist_in_album(result_text, artist_name)
-            if result_text != step_text:
-                honest_logger.info(f"✅ RÈGLE 12 - Artiste protégé dans album: '{step_text}' → '{result_text}'")
-            else:
-                honest_logger.info(f"ℹ️ RÈGLE 12 - Artiste '{artist_name}' non trouvé dans album: '{step_text}'")
             rules_applied.append(CaseCorrectionRule.PROTECT_ARTIST_IN_ALBUM)
-        
-        if result_text != original_text:
-            honest_logger.success(f"🎯 GROUPE 3 - Correction terminée: '{original_text}' → '{result_text}'")
-        else:
-            honest_logger.info(f"ℹ️ GROUPE 3 - Aucune correction nécessaire: '{original_text}'")
         
         return result_text, rules_applied
     
     def _apply_sentence_case(self, text: str) -> str:
         """Applique le Sentence Case : première lettre en majuscule, reste en minuscule."""
         if not text:
-            print(f"🔤 DEBUG - _apply_sentence_case: texte vide")
             return text
         
         original = text
@@ -392,10 +334,6 @@ class CaseCorrector:
             prefix = match.group(1)  # "sample title from "
             title_part = match.group(2)   # "01 - Drowned DJ run MC" ou "Drowned DJ run MC"
             
-            print(f"🔤 DEBUG - Format 'sample title from' détecté:")
-            print(f"🔤 DEBUG -   Prefix: '{prefix}'")
-            print(f"🔤 DEBUG -   Title part: '{title_part}'")
-            
             # Appliquer sentence case sur le prefix
             prefix_corrected = prefix[0].upper() + prefix[1:].lower() if len(prefix) > 1 else prefix.upper()
             
@@ -407,10 +345,6 @@ class CaseCorrector:
                 track_num = track_match.group(1)  # "01 - "
                 actual_title = track_match.group(2)  # "Drowned DJ run MC"
                 
-                print(f"🔤 DEBUG - Sous-format 'N° - Title' détecté dans title_part:")
-                print(f"🔤 DEBUG -   Track num: '{track_num}'")
-                print(f"🔤 DEBUG -   Actual title: '{actual_title}'")
-                
                 # Appliquer sentence case sur le titre réel (première lettre majuscule, reste minuscule)
                 title_corrected = actual_title[0].upper() + actual_title[1:].lower() if len(actual_title) > 1 else actual_title.upper()
                 title_part_corrected = track_num + title_corrected
@@ -419,7 +353,6 @@ class CaseCorrector:
                 title_part_corrected = title_part[0].upper() + title_part[1:].lower() if len(title_part) > 1 else title_part.upper()
             
             result = prefix_corrected + title_part_corrected
-            print(f"🔤 DEBUG - Correction 'sample title from': '{prefix}' + '{title_part}' → '{prefix_corrected}' + '{title_part_corrected}'")
         else:
             # Détection du format "N° - Title" (ex: "01 - Drowned DJ run MC")
             track_pattern = r'^(.*?)(\d{1,2}\s*-\s*)(.+)$'
@@ -430,11 +363,6 @@ class CaseCorrector:
                 track_num = track_match.group(2)  # "01 - "
                 title = track_match.group(3)  # "Drowned DJ run MC"
                 
-                print(f"🔤 DEBUG - Format 'N° - Title' détecté:")
-                print(f"🔤 DEBUG -   Prefix: '{prefix}'")
-                print(f"🔤 DEBUG -   Track: '{track_num}'") 
-                print(f"🔤 DEBUG -   Title: '{title}'")
-                
                 # Appliquer sentence case sur le prefix ET le titre (première lettre majuscule, reste minuscule)
                 if prefix:
                     prefix_corrected = prefix[0].upper() + prefix[1:].lower() if len(prefix) > 1 else prefix.upper()
@@ -444,12 +372,10 @@ class CaseCorrector:
                 title_corrected = title[0].upper() + title[1:].lower() if len(title) > 1 else title.upper()
                 
                 result = prefix_corrected + track_num + title_corrected
-                print(f"🔤 DEBUG - Correction format piste: '{prefix}' + '{track_num}' + '{title}' → '{prefix_corrected}' + '{track_num}' + '{title_corrected}'")
             else:
                 # Sentence case classique pour textes sans format spécial (première lettre majuscule, reste minuscule)
                 result = text[0].upper() + text[1:].lower() if len(text) > 1 else text.upper()
         
-        print(f"🔤 DEBUG - _apply_sentence_case: '{original}' → '{result}'")
         return result
     
     def _protect_roman_numerals(self, text: str) -> str:
@@ -515,33 +441,19 @@ class CaseCorrector:
         exceptions_used = []
         result_text = text
         
-        honest_logger.info(f"🔍 EXCEPTIONS - Texte d'entrée: '{text}'")
-        honest_logger.info(f"🔍 EXCEPTIONS - {len(self.case_exceptions)} exceptions chargées")
-        
         for exception in self.case_exceptions:
-            honest_logger.info(f"🔍 EXCEPTION - Test: '{exception.original}' → '{exception.corrected}' dans '{result_text}'")
-            
             if exception.case_sensitive:
                 # Recherche sensible à la casse
                 if exception.original in result_text:
-                    old_text = result_text
                     result_text = result_text.replace(exception.original, exception.corrected)
                     exceptions_used.append(exception)
-                    honest_logger.success(f"✅ EXCEPTION APPLIQUÉE: '{old_text}' → '{result_text}'")
-                else:
-                    honest_logger.info(f"❌ EXCEPTION non trouvée (sensible casse): '{exception.original}' dans '{result_text}'")
             else:
                 # Recherche insensible à la casse
                 pattern = re.compile(re.escape(exception.original), re.IGNORECASE)
                 if pattern.search(result_text):
-                    old_text = result_text
                     result_text = pattern.sub(exception.corrected, result_text)
                     exceptions_used.append(exception)
-                    honest_logger.success(f"✅ EXCEPTION APPLIQUÉE (insensible casse): '{old_text}' → '{result_text}'")
-                else:
-                    honest_logger.info(f"❌ EXCEPTION non trouvée (insensible casse): '{exception.original}' dans '{result_text}'")
         
-        honest_logger.info(f"🔍 EXCEPTIONS - Texte final: '{result_text}', {len(exceptions_used)} exceptions utilisées")
         return result_text, exceptions_used
     
     def _find_mp3_files(self, directory: str) -> List[str]:
@@ -589,7 +501,7 @@ class CaseCorrector:
             # Sauvegarder si des modifications ont été faites
             if modifications_made:
                 audio.save()
-                self.logger.success(f"✅ Métadonnées sauvegardées: {mp3_file}")
+                self.logger.info(f"✅ Métadonnées sauvegardées: {mp3_file}")
             
             return results
             
@@ -696,18 +608,8 @@ class CaseCorrector:
         Returns:
             bool: True si la correction a réussi, False sinon
         """
-        print(f"🔤 DEBUG - correct_album_metadata DÉBUT: {album_path}")
-        
         try:
-            print(f"🔤 DEBUG - Appel correct_album_case")
             results = self.correct_album_case(album_path)
-            print(f"🔤 DEBUG - Résultats correct_album_case: {len(results)} fichiers")
-            
-            for file, file_results in results.items():
-                print(f"🔤 DEBUG - Fichier {file}:")
-                for field, result in file_results.items():
-                    print(f"   {field}: '{result.original}' → '{result.corrected}'")
-                    print(f"   Changé: {result.changed}")
             
             # Vérification du succès : au moins un changement dans n'importe quel champ
             success = len(results) > 0
@@ -722,19 +624,13 @@ class CaseCorrector:
             
             if success:
                 self.logger.info(f"Correction de casse réussie pour : {album_path}")
-                if has_changes:
-                    print(f"🔤 DEBUG - Correction réussie avec changements")
-                else:
-                    print(f"🔤 DEBUG - Correction réussie sans changements nécessaires")
             else:
                 self.logger.warning(f"Aucun fichier trouvé pour : {album_path}")
-                print(f"🔤 DEBUG - Aucun fichier trouvé")
             
             return True  # Toujours retourner True même si aucune correction n'était nécessaire
             
         except Exception as e:
             self.logger.error(f"Erreur lors de la correction de casse pour {album_path}: {str(e)}", exc_info=True)
-            print(f"🔤 DEBUG - ERREUR: {str(e)}")
             return False
 
 

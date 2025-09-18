@@ -416,11 +416,6 @@ class MetadataCleaner:
         # Nettoyage final des espaces
         final_cleaned = re.sub(r'\s+', ' ', cleaned).strip()
         
-        if final_cleaned != original_text:
-            honest_logger.success(f"🎯 GROUPE 2 - Nettoyage terminé: '{original_text}' → '{final_cleaned}'")
-        else:
-            honest_logger.info(f"ℹ️ GROUPE 2 - Aucun changement nécessaire: '{original_text}'")
-        
         return final_cleaned
     
     def _identify_applied_rules(self, original: str, cleaned: str) -> List[CleaningRule]:

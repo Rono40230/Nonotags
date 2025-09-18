@@ -102,13 +102,9 @@ class FileCleaner:
         Returns:
             CleaningStats: Statistiques du nettoyage
         """
-        honest_logger.info(f"🧹 DÉBUT NETTOYAGE: {album_path}")
-        
         # Scan AVANT nettoyage
         before_files = [f.name for f in Path(album_path).iterdir() if f.is_file()]
         before_dirs = [f.name for f in Path(album_path).iterdir() if f.is_dir()]
-        
-        honest_logger.info(f"📊 AVANT: {len(before_files)} fichiers, {len(before_dirs)} dossiers")
         
         # Validation du chemin d'album
         validation = self.validator.validate_directory(album_path)
@@ -181,11 +177,8 @@ class FileCleaner:
         results = []
         album_dir = Path(album_path)
         
-        honest_logger.info(f"🔍 RÈGLE 1 - Recherche fichiers indésirables dans {album_dir.name}")
-        
         # Liste des types de fichiers à supprimer selon règle 1
         target_extensions = ['.DS_Store', 'Thumbs.db', '.png', '.nfo', '.txt', '.m3u', 'bs.db']
-        honest_logger.info(f"📋 Types ciblés: {target_extensions}")
         
         unwanted_count = 0
         total_files = 0
@@ -198,18 +191,14 @@ class FileCleaner:
             
             if self._is_unwanted_file(file_path):
                 unwanted_count += 1
-                honest_logger.info(f"🎯 RÈGLE 1 - Fichier indésirable détecté: {file_path.name}")
                 result = self._delete_file(file_path)
                 results.append(result)
                 
                 if result.success:
-                    honest_logger.success(f"✅ RÈGLE 1 - Suppression réussie: {file_path.name}")
                     honest_logger.file_operation("SUPPRESSION", str(file_path), True)
                 else:
                     honest_logger.error(f"❌ RÈGLE 1 - Suppression échouée: {file_path.name} - {result.error_message}")
                     honest_logger.file_operation("SUPPRESSION", str(file_path), False, result.error_message)
-            else:
-                honest_logger.info(f"ℹ️ RÈGLE 1 - Fichier conservé: {file_path.name}")
         
         # Rapport final règle 1
         if unwanted_count == 0:
@@ -224,8 +213,6 @@ class FileCleaner:
         results = []
         album_dir = Path(album_path)
         
-        honest_logger.info(f"🔍 RÈGLE 2 - Recherche sous-dossiers dans {album_dir.name}")
-        
         subfolder_count = 0
         total_dirs = 0
         
@@ -233,21 +220,12 @@ class FileCleaner:
             if subfolder.is_dir():
                 total_dirs += 1
                 subfolder_count += 1
-                honest_logger.info(f"📁 RÈGLE 2 - Sous-dossier détecté: {subfolder.name}")
                 
                 result = self._delete_folder(subfolder)
                 results.append(result)
                 
-                if result.success:
-                    honest_logger.success(f"✅ RÈGLE 2 - Suppression dossier réussie: {subfolder.name}")
-                else:
+                if not result.success:
                     honest_logger.error(f"❌ RÈGLE 2 - Suppression dossier échouée: {subfolder.name} - {result.error_message}")
-        
-        # Rapport final règle 2
-        if subfolder_count == 0:
-            honest_logger.info(f"ℹ️ RÈGLE 2 - Aucun sous-dossier trouvé")
-        else:
-            honest_logger.info(f"📊 RÈGLE 2 - {subfolder_count} sous-dossiers traités")
         
         return results
     
@@ -255,8 +233,6 @@ class FileCleaner:
         """Renomme les fichiers de pochettes selon les patterns configurés."""
         results = []
         album_dir = Path(album_path)
-        
-        honest_logger.info(f"🔍 RÈGLE 3 - Recherche fichiers pochettes dans {album_dir.name}")
         
         # Patterns ciblés selon règle 3
         target_patterns = ['front.jpg', 'Front.jpg', 'Cover.jpg']
@@ -281,16 +257,8 @@ class FileCleaner:
                 result = self._rename_file(file_path, target_path)
                 results.append(result)
                 
-                if result.success:
-                    honest_logger.success(f"✅ RÈGLE 3 - Renommage réussi: {file_path.name} → {new_name}")
-                else:
+                if not result.success:
                     honest_logger.error(f"❌ RÈGLE 3 - Renommage échoué: {file_path.name} → {new_name} - {result.error_message}")
-        
-        # Rapport final règle 3
-        if cover_count == 0:
-            honest_logger.info(f"ℹ️ RÈGLE 3 - Aucun fichier pochette à renommer sur {total_files} fichiers")
-        else:
-            honest_logger.info(f"📊 RÈGLE 3 - {cover_count} fichiers pochettes traités")
         
         return results
     
@@ -357,7 +325,6 @@ class FileCleaner:
             
             # Suppression
             file_path.unlink()
-            honest_logger.success(f"✅ SUPPRESSION RÉUSSIE: {file_path.name} ({size} bytes libérés)")
             
             return CleaningResult(
                 action=CleaningAction.DELETE_FILE,

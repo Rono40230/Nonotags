@@ -20,10 +20,7 @@ from ui.main_app import NonotagsApp
 def main():
     """Point d'entrée principal pour l'UI GTK3"""
     
-    print("🚀 Lancement de Nonotags (mode compatibilité GTK3)...")
-    print("📱 Interface moderne adaptée GTK3")
-    print("🎨 Design épuré et fonctionnel")
-    print()
+    # Lancement de Nonotags (mode compatibilité GTK3)
     
     # Style CSS moderne pour GTK3
     css_provider = Gtk.CssProvider()

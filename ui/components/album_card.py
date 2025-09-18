@@ -106,23 +106,14 @@ class AlbumCard(Gtk.Frame):
         info_box.pack_start(artist_label, False, False, 0)
         
         # Ligne 2 : Année et titre de l'album (lecture directe du nom de dossier)
-        # LOG: Debug pour comprendre le problème de synchronisation
-        print(f"🔍 CARD INIT - album_data keys: {list(album_data.keys())}")
-        print(f"🔍 CARD INIT - album_data: {album_data}")
-        
         folder_path = album_data.get('folder_path', '')
-        print(f"🔍 CARD INIT - folder_path: {folder_path}")
         
         if folder_path and os.path.exists(folder_path):
             # Lecture directe du nom du dossier depuis le filesystem
             album_title = os.path.basename(folder_path)
-            print(f"✅ CARD INIT - Titre lu depuis filesystem: {album_title}")
         else:
             # Fallback sur les données d'album
             album_title = album_data.get('title', 'Album Inconnu')
-            print(f"❌ CARD INIT - Fallback album_data: {album_title}")
-        
-        print(f"📝 CARD INIT - Texte final: {album_title}")
         
         # Année et titre de l'album
         year_title_text = album_title
@@ -184,7 +175,6 @@ class AlbumCard(Gtk.Frame):
     
     def on_edit_clicked(self, button):
         """Ouvre la fenêtre d'édition"""
-        print(f"✏️ Édition de l'album: {self.album_data.get('album')}")
         # Import local pour éviter les dépendances circulaires
         from ui.views.album_edit_window import AlbumEditWindow
         edit_window = AlbumEditWindow(self.album_data, self)
@@ -221,7 +211,6 @@ class AlbumCard(Gtk.Frame):
             # Retirer de la grille parent directement sans confirmation
             if self.get_parent():
                 self.get_parent().remove(self)
-                print(f"🗑️ Album retiré: {album_title}")
                 self._show_success(f"Album '{album_title}' retiré de la liste")
                     
         except Exception as e:

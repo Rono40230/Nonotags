@@ -42,8 +42,6 @@ class NonotagsApp:
         self.startup_window = StartupWindow(self)
         self.startup_window.show_all()
         
-        print("✅ Application Nonotags lancée avec succès!")
-        print("🎯 Fenêtre de démarrage affichée")
         Gtk.main()
         
     def create_main_window_with_scan(self, folder_path):
@@ -51,7 +49,6 @@ class NonotagsApp:
         self.create_main_window()
         
         # Lancer le scan automatiquement
-        print(f"🔍 Lancement du scan pour: {folder_path}")
         # Simuler le scan pour l'instant
         GLib.idle_add(self._scan_folder, folder_path)
     
@@ -60,13 +57,10 @@ class NonotagsApp:
         try:
             # Stocker le dossier actuel pour rescans futurs
             self.current_folder = folder_path
-            print(f"🔍 SCAN - Scanning: {folder_path}")
             
             from services.music_scanner import MusicScanner
             scanner = MusicScanner()
             albums = scanner.scan_directory(folder_path)
-            
-            print(f"✅ {len(albums)} albums trouvés")
             
             # Effacer les albums de démonstration
             if self.albums_grid:
@@ -87,11 +81,10 @@ class NonotagsApp:
             self.update_cards_per_line()
             
             # ✅ TRAITEMENT AUTOMATIQUE : Démarrer immédiatement le traitement
-            print("🚀 Démarrage automatique du traitement...")
             if self.orchestrator.start_processing():
-                print("✅ Traitement automatique démarré")
+                pass  # Traitement automatique démarré
             else:
-                print("❌ Impossible de démarrer le traitement automatique")
+                pass  # Impossible de démarrer le traitement automatique
             
             # Sauvegarder le dossier actuel
             self.current_folder = folder_path
@@ -169,7 +162,6 @@ class NonotagsApp:
         self.main_window.show_all()
         
         GLib.idle_add(self.update_cards_per_line)
-        print("🎯 Fenêtre principale ouverte")
         
         # Fermer la fenêtre de démarrage
         if self.startup_window:
@@ -178,7 +170,6 @@ class NonotagsApp:
     
     def on_main_window_close(self, window, event):
         """Gestionnaire de fermeture de la fenêtre principale"""
-        print("👋 Fermeture de l'application")
         Gtk.main_quit()
         return False
     
@@ -207,7 +198,6 @@ class NonotagsApp:
     
     def _update_albums_display(self, albums: List[Dict]):
         """Met à jour l'affichage des albums"""
-        print(f"🔄 _update_albums_display appelée avec {len(albums)} albums")
         
         # Vider la grille actuelle
         if self.albums_grid:
@@ -216,7 +206,6 @@ class NonotagsApp:
         
         # Ajouter les nouvelles cartes
         for album_data in albums:
-            print(f"📋 Création card pour: {album_data.get('path', 'AUCUN_PATH')}")
             card = AlbumCard(album_data, self)
             self.albums_grid.add(card)
         
@@ -250,13 +239,12 @@ class NonotagsApp:
             dialog.destroy()
             return
         
-        print(f"✏️ Édition groupée de {len(selected_albums)} album(s) sélectionné(s)")
+        # Edition groupée demandée
         for album in selected_albums:
-            print(f"   - {album.get('artist', 'Artiste')} - {album.get('album', 'Titre')}")
+            pass  # Album sélectionné pour édition
     
     def on_exceptions_clicked(self, button):
         """Ouvre la fenêtre de gestion des exceptions de casse"""
-        print("📝 Ouverture de la fenêtre des exceptions de casse")
         try:
             exceptions_window = ExceptionsWindow(parent=self.main_window)
             exceptions_window.show_all()
@@ -293,7 +281,6 @@ class NonotagsApp:
         
         if hasattr(self, 'main_window') and self.main_window:
             width = self.main_window.get_allocated_width()
-            print(f"📐 Largeur fenêtre: {width}px → {cards_per_line} cartes par ligne")
     
     def on_window_resize(self, window):
         """Gestionnaire de redimensionnement de fenêtre avec debouncing"""
@@ -334,16 +321,12 @@ class NonotagsApp:
         
         if self.status_label:
             self.status_label.set_markup(f"<span size='small'>État: <b>{state_name}</b></span>")
-        
-        print(f"🔄 État traitement: {old_state} → {new_state}")
     
     def on_processing_progress_updated(self, progress, processed, total):
         """Callback mise à jour du progrès"""
         if self.progress_bar:
             self.progress_bar.set_fraction(progress / 100.0)
             self.progress_bar.set_text(f"{processed}/{total} albums ({progress:.1f}%)")
-        
-        print(f"📊 Progrès: {progress:.1f}% ({processed}/{total})")
     
     def on_processing_step_changed(self, step, album_number):
         """Callback changement d'étape"""
@@ -351,20 +334,16 @@ class NonotagsApp:
         
         if self.step_label:
             self.step_label.set_markup(f"<span size='small'>Étape: <b>{step_name}</b> (Album {album_number})</span>")
-        
-        print(f"🔧 Étape: {step_name} - Album {album_number}")
     
     def on_album_processed(self, album, success):
         """Callback album traité"""
         album_title = album.get('title', 'Sans titre')
         status = "✅ Réussi" if success else "❌ Échec"
-        print(f"🎵 Album traité: {album_title} - {status}")
         
         # TODO: Mettre à jour l'état de la carte d'album correspondante
     
     def on_processing_error(self, error_message):
         """Callback erreur de traitement"""
-        print(f"❌ Erreur traitement: {error_message}")
         
         # Afficher un dialog d'erreur
         dialog = Gtk.MessageDialog(
@@ -382,20 +361,15 @@ class NonotagsApp:
         """Callback traitement terminé"""
         if success:
             message = f"🎉 Traitement automatique terminé avec succès!\n{processed}/{total} albums traités et optimisés."
-            print(f"✅ {message}")
             
             # RESCAN pour rafraîchir les cards avec les nouveaux noms
-            print("🔄 Rafraîchissement des cartes après traitement...")
-            print(f"🔍 DEBUG - current_folder disponible: {hasattr(self, 'current_folder')}")
             if hasattr(self, 'current_folder') and self.current_folder:
                 # SOLUTION: Chercher le nouveau nom du dossier après renommage
                 old_folder = self.current_folder
-                print(f"🔍 DEBUG - Ancien dossier: {old_folder}")
                 
                 # Si l'ancien dossier n'existe plus, chercher le nouveau nom
                 if not os.path.exists(old_folder):
                     parent_dir = os.path.dirname(old_folder)
-                    print(f"🔍 DEBUG - Recherche dans parent: {parent_dir}")
                     
                     # Chercher un dossier qui commence par une parenthèse (format RÈGLE 17)
                     new_folder = None
@@ -408,21 +382,14 @@ class NonotagsApp:
                                     mp3_files = [f for f in os.listdir(item_path) if f.lower().endswith('.mp3')]
                                     if mp3_files:
                                         new_folder = item_path
-                                        print(f"✅ DEBUG - Dossier RÈGLE 17 trouvé: {item}")
                                         break
                                 except PermissionError:
                                     continue
                     
                     if new_folder:
                         self.current_folder = new_folder
-                        print(f"✅ DEBUG - Nouveau dossier configuré: {new_folder}")
-                    else:
-                        print("❌ DEBUG - Aucun dossier RÈGLE 17 trouvé")
                 
-                print(f"🔍 DEBUG - Rescanning: {self.current_folder}")
                 GLib.idle_add(self._scan_folder, self.current_folder)
-            else:
-                print("❌ DEBUG - Pas de current_folder pour rescan")
             
             # Dialog de succès - DÉSACTIVÉ sur demande utilisateur
             # dialog = Gtk.MessageDialog(
@@ -437,7 +404,6 @@ class NonotagsApp:
             # dialog.destroy()
         else:
             message = f"⚠️ Traitement automatique interrompu.\n{processed}/{total} albums traités."
-            print(f"⚠️ {message}")
         
         # Réinitialiser la barre de progression
         if self.progress_bar:

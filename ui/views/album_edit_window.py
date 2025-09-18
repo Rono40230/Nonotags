@@ -304,8 +304,7 @@ class AlbumEditWindow(Gtk.Window):
                 audio_files.append(os.path.join(folder_path, file))
         
         if not audio_files:
-            print(f"⚠️ Aucun fichier audio trouvé dans: {folder_path}")
-            return
+            return  # Aucun fichier audio trouvé
             
         audio_files.sort()
         
@@ -742,7 +741,6 @@ class AlbumEditWindow(Gtk.Window):
     
     def on_startup_window_close(self, window, event):
         """Gestionnaire de fermeture de la fenêtre"""
-        print("👋 Fermeture de la fenêtre d'édition")
         
         # Nettoyer le lecteur audio
         if hasattr(self, 'audio_player'):

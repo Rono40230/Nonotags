@@ -57,8 +57,6 @@ class StartupWindow(Gtk.Window):
         
     def on_import_clicked(self, button):
         """Importer des albums et ouvrir l'application avec les résultats"""
-        print("📁 Importer des albums sélectionné")
-        
         # Ouvrir le sélecteur de dossier
         dialog = Gtk.FileChooserDialog(
             title="Sélectionner un dossier d'albums à importer",
@@ -74,7 +72,6 @@ class StartupWindow(Gtk.Window):
         
         if response == Gtk.ResponseType.OK:
             folder_path = dialog.get_filename()
-            print(f"📁 Dossier sélectionné: {folder_path}")
             dialog.destroy()
             
             # Ouvrir l'application principale avec le dossier
@@ -85,8 +82,6 @@ class StartupWindow(Gtk.Window):
     
     def on_exceptions_clicked(self, button):
         """Ouvre la fenêtre des exceptions"""
-        print("⚙️ Fenêtre des exceptions")
-        
         # Importer et ouvrir la fenêtre des exceptions
         from ui.views.exceptions_window import ExceptionsWindow
         
@@ -95,12 +90,10 @@ class StartupWindow(Gtk.Window):
         
     def on_open_app_clicked(self, button):
         """Ouvre la fenêtre principale et ferme la fenêtre de démarrage"""
-        print("🚀 Ouverture de l'application principale")
         self.hide()  # Cache la fenêtre de démarrage
         self.app.create_main_window()  # Crée et affiche la fenêtre principale
 
     def on_startup_window_close(self, window, event):
         """Gestionnaire de fermeture de la fenêtre de démarrage"""
-        print("👋 Fermeture de l'application depuis la fenêtre de démarrage")
         Gtk.main_quit()
         return False

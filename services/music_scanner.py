@@ -34,8 +34,6 @@ class MusicScanner:
         if not os.path.exists(directory_path):
             raise FileNotFoundError(f"Le dossier {directory_path} n'existe pas")
             
-        print(f"🔍 Scan du dossier: {directory_path}")
-        
         # Parcours récursif des dossiers
         for root, dirs, files in os.walk(directory_path):
             music_files = self._filter_music_files(files)
@@ -47,7 +45,6 @@ class MusicScanner:
                     if progress_callback:
                         progress_callback(len(self.albums_found), album_data['title'])
         
-        print(f"✅ Scan terminé: {len(self.albums_found)} albums trouvés")
         return self.albums_found
     
     def _filter_music_files(self, files: List[str]) -> List[str]:
@@ -109,7 +106,7 @@ class MusicScanner:
                     'track_number': self._get_tag_value(audio, 'TRCK')
                 }
         except (ID3NoHeaderError, Exception) as e:
-            print(f"⚠️ Erreur lecture métadonnées {file_path}: {e}")
+            # Erreur lecture métadonnées, utiliser le nom de fichier
             return self._guess_metadata_from_filename(file_path)
         
         return None

@@ -227,7 +227,6 @@ class FileRenamer:
         Returns:
             Tuple[str, List[RenamingRule]]: Année formatée et règles appliquées
         """
-        self.honest_logger.info(f"🔍 [RÈGLE 17] HANDLE_MULTI_YEAR - Analyse année: '{year}'")
         rules_applied = []
         
         if not year or not year.strip():
@@ -235,17 +234,14 @@ class FileRenamer:
             return "", []
         
         year = year.strip()
-        self.honest_logger.debug(f"📝 [RÈGLE 17] Année nettoyée: '{year}'")
         
         # Si c'est déjà une plage formatée (ex: "1995-2000")
         if re.match(r'^\d{4}-\d{4}$', year):
             rules_applied.append(RenamingRule.HANDLE_MULTI_YEAR)
-            self.honest_logger.success(f"✅ [RÈGLE 17] Plage déjà formatée détectée: '{year}'")
             return year, rules_applied
         
         # Extraction des années individuelles
         years = re.findall(r'\b\d{4}\b', year)
-        self.honest_logger.debug(f"🔍 [RÈGLE 17] Années extraites: {years}")
         
         if not years:
             self.honest_logger.warning(f"❌ [RÈGLE 17] Aucune année valide détectée dans: '{year}'")
@@ -268,16 +264,13 @@ class FileRenamer:
                     rules_applied.append(RenamingRule.HANDLE_MULTI_YEAR)
                     # Format compilation : (Année la plus ancienne-2 derniers chiffres de l'année la plus récente)
                     result = f"{min_year}-{str(max_year)[-2:]}"
-                    self.honest_logger.success(f"🎯 [RÈGLE 17] Plage créée: '{year}' → '{result}' (compilation {len(year_ints)} années)")
                     return result, rules_applied
                 else:
-                    self.honest_logger.info(f"ℹ️ [RÈGLE 17] Toutes les années identiques: {min_year}")
                     return str(min_year), []
         except ValueError as e:
             self.honest_logger.error(f"❌ [RÈGLE 17] Erreur conversion années: {e}")
             pass
         
-        self.honest_logger.warning(f"⚠️ [RÈGLE 17] Retour valeur originale: '{year}'")
         return year, []
     
     def preview_file_renaming(self, file_path: str, metadata: Dict[str, str]) -> RenamingResult:
@@ -408,7 +401,6 @@ class FileRenamer:
         Returns:
             RenamingResult: Résultat du renommage
         """
-        self.honest_logger.info(f"🔍 [RÈGLE 15] RENAME_FILE - Renommage fichier: '{Path(file_path).name}'")
         try:
             # Prévisualisation pour obtenir le nouveau nom
             preview = self.preview_file_renaming(file_path, metadata)
@@ -418,10 +410,7 @@ class FileRenamer:
                 return preview
             
             if not preview.renamed:
-                self.honest_logger.info(f"ℹ️ [RÈGLE 15] Pas de renommage nécessaire pour : {Path(file_path).name}")
                 return preview
-            
-            self.honest_logger.info(f"📝 [RÈGLE 15] Nouveau nom proposé: '{Path(preview.new_path).name}'")
             
             # Gestion des conflits de noms
             new_path = preview.new_path
@@ -435,7 +424,6 @@ class FileRenamer:
                 suffix = path_obj.suffix
                 new_path = str(path_obj.parent / f"{stem} ({counter}){suffix}")
                 counter += 1
-                self.honest_logger.debug(f"🔄 [RÈGLE 15] Conflit détecté, tentative: '{Path(new_path).name}' (#{counter})")
                 
                 if counter > 100:  # Protection contre boucle infinie
                     error_msg = "Trop de fichiers avec le même nom"
@@ -445,15 +433,11 @@ class FileRenamer:
             # Effectuer le renommage
             if new_path != file_path:
                 shutil.move(file_path, new_path)
-                old_name = Path(file_path).name
-                new_name = Path(new_path).name
-                self.honest_logger.success(f"🎯 [RÈGLE 15] Fichier renommé: '{old_name}' → '{new_name}'")
                 
                 # Mise à jour des règles si conflit résolu
                 rules = preview.rules_applied.copy()
                 if new_path != original_new_path:
                     rules.append(RenamingRule.HANDLE_DUPLICATE_NAME)
-                    self.honest_logger.info(f"🔧 [RÈGLE 15] Règle duplicate name ajoutée")
                 
                 return RenamingResult(
                     original_path=file_path,
@@ -488,7 +472,6 @@ class FileRenamer:
         Returns:
             RenamingResult: Résultat du renommage
         """
-        self.honest_logger.info(f"🔍 [RÈGLE 16] RENAME_FOLDER - Renommage dossier: '{Path(folder_path).name}'")
         try:
             # Prévisualisation pour obtenir le nouveau nom
             preview = self.preview_folder_renaming(folder_path, album_metadata)
@@ -498,10 +481,7 @@ class FileRenamer:
                 return preview
             
             if not preview.renamed:
-                self.honest_logger.info(f"ℹ️ [RÈGLE 16] Pas de renommage nécessaire pour : {Path(folder_path).name}")
                 return preview
-            
-            self.honest_logger.info(f"📝 [RÈGLE 16] Nouveau nom proposé: '{Path(preview.new_path).name}'")
             
             # Gestion des conflits de noms
             new_path = preview.new_path
@@ -513,7 +493,6 @@ class FileRenamer:
                 path_obj = Path(original_new_path)
                 new_path = str(path_obj.parent / f"{path_obj.name} ({counter})")
                 counter += 1
-                self.honest_logger.debug(f"🔄 [RÈGLE 16] Conflit dossier détecté, tentative: '{Path(new_path).name}' (#{counter})")
                 
                 if counter > 100:  # Protection contre boucle infinie
                     error_msg = "Trop de dossiers avec le même nom"
@@ -523,15 +502,11 @@ class FileRenamer:
             # Effectuer le renommage
             if new_path != folder_path:
                 shutil.move(folder_path, new_path)
-                old_name = Path(folder_path).name
-                new_name = Path(new_path).name
-                self.honest_logger.success(f"🎯 [RÈGLE 16] Dossier renommé: '{old_name}' → '{new_name}'")
                 
                 # Mise à jour des règles si conflit résolu
                 rules = preview.rules_applied.copy()
                 if new_path != original_new_path:
                     rules.append(RenamingRule.HANDLE_DUPLICATE_NAME)
-                    self.honest_logger.info(f"🔧 [RÈGLE 16] Règle duplicate name ajoutée")
                 
                 return RenamingResult(
                     original_path=folder_path,

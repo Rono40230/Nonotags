@@ -241,17 +241,11 @@ class ProcessingOrchestrator:
             # ÉTAPE 3: Correction de casse
             GLib.idle_add(self._notify_step_changed, ProcessingStep.CASE_CORRECTION, album_number)
             
-            print(f"🔤 DEBUG - ORCHESTRATOR: Début correction casse pour album {album_number}")
-            print(f"🔤 DEBUG - ORCHESTRATOR: Chemin album: {album_path}")
-            
             if not self._execute_step(
                 lambda: self.case_corrector.correct_album_metadata(album_path),
                 f"Correction casse - Album {album_number}"
             ):
-                print(f"🔤 DEBUG - ORCHESTRATOR: Échec correction casse")
                 return False
-            
-            print(f"🔤 DEBUG - ORCHESTRATOR: Correction casse terminée")
             
             # ÉTAPE 4: Formatage
             GLib.idle_add(self._notify_step_changed, ProcessingStep.FORMATTING, album_number)
@@ -281,7 +275,6 @@ class ProcessingOrchestrator:
                 return False
             
             self.logger.info(f"Album {album_number} traité avec succès")
-            honest_logger.success(f"✅ ALBUM TRAITÉ AVEC SUCCÈS: {album.get('title', 'Sans titre')}")
             return True
             
         except Exception as e:
@@ -319,25 +312,18 @@ class ProcessingOrchestrator:
             if hasattr(result, 'success'):
                 # Pour les objets avec .success (comme CleaningResult)
                 if not result.success:
-                    honest_logger.error(f"❌ ÉTAPE ÉCHOUÉE: {step_description}")
                     self.logger.warning(f"Étape échouée: {step_description}")
                     return False
             elif hasattr(result, 'total_errors'):
                 # Pour les objets Stats (CleaningStats, AlbumCleaningStats) 
                 if result.total_errors > 0:
-                    honest_logger.error(f"❌ ÉTAPE ÉCHOUÉE: {step_description} - {result.total_errors} erreurs")
                     self.logger.warning(f"Étape échouée avec {result.total_errors} erreurs: {step_description}")
                     return False
-                else:
-                    honest_logger.success(f"✅ ÉTAPE RÉUSSIE: {step_description}")
             elif isinstance(result, bool):
                 # Pour les retours booléens simples
                 if not result:
-                    honest_logger.error(f"❌ ÉTAPE ÉCHOUÉE: {step_description}")
                     self.logger.warning(f"Étape échouée: {step_description}")
                     return False
-                else:
-                    honest_logger.success(f"✅ ÉTAPE RÉUSSIE: {step_description}")
             
             self.logger.debug(f"Étape réussie: {step_description}")
             return True
