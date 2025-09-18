@@ -3,6 +3,7 @@ Composant AlbumCard
 Widget représentant une carte d'album dans l'interface
 """
 
+import os
 import gi
 gi.require_version('Gtk', '3.0')
 
@@ -33,9 +34,10 @@ CARD_STATES = {
 class AlbumCard(Gtk.Frame):
     """Widget représentant une carte d'album"""
     
-    def __init__(self, album_data: Dict):
+    def __init__(self, album_data: Dict, parent_app=None):
         super().__init__()
         self.album_data = album_data
+        self.parent_app = parent_app
         self.current_state = 'SUCCESS'  # État par défaut après traitement automatique
         self.status_label = None  # Label pour afficher l'état
         
@@ -190,11 +192,101 @@ class AlbumCard(Gtk.Frame):
     
     def on_playlist_clicked(self, button):
         """Crée une playlist avec cet album"""
-        print(f"📋 Création de playlist: {self.album_data.get('album')}")
+        try:
+            # Récupérer le chemin du dossier de l'album
+            folder_path = self.album_data.get('folder_path') or self.album_data.get('path')
+            if not folder_path or not os.path.exists(folder_path):
+                self._show_error("Dossier de l'album non trouvé")
+                return
+            
+            # Créer la playlist M3U
+            playlist_path = self._create_playlist_m3u(folder_path)
+            
+            if playlist_path:
+                album_title = self.album_data.get('title') or self.album_data.get('album', 'Album')
+                print(f"✅ Playlist créée: {playlist_path}")
+                self._show_success(f"Playlist créée pour '{album_title}'")
+            else:
+                self._show_error("Impossible de créer la playlist")
+                
+        except Exception as e:
+            print(f"❌ Erreur création playlist: {e}")
+            self._show_error(f"Erreur: {str(e)}")
     
     def on_remove_clicked(self, button):
         """Retire cet album de la liste"""
-        print(f"🗑️ Retrait de l'album: {self.album_data.get('album')}")
+        try:
+            album_title = self.album_data.get('title') or self.album_data.get('album', 'Album')
+            
+            # Retirer de la grille parent directement sans confirmation
+            if self.get_parent():
+                self.get_parent().remove(self)
+                print(f"🗑️ Album retiré: {album_title}")
+                self._show_success(f"Album '{album_title}' retiré de la liste")
+                    
+        except Exception as e:
+            print(f"❌ Erreur suppression album: {e}")
+            self._show_error(f"Erreur: {str(e)}")
+    
+    def _create_playlist_m3u(self, folder_path):
+        """Crée une playlist M3U avec les fichiers MP3 du dossier"""
+        try:
+            # Chercher tous les fichiers MP3 dans le dossier
+            mp3_files = []
+            for file_name in os.listdir(folder_path):
+                if file_name.lower().endswith('.mp3'):
+                    mp3_files.append(file_name)
+            
+            if not mp3_files:
+                raise ValueError("Aucun fichier MP3 trouvé dans le dossier")
+            
+            # Trier les fichiers par nom
+            mp3_files.sort()
+            
+            # Récupérer l'artiste depuis les données de l'album
+            artist = self.album_data.get('artist', 'Artiste Inconnu')
+            
+            # Récupérer le titre de l'album depuis le nom du dossier (comme affiché dans la carte)
+            if folder_path and os.path.exists(folder_path):
+                album_folder_name = os.path.basename(folder_path)
+            else:
+                album_folder_name = self.album_data.get('title') or self.album_data.get('album') or 'Album'
+            
+            # Construire le nom au format : artiste - titre de l'album (tel qu'affiché)
+            playlist_name = f"{artist} - {album_folder_name}"
+            
+            # Nettoyer le nom de fichier des caractères non autorisés
+            safe_name = "".join(c for c in playlist_name if c.isalnum() or c in (' ', '-', '_', '(', ')')).strip()
+            playlist_filename = f"{safe_name}.m3u"
+            playlist_path = os.path.join(folder_path, playlist_filename)
+            
+            # Contenu de la playlist
+            playlist_content = ["#EXTM3U"]
+            
+            for mp3_file in mp3_files:
+                # Ajouter chaque fichier avec chemin relatif
+                playlist_content.append(f"#EXTINF:-1,{mp3_file}")
+                playlist_content.append(mp3_file)
+            
+            # Écrire le fichier playlist
+            with open(playlist_path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(playlist_content))
+            
+            return playlist_path
+            
+        except Exception as e:
+            print(f"❌ Erreur création playlist M3U: {e}")
+            return None
+    
+    def _show_success(self, message):
+        """Affiche un message de succès"""
+        print(f"✅ {message}")
+        # TODO: Implémenter notification toast si disponible
+    
+    def _show_error(self, message):
+        """Affiche un message d'erreur"""
+        print(f"❌ {message}")
+        # TODO: Implémenter notification toast si disponible
     
     def _update_display(self):
         """Met à jour l'affichage de la carte après édition"""

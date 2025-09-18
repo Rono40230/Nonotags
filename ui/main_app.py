@@ -75,7 +75,7 @@ class NonotagsApp:
                     
             # Ajouter les vrais albums
             for album in albums:
-                card = AlbumCard(album)
+                card = AlbumCard(album, self)
                 self.albums_grid.add(card)
                 
             # Sauvegarder les albums pour le traitement
@@ -217,7 +217,7 @@ class NonotagsApp:
         # Ajouter les nouvelles cartes
         for album_data in albums:
             print(f"📋 Création card pour: {album_data.get('path', 'AUCUN_PATH')}")
-            card = AlbumCard(album_data)
+            card = AlbumCard(album_data, self)
             self.albums_grid.add(card)
         
         # Sauvegarder les albums pour le traitement
