@@ -241,11 +241,17 @@ class ProcessingOrchestrator:
             # ÉTAPE 3: Correction de casse
             GLib.idle_add(self._notify_step_changed, ProcessingStep.CASE_CORRECTION, album_number)
             
+            print(f"🔤 DEBUG - ORCHESTRATOR: Début correction casse pour album {album_number}")
+            print(f"🔤 DEBUG - ORCHESTRATOR: Chemin album: {album_path}")
+            
             if not self._execute_step(
                 lambda: self.case_corrector.correct_album_metadata(album_path),
                 f"Correction casse - Album {album_number}"
             ):
+                print(f"🔤 DEBUG - ORCHESTRATOR: Échec correction casse")
                 return False
+            
+            print(f"🔤 DEBUG - ORCHESTRATOR: Correction casse terminée")
             
             # ÉTAPE 4: Formatage
             GLib.idle_add(self._notify_step_changed, ProcessingStep.FORMATTING, album_number)

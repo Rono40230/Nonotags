@@ -46,7 +46,6 @@ class CaseCorrectionResult:
     """Résultat d'une correction de casse."""
     original: str
     corrected: str
-    changed: bool
     rules_applied: List[CaseCorrectionRule]
     exceptions_used: List[CaseException]
     changed: bool
@@ -211,9 +210,9 @@ class CaseCorrector:
         result = CaseCorrectionResult(
             original=original_text,
             corrected=corrected_text,
-            changed=changed,
             rules_applied=rules_applied,
-            exceptions_used=exceptions_used
+            exceptions_used=exceptions_used,
+            changed=changed
         )
         
         print(f"🔤 DEBUG - correct_text_case RÉSULTAT FINAL:")
@@ -346,13 +345,12 @@ class CaseCorrector:
             honest_logger.info(f"✅ Prépositions gérées: '{step_text}' → '{result_text}'")
         rules_applied.append(CaseCorrectionRule.HANDLE_PREPOSITIONS)
         
-        # Protection des abréviations (seulement pour les albums et artistes, pas les titres normaux)
-        if text_type != "title":
-            step_text = result_text
-            result_text = self._protect_abbreviations(result_text)
-            if result_text != step_text:
-                honest_logger.info(f"✅ Abréviations protégées: '{step_text}' → '{result_text}'")
-            rules_applied.append(CaseCorrectionRule.PROTECT_ABBREVIATIONS)
+        # Protection des abréviations
+        step_text = result_text
+        result_text = self._protect_abbreviations(result_text)
+        if result_text != step_text:
+            honest_logger.info(f"✅ Abréviations protégées: '{step_text}' → '{result_text}'")
+        rules_applied.append(CaseCorrectionRule.PROTECT_ABBREVIATIONS)
         
         # RÈGLE 12 : Protection artiste dans album (si applicable)
         if text_type == "album" and artist_name:
@@ -378,73 +376,8 @@ class CaseCorrector:
             return text
         
         original = text
-        
-        # Détection spéciale du format "sample title from [Titre]" 
-        # Pattern pour capturer : "sample title from TITRE"
-        sample_pattern = r'^(sample title from\s+)(.+)$'
-        match = re.match(sample_pattern, text, re.IGNORECASE)
-        
-        if match:
-            prefix = match.group(1)  # "sample title from "
-            title_part = match.group(2)   # "01 - Drowned DJ run MC" ou "Drowned DJ run MC"
-            
-            print(f"🔤 DEBUG - Format 'sample title from' détecté:")
-            print(f"🔤 DEBUG -   Prefix: '{prefix}'")
-            print(f"🔤 DEBUG -   Title part: '{title_part}'")
-            
-            # Appliquer sentence case sur le prefix
-            prefix_corrected = prefix[0].upper() + prefix[1:].lower() if len(prefix) > 1 else prefix.upper()
-            
-            # Vérifier si title_part contient un format "N° - Title"
-            track_pattern = r'^(\d{1,2}\s*-\s*)(.+)$'
-            track_match = re.match(track_pattern, title_part)
-            
-            if track_match:
-                track_num = track_match.group(1)  # "01 - "
-                actual_title = track_match.group(2)  # "Drowned DJ run MC"
-                
-                print(f"🔤 DEBUG - Sous-format 'N° - Title' détecté dans title_part:")
-                print(f"🔤 DEBUG -   Track num: '{track_num}'")
-                print(f"🔤 DEBUG -   Actual title: '{actual_title}'")
-                
-                # Appliquer sentence case sur le titre réel (première lettre majuscule, reste minuscule)
-                title_corrected = actual_title[0].upper() + actual_title[1:].lower() if len(actual_title) > 1 else actual_title.upper()
-                title_part_corrected = track_num + title_corrected
-            else:
-                # Pas de numéro de piste, juste un titre (première lettre majuscule, reste minuscule)
-                title_part_corrected = title_part[0].upper() + title_part[1:].lower() if len(title_part) > 1 else title_part.upper()
-            
-            result = prefix_corrected + title_part_corrected
-            print(f"🔤 DEBUG - Correction 'sample title from': '{prefix}' + '{title_part}' → '{prefix_corrected}' + '{title_part_corrected}'")
-        else:
-            # Détection du format "N° - Title" (ex: "01 - Drowned DJ run MC")
-            track_pattern = r'^(.*?)(\d{1,2}\s*-\s*)(.+)$'
-            track_match = re.match(track_pattern, text)
-            
-            if track_match:
-                prefix = track_match.group(1)  # ""
-                track_num = track_match.group(2)  # "01 - "
-                title = track_match.group(3)  # "Drowned DJ run MC"
-                
-                print(f"🔤 DEBUG - Format 'N° - Title' détecté:")
-                print(f"🔤 DEBUG -   Prefix: '{prefix}'")
-                print(f"🔤 DEBUG -   Track: '{track_num}'") 
-                print(f"🔤 DEBUG -   Title: '{title}'")
-                
-                # Appliquer sentence case sur le prefix ET le titre (première lettre majuscule, reste minuscule)
-                if prefix:
-                    prefix_corrected = prefix[0].upper() + prefix[1:].lower() if len(prefix) > 1 else prefix.upper()
-                else:
-                    prefix_corrected = ""
-                    
-                title_corrected = title[0].upper() + title[1:].lower() if len(title) > 1 else title.upper()
-                
-                result = prefix_corrected + track_num + title_corrected
-                print(f"🔤 DEBUG - Correction format piste: '{prefix}' + '{track_num}' + '{title}' → '{prefix_corrected}' + '{track_num}' + '{title_corrected}'")
-            else:
-                # Sentence case classique pour textes sans format spécial (première lettre majuscule, reste minuscule)
-                result = text[0].upper() + text[1:].lower() if len(text) > 1 else text.upper()
-        
+        # Première lettre en majuscule, le reste en minuscule
+        result = text[0].upper() + text[1:].lower() if len(text) > 1 else text.upper()
         print(f"🔤 DEBUG - _apply_sentence_case: '{original}' → '{result}'")
         return result
     
@@ -462,10 +395,6 @@ class CaseCorrector:
     
     def _handle_prepositions(self, text: str) -> str:
         """Gère les prépositions (minuscules sauf en début)."""
-        # EXCEPTION: Ne pas traiter les prépositions dans les titres "Sample title from [Title]"
-        if text.startswith('Sample title from '):
-            return text
-            
         words = text.split()
         for i, word in enumerate(words):
             # Ne pas traiter le premier mot
@@ -479,10 +408,6 @@ class CaseCorrector:
     
     def _protect_abbreviations(self, text: str) -> str:
         """Protège les abréviations connues, mais pas les prépositions."""
-        # EXCEPTION: Ne pas traiter les abréviations dans les titres "Sample title from [Title]"
-        if text.startswith('Sample title from '):
-            return text
-            
         words = text.split()
         for i, word in enumerate(words):
             # Extraire le mot sans ponctuation pour comparaison
@@ -536,46 +461,24 @@ class CaseCorrector:
     
     def _correct_file_case(self, mp3_file: str, artist_name: str = None) -> Dict[str, CaseCorrectionResult]:
         """Corrige la casse des métadonnées d'un fichier."""
-        try:
-            from mutagen.id3 import ID3
-            
-            # Lecture des vraies métadonnées
-            audio = ID3(mp3_file)
-            results = {}
-            
-            # Lecture des champs métadonnées réels
-            metadata_fields = {
-                'TIT2': str(audio.get('TIT2', [''])[0]) if audio.get('TIT2') else '',
-                'TALB': str(audio.get('TALB', [''])[0]) if audio.get('TALB') else '',
-                'TPE1': str(audio.get('TPE1', [''])[0]) if audio.get('TPE1') else ''
-            }
-            
-            # Correction de chaque champ
-            modifications_made = False
-            for field_name, field_value in metadata_fields.items():
-                if field_value:
-                    text_type = self._get_text_type_from_field(field_name)
-                    result = self.correct_text_case(field_value, text_type, artist_name)
-                    results[field_name] = result
-                    
-                    # Si changement, appliquer à la métadonnée
-                    if result.changed:
-                        from mutagen.id3 import TIT2, TALB, TPE1
-                        tag_class = {'TIT2': TIT2, 'TALB': TALB, 'TPE1': TPE1}[field_name]
-                        audio[field_name] = tag_class(encoding=3, text=result.corrected)
-                        modifications_made = True
-                        self.logger.info(f"🔧 Métadonnée modifiée: {field_name}: '{field_value}' → '{result.corrected}'")
-            
-            # Sauvegarder si des modifications ont été faites
-            if modifications_made:
-                audio.save()
-                self.logger.success(f"✅ Métadonnées sauvegardées: {mp3_file}")
-            
-            return results
-            
-        except Exception as e:
-            self.logger.error(f"❌ Erreur correction métadonnées {mp3_file}: {e}")
-            return {}
+        # Placeholder pour l'intégration avec mutagen
+        # En réalité, on lirait et modifierait les tags ID3
+        results = {}
+        
+        # Simulation des champs métadonnées
+        metadata_fields = {
+            'TIT2': f"sample title from {Path(mp3_file).stem}",
+            'TALB': f"sample album name",
+            'TPE1': f"sample artist name"
+        }
+        
+        for field_name, field_value in metadata_fields.items():
+            if field_value:
+                text_type = self._get_text_type_from_field(field_name)
+                result = self.correct_text_case(field_value, text_type, artist_name)
+                results[field_name] = result
+        
+        return results
     
     def _get_text_type_from_field(self, field_name: str) -> str:
         """Détermine le type de texte selon le champ métadonnée."""
@@ -683,32 +586,20 @@ class CaseCorrector:
             results = self.correct_album_case(album_path)
             print(f"🔤 DEBUG - Résultats correct_album_case: {len(results)} fichiers")
             
-            for file, file_results in results.items():
+            for file, result in results.items():
                 print(f"🔤 DEBUG - Fichier {file}:")
-                for field, result in file_results.items():
-                    print(f"   {field}: '{result.original}' → '{result.corrected}'")
-                    print(f"   Changé: {result.changed}")
+                print(f"   Original: '{result.original}'")
+                print(f"   Corrigé: '{result.corrected}'")
+                print(f"   Changé: {result.corrected != result.original}")
             
-            # Vérification du succès : au moins un changement dans n'importe quel champ
-            success = len(results) > 0
-            has_changes = False
-            for file_results in results.values():
-                for result in file_results.values():
-                    if result.changed:
-                        has_changes = True
-                        break
-                if has_changes:
-                    break
+            success = len(results) > 0 and all(result.corrected != result.original for result in results.values())
             
             if success:
                 self.logger.info(f"Correction de casse réussie pour : {album_path}")
-                if has_changes:
-                    print(f"🔤 DEBUG - Correction réussie avec changements")
-                else:
-                    print(f"🔤 DEBUG - Correction réussie sans changements nécessaires")
+                print(f"🔤 DEBUG - Correction réussie")
             else:
-                self.logger.warning(f"Aucun fichier trouvé pour : {album_path}")
-                print(f"🔤 DEBUG - Aucun fichier trouvé")
+                self.logger.warning(f"Aucune correction nécessaire pour : {album_path}")
+                print(f"🔤 DEBUG - Aucune correction nécessaire")
             
             return True  # Toujours retourner True même si aucune correction n'était nécessaire
             
