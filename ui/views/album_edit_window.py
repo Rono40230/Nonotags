@@ -15,7 +15,6 @@ from mutagen.flac import FLAC
 from services.audio_player import AudioPlayer, PlayerState
 from services.cover_search import CoverSearchService
 
-
 class AlbumEditWindow(Gtk.Window):
     """Fenêtre d'édition conforme au cahier des charges - 4 blocs"""
     
@@ -320,7 +319,7 @@ class AlbumEditWindow(Gtk.Window):
         
         # Utiliser album_data si fourni, sinon self.album_data
         current_album = album_data or self.album_data
-        album_title = current_album.get('title', 'Album Inconnu')
+        album_title = current_album.get('album', 'Album Inconnu')  # ✅ FIX: 'album' au lieu de 'title'
         album_artist = current_album.get('artist', 'Artiste Inconnu')
             
         audio_files = []

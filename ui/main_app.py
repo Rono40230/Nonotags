@@ -14,7 +14,6 @@ from ui.components.album_card import AlbumCard
 from ui.processing_orchestrator import ProcessingOrchestrator, ProcessingState, ProcessingStep
 from ui.views.exceptions_window import ExceptionsWindow
 
-
 class NonotagsApp:
     """Application Nonotags avec séquence de démarrage"""
     
@@ -55,13 +54,15 @@ class NonotagsApp:
     def _scan_folder(self, folder_path):
         """Scanne un dossier et ajoute les albums trouvés"""
         try:
+
             # Stocker le dossier actuel pour rescans futurs
             self.current_folder = folder_path
             
             from services.music_scanner import MusicScanner
             scanner = MusicScanner()
+
             albums = scanner.scan_directory(folder_path)
-            
+
             # MODIFICATION: Ne plus effacer les albums existants
             # Initialiser les listes si elles n'existent pas
             if not hasattr(self, 'loaded_albums') or self.loaded_albums is None:
@@ -81,6 +82,7 @@ class NonotagsApp:
                     
             # Ajouter les nouveaux albums sans dupliquer
             new_albums_added = []
+
             for album in albums:
                 # Vérifier si l'album n'est pas déjà dans la liste (éviter les doublons)
                 album_path = album.get('folder_path') or album.get('path', '')
@@ -90,18 +92,19 @@ class NonotagsApp:
                 )
                 
                 if not already_exists:
+
                     card = AlbumCard(album, self)
                     self.albums_grid.add(card)
                     self.loaded_albums.append(album)
                     new_albums_added.append(album)
-                    
+
             # Ajouter SEULEMENT les nouveaux albums à l'orchestrator
             if new_albums_added:
                 self.orchestrator.add_albums(new_albums_added)
-                
+
             self.albums_grid.show_all()
             self.update_cards_per_line()
-            
+
             # ✅ TRAITEMENT AUTOMATIQUE : Démarrer immédiatement le traitement
             if self.orchestrator.start_processing():
                 pass  # Traitement automatique démarré
@@ -227,8 +230,7 @@ class NonotagsApp:
     
     def on_import_clicked(self, button):
         """Import de fichiers/albums individuels"""
-        print("📂 Import de fichiers/albums")
-        
+
         dialog = Gtk.FileChooserDialog(
             title="Importer des fichiers musicaux ou des albums",
             parent=self.main_window,
@@ -238,14 +240,16 @@ class NonotagsApp:
             "Annuler", Gtk.ResponseType.CANCEL,
             "Importer", Gtk.ResponseType.OK
         )
-        
+
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             folder = dialog.get_filename()
+
             dialog.destroy()
             # Utiliser la même fonction que pour le scan depuis la fenêtre de démarrage
             self._scan_folder(folder)
         else:
+
             dialog.destroy()
     
     def _update_albums_display(self, albums: List[Dict]):
@@ -424,10 +428,57 @@ class NonotagsApp:
     
     def on_album_processed(self, album, success):
         """Callback album traité"""
-        album_title = album.get('title', 'Sans titre')
+        album_title = album.get('album', 'Sans titre')
         status = "✅ Réussi" if success else "❌ Échec"
+        print(f"🔄 Album traité: {album_title} - {status}")
         
-        # TODO: Mettre à jour l'état de la carte d'album correspondante
+        # Mettre à jour la carte d'album correspondante
+        self._update_album_card_after_processing(album, success)
+    
+    def _update_album_card_after_processing(self, album, success):
+        """Met à jour la carte d'album après traitement"""
+        try:
+            original_folder_path = album.get('folder_path', '')
+            if not original_folder_path:
+                print("⚠️ Pas de folder_path dans les données album")
+                return
+            
+            # Trouver la carte correspondante dans la grille
+            for child in self.albums_grid.get_children():
+                if hasattr(child, 'get_child') and child.get_child():  # FlowBoxChild
+                    card = child.get_child()
+                    if hasattr(card, 'album_data'):
+                        card_folder_path = card.album_data.get('folder_path', '')
+                        
+                        if card_folder_path == original_folder_path:
+                            print(f"📝 Carte trouvée pour {original_folder_path}")
+                            
+                            # ✅ FIX: Mettre à jour directement avec les nouvelles données de l'album
+                            # L'orchestrateur a déjà mis à jour album['folder_path']
+                            card.album_data.update(album)
+                            if hasattr(card, '_update_display'):
+                                card._update_display()
+                            print(f"✅ Carte mise à jour avec les nouvelles données")
+                            
+                            break
+            
+        except Exception as e:
+            print(f"❌ Erreur mise à jour carte: {e}")
+    
+    def _same_music_files(self, old_path, new_path):
+        """Vérifie si deux dossiers contiennent les mêmes fichiers musicaux"""
+        try:
+            if not os.path.exists(new_path):
+                return False
+                
+            # Lister les fichiers MP3 dans les deux dossiers
+            old_files = [f for f in os.listdir(old_path) if f.lower().endswith('.mp3')] if os.path.exists(old_path) else []
+            new_files = [f for f in os.listdir(new_path) if f.lower().endswith('.mp3')]
+            
+            return len(old_files) == len(new_files) and len(new_files) > 0
+            
+        except Exception:
+            return False
     
     def on_processing_error(self, error_message):
         """Callback erreur de traitement"""

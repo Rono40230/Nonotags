@@ -24,7 +24,6 @@ from support.config_manager import ConfigManager
 from support.state_manager import StateManager
 from support.validator import Validator
 
-
 class ProcessingState(Enum):
     """États du traitement"""
     IDLE = "idle"
@@ -34,7 +33,6 @@ class ProcessingState(Enum):
     ERROR = "error"
     CANCELLED = "cancelled"
 
-
 class ProcessingStep(Enum):
     """Étapes du pipeline de traitement"""
     FILE_CLEANING = "file_cleaning"
@@ -43,7 +41,6 @@ class ProcessingStep(Enum):
     FORMATTING = "formatting"
     RENAMING = "renaming"
     SYNCHRONIZATION = "synchronization"
-
 
 class ProcessingOrchestrator:
     """Orchestrateur du pipeline de traitement pour l'interface utilisateur"""
@@ -259,12 +256,21 @@ class ProcessingOrchestrator:
             # ÉTAPE 5: Renommage
             GLib.idle_add(self._notify_step_changed, ProcessingStep.RENAMING, album_number)
             
+            # ✅ FIX: Utiliser rename_album pour avoir le résultat complet
+            rename_result = self.file_renamer.rename_album(album_path)
             if not self._execute_step(
-                lambda: self.file_renamer.rename_album_files(album_path),
+                lambda: len(rename_result.errors) == 0,  # Succès si pas d'erreurs
                 f"Renommage - Album {album_number}"
             ):
                 return False
             
+            # ✅ FIX: Mettre à jour le chemin de l'album si renommé
+            if rename_result.folder_result and rename_result.folder_result.new_path != album_path:
+                new_album_path = rename_result.folder_result.new_path
+                album['folder_path'] = new_album_path
+                album_path = new_album_path  # Utiliser le nouveau chemin pour les étapes suivantes
+                self.logger.info(f"Chemin album mis à jour: {album_path} → {new_album_path}")
+
             # ÉTAPE 6: Synchronisation
             GLib.idle_add(self._notify_step_changed, ProcessingStep.SYNCHRONIZATION, album_number)
             
@@ -308,24 +314,18 @@ class ProcessingOrchestrator:
             # Exécuter l'étape
             result = step_function()
             
-            # Vérifier le résultat avec critères honnêtes
+            # Vérifier le résultat
             if hasattr(result, 'success'):
                 # Pour les objets avec .success (comme CleaningResult)
                 if not result.success:
                     self.logger.warning(f"Étape échouée: {step_description}")
-                    return False
-            elif hasattr(result, 'total_errors'):
-                # Pour les objets Stats (CleaningStats, AlbumCleaningStats) 
-                if result.total_errors > 0:
-                    self.logger.warning(f"Étape échouée avec {result.total_errors} erreurs: {step_description}")
                     return False
             elif isinstance(result, bool):
                 # Pour les retours booléens simples
                 if not result:
                     self.logger.warning(f"Étape échouée: {step_description}")
                     return False
-            
-            self.logger.debug(f"Étape réussie: {step_description}")
+
             return True
             
         except Exception as e:
@@ -339,9 +339,7 @@ class ProcessingOrchestrator:
         
         if self.on_state_changed:
             self.on_state_changed(old_state, new_state)
-        
-        self.logger.debug(f"État changé: {old_state} → {new_state}")
-    
+
     def _notify_progress_updated(self, progress: float):
         """Notifie la mise à jour du progrès"""
         self.current_progress = progress

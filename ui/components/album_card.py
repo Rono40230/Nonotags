@@ -21,16 +21,6 @@ try:
 except ImportError:
     MUTAGEN_AVAILABLE = False
 
-# États visuels des cartes d'albums après traitement automatique
-CARD_STATES = {
-    'SUCCESS': ('✅', 'Traité avec succès', 'card-success'),
-    'ERROR_METADATA': ('🏷️', 'Erreur métadonnées', 'card-error-metadata'),
-    'ERROR_FILE': ('📁', 'Erreur fichiers', 'card-error-file'),
-    'ERROR_COVER': ('🖼️', 'Erreur pochette', 'card-error-cover'),
-    'ERROR_PROCESSING': ('⚠️', 'Erreur traitement', 'card-error-processing')
-}
-
-
 class AlbumCard(Gtk.Frame):
     """Widget représentant une carte d'album"""
     
@@ -38,8 +28,6 @@ class AlbumCard(Gtk.Frame):
         super().__init__()
         self.album_data = album_data
         self.parent_app = parent_app
-        self.current_state = 'SUCCESS'  # État par défaut après traitement automatique
-        self.status_label = None  # Label pour afficher l'état
         
         self.set_shadow_type(Gtk.ShadowType.OUT)
         self.get_style_context().add_class("album-card")
@@ -63,15 +51,9 @@ class AlbumCard(Gtk.Frame):
         # Forcer la taille du conteneur principal
         vbox.set_size_request(296, 476)  # 320-24 pour les marges
         
-        # Case de sélection et indicateur d'état en haut
+        # Case de sélection en haut à droite
         header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         header_box.set_halign(Gtk.Align.FILL)
-        
-        # Indicateur d'état à gauche
-        self.status_label = Gtk.Label()
-        self.status_label.set_halign(Gtk.Align.START)
-        self._update_status_display()
-        header_box.pack_start(self.status_label, False, False, 0)
         
         # Case de sélection à droite
         self.selection_checkbox = Gtk.CheckButton()
@@ -105,17 +87,11 @@ class AlbumCard(Gtk.Frame):
         artist_label.set_max_width_chars(25)
         info_box.pack_start(artist_label, False, False, 0)
         
-        # Ligne 2 : Année et titre de l'album (lecture directe du nom de dossier)
-        folder_path = album_data.get('folder_path', '')
+        # Ligne 2 : Titre = nom du dossier (SIMPLE)
+        folder_path = album_data.get('folder_path') or album_data.get('path')
+        album_title = os.path.basename(folder_path) if folder_path else album_data.get('album', 'Album Inconnu')
         
-        if folder_path and os.path.exists(folder_path):
-            # Lecture directe du nom du dossier depuis le filesystem
-            album_title = os.path.basename(folder_path)
-        else:
-            # Fallback sur les données d'album
-            album_title = album_data.get('title', 'Album Inconnu')
-        
-        # Année et titre de l'album
+        # Le titre = nom du dossier, point final
         year_title_text = album_title
         year_title_label = Gtk.Label()
         year_title_label.set_text(year_title_text)
@@ -283,40 +259,33 @@ class AlbumCard(Gtk.Frame):
     
     def _update_display(self):
         """Met à jour l'affichage de la carte après édition"""
-        # Récupérer les nouveaux labels
+        # Parcourir la hiérarchie pour trouver le label du titre
         for child in self.get_children():
             if isinstance(child, Gtk.Box):
-                for subchild in child.get_children():
-                    if isinstance(subchild, Gtk.Label):
-                        # Reconstruit le texte des labels avec les nouvelles données
-                        if "🎤" in subchild.get_text():  # Label artiste
-                            subchild.set_markup(f"<b>🎤 {self.album_data.get('artist', 'Artiste inconnu')}</b>")
-                        elif "📅" in subchild.get_text():  # Label année-titre
-                            print(f"🔄 UPDATE_DISPLAY appelée pour: {self.album_data.get('path', 'AUCUN_PATH')}")
-                            year = self.album_data.get('year', '')
-                            
-                            # LECTURE DIRECTE DU NOM DE DOSSIER (même logique que __init__)
-                            folder_path = self.album_data.get('path', '')
-                            print(f"🔍 UPDATE_DISPLAY - folder_path: {folder_path}")
-                            
-                            if folder_path and os.path.exists(folder_path):
-                                album = os.path.basename(folder_path)
-                                print(f"✅ UPDATE_DISPLAY - Titre du dossier: {album}")
-                            else:
-                                album = self.album_data.get('album', 'Album inconnu')
-                                print(f"❌ UPDATE_DISPLAY - Fallback album_data: {album}")
-                                
-                            year_text = f"{year} - " if year else ""
-                            final_text = f"📅 {year_text}{album}"
-                            print(f"📝 UPDATE_DISPLAY - Texte final: {final_text}")
-                            subchild.set_markup(f"<b>{final_text}</b>")
-                        elif "🎼" in subchild.get_text():  # Label genre
-                            subchild.set_markup(f"🎼 {self.album_data.get('genre', 'Genre inconnu')}")
-                        elif "🎵" in subchild.get_text():  # Label pistes
-                            tracks = self.album_data.get('tracks', 0)
-                            piste_text = "piste" if tracks <= 1 else "pistes"
-                            subchild.set_markup(f"🎵 {tracks} {piste_text}")
-                break
+                for box_child in child.get_children():
+                    if isinstance(box_child, Gtk.Box):  # Info box
+                        labels = [w for w in box_child.get_children() if isinstance(w, Gtk.Label)]
+                        if len(labels) >= 2:  # Artiste + Titre + ...
+                            title_label = labels[1]  # Le 2ème label = titre
+                            # SIMPLE : nouveau nom du dossier
+                            folder_path = self.album_data.get('folder_path') or self.album_data.get('path')
+                            new_title = os.path.basename(folder_path) if folder_path else self.album_data.get('album', 'Album Inconnu')
+                            title_label.set_text(new_title)
+                            print(f"✅ Titre mis à jour: {new_title}")
+                            return
+    
+    def update_folder_path(self, new_folder_path: str):
+        """Met à jour le chemin du dossier après renommage et rafraîchit l'affichage"""
+        old_path = self.album_data.get('folder_path', '')
+        print(f"🔄 Mise à jour chemin dossier: {old_path} → {new_folder_path}")
+        
+        # Mettre à jour les données de l'album
+        self.album_data['folder_path'] = new_folder_path
+        
+        # Rafraîchir l'affichage pour montrer le nouveau nom
+        self._update_display()
+        
+        print(f"✅ Carte mise à jour avec nouveau chemin: {new_folder_path}")
     
     def on_selection_toggled(self, checkbox):
         """Gère la sélection/déselection de l'album"""
@@ -326,42 +295,6 @@ class AlbumCard(Gtk.Frame):
             print(f"✅ Album sélectionné: {album_title}")
         else:
             print(f"❌ Album désélectionné: {album_title}")
-
-    def set_state(self, state: str):
-        """Change l'état de la carte et met à jour l'affichage"""
-        if state in CARD_STATES:
-            old_state = self.current_state
-            self.current_state = state
-            
-            # Supprimer l'ancienne classe CSS
-            if old_state in CARD_STATES:
-                self.get_style_context().remove_class(CARD_STATES[old_state][2])
-            
-            # Ajouter la nouvelle classe CSS
-            self.get_style_context().add_class(CARD_STATES[state][2])
-            
-            # Mettre à jour l'affichage du statut
-            self._update_status_display()
-            
-            print(f"🔄 Carte {self.album_data.get('album', 'Inconnu')} : {old_state} → {state}")
-
-    def get_state(self) -> str:
-        """Retourne l'état actuel de la carte"""
-        return self.current_state
-
-    def _update_status_display(self):
-        """Met à jour l'affichage de l'indicateur d'état"""
-        if self.status_label and self.current_state in CARD_STATES:
-            emoji, text, css_class = CARD_STATES[self.current_state]
-            self.status_label.set_markup(f'<span font="12">{emoji}</span>')
-            self.status_label.set_tooltip_text(text)
-            
-            # Supprimer les anciennes classes d'état
-            for state_info in CARD_STATES.values():
-                self.status_label.get_style_context().remove_class(state_info[2])
-            
-            # Ajouter la classe CSS correspondante
-            self.status_label.get_style_context().add_class(css_class)
 
     def _create_cover_widget(self):
         """Crée le widget de pochette - vraie image ou placeholder"""

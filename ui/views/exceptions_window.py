@@ -12,7 +12,6 @@ from database.models import CaseExceptionModel
 from support.logger import AppLogger
 from support.validator import Validator
 
-
 class ExceptionsWindow(Gtk.Window):
     """Fenêtre de gestion des exceptions de casse"""
     
@@ -155,9 +154,7 @@ class ExceptionsWindow(Gtk.Window):
         desc_label = Gtk.Label("Gérez les mots qui ne doivent pas suivre les règles de casse automatiques")
         desc_label.set_halign(Gtk.Align.START)
         title_box.pack_start(desc_label, False, False, 0)
-        
 
-    
     def _create_toolbar(self, parent):
         """Crée la barre d'outils"""
         toolbar_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
@@ -441,7 +438,6 @@ class ExceptionsWindow(Gtk.Window):
         
         self.logger.info("✅ DEBUG - Validation réussie")
         return True
-    
 
     # === CALLBACKS ===
     
