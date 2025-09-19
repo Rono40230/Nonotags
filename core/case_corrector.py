@@ -314,7 +314,9 @@ class CaseCorrector:
         if text_type == "album" and artist_name:
             step_text = result_text
             result_text = self._protect_artist_in_album(result_text, artist_name)
-            rules_applied.append(CaseCorrectionRule.PROTECT_ARTIST_IN_ALBUM)
+            # Ajouter la règle seulement si elle a effectué un changement
+            if result_text != step_text:
+                rules_applied.append(CaseCorrectionRule.PROTECT_ARTIST_IN_ALBUM)
         
         return result_text, rules_applied
     
@@ -597,6 +599,43 @@ class CaseCorrector:
         except Exception as e:
             self.logger.error(f"Erreur sauvegarde historique : {e}")
     
+    def _extract_artist_name_from_album(self, album_path: str) -> str:
+        """
+        Extrait le nom de l'artiste depuis les métadonnées du premier fichier MP3 de l'album.
+        
+        Args:
+            album_path: Chemin vers le dossier de l'album
+            
+        Returns:
+            str: Nom de l'artiste ou None si non trouvé
+        """
+        try:
+            mp3_files = self._find_mp3_files(album_path)
+            if not mp3_files:
+                return None
+                
+            # Prendre le premier fichier MP3 pour extraire l'artiste
+            first_mp3 = mp3_files[0]
+            
+            try:
+                from mutagen.id3 import ID3
+                audio = ID3(first_mp3)
+                
+                # Essayer TPE1 (artiste principal) puis TPE2 (artiste de l'album)
+                if 'TPE1' in audio and audio['TPE1'].text:
+                    return str(audio['TPE1'].text[0]).strip()
+                elif 'TPE2' in audio and audio['TPE2'].text:
+                    return str(audio['TPE2'].text[0]).strip()
+                    
+            except Exception as e:
+                self.logger.debug(f"Impossible de lire les métadonnées de {first_mp3}: {e}")
+                
+            return None
+            
+        except Exception as e:
+            self.logger.debug(f"Erreur extraction artist_name depuis {album_path}: {e}")
+            return None
+
     def correct_album_metadata(self, album_path: str) -> bool:
         """
         Méthode de compatibilité pour processing_orchestrator.py.
@@ -609,7 +648,9 @@ class CaseCorrector:
             bool: True si la correction a réussi, False sinon
         """
         try:
-            results = self.correct_album_case(album_path)
+            # ✅ FIX: Extraire l'artist_name depuis les métadonnées pour la règle PROTECT_ARTIST_IN_ALBUM
+            artist_name = self._extract_artist_name_from_album(album_path)
+            results = self.correct_album_case(album_path, artist_name)
             
             # Vérification du succès : au moins un changement dans n'importe quel champ
             success = len(results) > 0

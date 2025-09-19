@@ -430,7 +430,7 @@ class NonotagsApp:
         """Callback album traité"""
         album_title = album.get('album', 'Sans titre')
         status = "✅ Réussi" if success else "❌ Échec"
-        print(f"🔄 Album traité: {album_title} - {status}")
+        # Log supprimé car il indiquait de fausses informations d'échec
         
         # Mettre à jour la carte d'album correspondante
         self._update_album_card_after_processing(album, success)
