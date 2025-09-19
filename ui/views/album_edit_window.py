@@ -321,6 +321,12 @@ class AlbumEditWindow(Gtk.Window):
         current_album = album_data or self.album_data
         album_title = current_album.get('album', 'Album Inconnu')  # ✅ FIX: 'album' au lieu de 'title'
         album_artist = current_album.get('artist', 'Artiste Inconnu')
+        
+        # ✅ FIX: Réinitialiser self.tracks pour le premier album seulement
+        if not hasattr(self, '_tracks_initialized'):
+            self.tracks = []
+            self.current_track_index = 0
+            self._tracks_initialized = True
             
         audio_files = []
         for file in os.listdir(folder_path):
@@ -361,6 +367,17 @@ class AlbumEditWindow(Gtk.Window):
                     metadata.get('genre', ''),                  # Genre
                     file_path                                    # Path (caché)
                 ])
+                
+                # ✅ FIX: Ajouter à self.tracks pour le lecteur audio
+                track_data = {
+                    'file_path': file_path,
+                    'title': metadata.get('title', display_filename),
+                    'artist': metadata.get('artist', ''),
+                    'album': album_title,
+                    'track_num': track_num,
+                    'display_filename': display_filename
+                }
+                self.tracks.append(track_data)
                 
             except Exception as e:
                 print(f"Erreur lecture {file_path}: {e}")
@@ -515,23 +532,44 @@ class AlbumEditWindow(Gtk.Window):
         iter = self.metadata_store.get_iter(path)
         self.metadata_store.set_value(iter, 2, new_text)  # Colonne Titre
     
-    def on_row_activated(self, treeview, path, column):
-        """Double-clic sur une ligne = lecture du fichier"""
+    def on_row_activated(self, tree_view, path, column):
+        """Double-clic sur une ligne du tableau"""
         iter = self.metadata_store.get_iter(path)
         file_path = self.metadata_store.get_value(iter, 9)  # Path caché
-        if column.get_title() == "Fichier":  # Double-clic sur nom fichier
-            self._play_audio_file(file_path)
+        
+        # ✅ FIX: Lancer la lecture directement avec le file_path
+        if file_path and os.path.exists(file_path):
+            # Trouver l'index dans self.tracks pour synchroniser
+            for i, track in enumerate(self.tracks):
+                if track.get('file_path') == file_path:
+                    self.current_track_index = i
+                    break
+            
+            # Lancer la lecture
+            if self.audio_player.load_file(file_path):
+                self.audio_player.play()
+                self._start_position_timer()
+                print(f"🎵 Lecture démarrée: {os.path.basename(file_path)}")
+            else:
+                print(f"❌ Erreur chargement: {file_path}")
     
     # === CALLBACKS LECTEUR AUDIO ===
     def on_play(self, button):
         """Bouton play/pause"""
         if self.audio_player.is_playing():
             self.audio_player.pause()
+            self.play_btn.set_label("▶️")
         elif self.audio_player.is_paused():
             self.audio_player.play()
+            self.play_btn.set_label("⏸️")
         else:
-            # Jouer le premier fichier ou celui sélectionné
-            self._play_current_track()
+            # ✅ FIX: Jouer la première piste si aucune n'est chargée
+            if self.tracks:
+                if not hasattr(self, 'current_track_index') or self.current_track_index >= len(self.tracks):
+                    self.current_track_index = 0
+                self._play_current_track()
+            else:
+                print("❌ Aucune piste disponible")
     
     def on_previous(self, button):
         """Piste précédente"""
@@ -575,6 +613,7 @@ class AlbumEditWindow(Gtk.Window):
     def _play_current_track(self):
         """Joue la piste actuelle"""
         if not self.tracks or self.current_track_index >= len(self.tracks):
+            print("❌ Aucune piste à jouer")
             return
         
         track = self.tracks[self.current_track_index]
@@ -583,34 +622,40 @@ class AlbumEditWindow(Gtk.Window):
         if file_path and os.path.exists(file_path):
             if self.audio_player.load_file(file_path):
                 self.audio_player.play()
-                self._start_position_timer()
+                print(f"🎵 Lecture: {track.get('display_filename', os.path.basename(file_path))}")
             else:
-                print(f"Erreur chargement: {file_path}")
+                print(f"❌ Erreur chargement: {file_path}")
+        else:
+            print(f"❌ Fichier introuvable: {file_path}")
     
     def _start_position_timer(self):
-        """Démarre le timer de mise à jour de position"""
-        if self.position_timer:
+        """Démarre le timer de mise à jour de la position"""
+        if hasattr(self, 'position_timer') and self.position_timer:
             GLib.source_remove(self.position_timer)
         
-        self.position_timer = GLib.timeout_add(100, self._update_position)
+        # ✅ FIX: Ajouter import GLib si manquant
+        from gi.repository import GLib
+        self.position_timer = GLib.timeout_add(500, self._update_position)  # Toutes les 500ms
     
     def _update_position(self):
         """Met à jour la position du lecteur"""
         if not self.audio_player.is_playing():
-            return False
+            return False  # Arrêter le timer
         
         position = self.audio_player.get_position()
         duration = self.audio_player.get_duration()
         
         if duration > 0:
-            percentage = (position / duration) * 100
-            self.progress_scale.set_value(percentage)
+            progress = (position / duration) * 100
+            self.progress_scale.set_value(progress)
             
-            # Mise à jour des labels de temps
-            self.time_start_label.set_text(self._format_time(position))
-            self.time_end_label.set_text(self._format_time(duration))
+            # Mettre à jour les labels de temps
+            pos_str = self._format_time(position)
+            dur_str = self._format_time(duration)
+            self.time_start_label.set_text(pos_str)
+            self.time_end_label.set_text(dur_str)
         
-        return True
+        return True  # Continuer le timer
     
     def _format_time(self, seconds):
         """Formate le temps en mm:ss"""
@@ -622,8 +667,14 @@ class AlbumEditWindow(Gtk.Window):
         """Callback changement d'état audio"""
         if state == PlayerState.PLAYING:
             self.play_btn.set_label("⏸️")
+            if not hasattr(self, 'position_timer') or not self.position_timer:
+                self._start_position_timer()
         else:
             self.play_btn.set_label("▶️")
+            if hasattr(self, 'position_timer') and self.position_timer:
+                from gi.repository import GLib
+                GLib.source_remove(self.position_timer)
+                self.position_timer = None
     
     def on_audio_position_changed(self, position):
         """Callback changement de position"""
