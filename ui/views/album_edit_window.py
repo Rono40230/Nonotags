@@ -6,7 +6,7 @@ Fenêtre d'édition conforme au cahier des charges avec 4 blocs
 import gi
 gi.require_version('Gtk', '3.0')
 
-from gi.repository import Gtk, GLib, GdkPixbuf
+from gi.repository import Gtk, GLib, GdkPixbuf, Pango
 import os
 from mutagen.id3 import ID3, TIT2, TPE1, TALB, TDRC, TCON
 from mutagen.mp3 import MP3
@@ -730,7 +730,9 @@ class AlbumEditWindow(Gtk.Window):
             transient_for=self,
             flags=0
         )
-        dialog.set_default_size(600, 400)
+        # Même taille que la fenêtre d'édition
+        dialog.set_default_size(1200, 800)
+        dialog.set_resizable(True)
         
         # Boutons
         dialog.add_button("Annuler", Gtk.ResponseType.CANCEL)
@@ -738,11 +740,6 @@ class AlbumEditWindow(Gtk.Window):
         
         # Contenu
         content_area = dialog.get_content_area()
-        
-        # Label de recherche
-        search_label = Gtk.Label(f"Recherche pour: {artist} - {album}")
-        search_label.set_margin_top(10)
-        content_area.pack_start(search_label, False, False, 0)
         
         # Zone de chargement/résultats
         spinner = Gtk.Spinner()
@@ -771,11 +768,265 @@ class AlbumEditWindow(Gtk.Window):
         # Attendre la réponse
         response = dialog.run()
         
+        print(f"🎯 Dialog response: {response}")
+        print(f"🎯 Response OK? {response == Gtk.ResponseType.OK}")
+        
         if response == Gtk.ResponseType.OK:
-            # TODO: Implémenter la sélection de pochette
-            pass
+            # Appliquer la pochette sélectionnée
+            print(f"🎯 hasattr selected_cover: {hasattr(self, 'selected_cover')}")
+            if hasattr(self, 'selected_cover'):
+                print(f"🎯 selected_cover value: {self.selected_cover}")
+            
+            if hasattr(self, 'selected_cover') and self.selected_cover:
+                print(f"🎯 APPEL _apply_selected_cover avec: {self.selected_cover}")
+                self._apply_selected_cover(self.selected_cover)
+            else:
+                print(f"🎯 Aucune pochette sélectionnée ou selected_cover manquant")
+                # Montrer un message si aucune pochette sélectionnée
+                msg_dialog = Gtk.MessageDialog(
+                    transient_for=self,
+                    flags=0,
+                    message_type=Gtk.MessageType.WARNING,
+                    buttons=Gtk.ButtonsType.OK,
+                    text="Aucune pochette sélectionnée"
+                )
+                msg_dialog.run()
+                msg_dialog.destroy()
         
         dialog.destroy()
+    
+    def _apply_selected_cover(self, cover_result):
+        """Applique la pochette sélectionnée"""
+        print(f"🎯 DÉBUT _apply_selected_cover - URL: {cover_result.url}")
+        print(f"🎯 Nombre de tracks: {len(self.tracks) if hasattr(self, 'tracks') else 'AUCUN'}")
+        
+        try:
+            import requests
+            from PIL import Image as PILImage
+            import io
+            
+            # Télécharger l'image complète
+            response = requests.get(cover_result.url, timeout=15)
+            response.raise_for_status()
+            
+            # Sauver dans le dossier de l'album et appliquer aux tags
+            if self.tracks:
+                # Utiliser le premier track pour déterminer le dossier de l'album
+                album_folder = os.path.dirname(self.tracks[0]['file_path'])
+                cover_path = os.path.join(album_folder, 'cover.jpg')
+                
+                # Traiter l'image avec PIL
+                pil_image = PILImage.open(io.BytesIO(response.content))
+                
+                # Convertir en RGB si nécessaire
+                if pil_image.mode != 'RGB':
+                    pil_image = pil_image.convert('RGB')
+                
+                # Redimensionner si trop grande (max 1000x1000)
+                if pil_image.width > 1000 or pil_image.height > 1000:
+                    pil_image.thumbnail((1000, 1000), PILImage.Resampling.LANCZOS)
+                
+                # Sauver le fichier cover.jpg
+                pil_image.save(cover_path, 'JPEG', quality=90)
+                print(f"🎯 Fichier cover.jpg sauvé: {cover_path}")
+                
+                # Appliquer la pochette aux tags de tous les morceaux de l'album
+                print(f"🎯 AVANT appel _embed_cover_to_tracks")
+                self._embed_cover_to_tracks(cover_path)
+                print(f"🎯 APRÈS appel _embed_cover_to_tracks")
+                
+                # Mettre à jour l'affichage de la pochette dans la fenêtre d'édition
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(cover_path, 250, 250, True)
+                self.cover_image.set_from_pixbuf(pixbuf)
+                
+                # Mettre à jour la carte dans la fenêtre principale
+                if self.parent_card and hasattr(self.parent_card, 'refresh_cover'):
+                    def update_card_cover():
+                        try:
+                            self.parent_card.refresh_cover()
+                            print(f"🔄 Carte rafraîchie avec nouvelle pochette")
+                        except Exception as e:
+                            print(f"❌ Erreur rafraîchissement carte: {e}")
+                    
+                    GLib.idle_add(update_card_cover)
+                
+                print(f"✅ Pochette sauvée: {cover_path}")
+                print(f"✅ Pochette appliquée aux tags de {len(self.tracks)} morceaux")
+                print(f"✅ Carte parent mise à jour")
+            else:
+                print("⚠️ Aucun morceau chargé pour appliquer la pochette")
+                
+        except Exception as e:
+            print(f"❌ Erreur application pochette: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _embed_cover_to_tracks(self, cover_path):
+        """Intègre la pochette dans les tags de tous les morceaux de l'album"""
+        if not os.path.exists(cover_path):
+            print(f"❌ Fichier de pochette introuvable: {cover_path}")
+            return
+        
+        print(f"🎵 Début application pochette aux tags: {len(self.tracks)} morceaux")
+        success_count = 0
+        error_count = 0
+        
+        for track in self.tracks:
+            try:
+                file_path = track['file_path']
+                print(f"🔄 Traitement: {os.path.basename(file_path)}")
+                
+                if not os.path.exists(file_path):
+                    print(f"❌ Fichier morceau introuvable: {file_path}")
+                    error_count += 1
+                    continue
+                
+                # Lire les données de l'image
+                with open(cover_path, 'rb') as img_file:
+                    cover_data = img_file.read()
+                
+                print(f"📸 Image lue: {len(cover_data)} bytes")
+                
+                # Appliquer selon le format de fichier
+                if file_path.lower().endswith('.mp3'):
+                    print(f"🎵 Application MP3: {file_path}")
+                    self._embed_cover_mp3(file_path, cover_data)
+                    # Vérifier que la pochette a été appliquée
+                    self._verify_cover_embedded(file_path, 'mp3')
+                elif file_path.lower().endswith('.flac'):
+                    print(f"🎵 Application FLAC: {file_path}")
+                    self._embed_cover_flac(file_path, cover_data)
+                    # Vérifier que la pochette a été appliquée
+                    self._verify_cover_embedded(file_path, 'flac')
+                elif file_path.lower().endswith(('.m4a', '.mp4')):
+                    print(f"🎵 Application MP4: {file_path}")
+                    self._embed_cover_mp4(file_path, cover_data)
+                    # Vérifier que la pochette a été appliquée
+                    self._verify_cover_embedded(file_path, 'mp4')
+                else:
+                    print(f"⚠️ Format non supporté pour le tag cover: {file_path}")
+                    error_count += 1
+                    continue
+                
+                success_count += 1
+                print(f"✅ Pochette appliquée: {os.path.basename(file_path)}")
+                
+            except Exception as e:
+                print(f"❌ Erreur application pochette sur {track['file_path']}: {e}")
+                import traceback
+                traceback.print_exc()
+                error_count += 1
+        
+        print(f"🎵 Pochette appliquée avec succès sur {success_count}/{len(self.tracks)} morceaux")
+        if error_count > 0:
+            print(f"⚠️ {error_count} erreurs lors de l'application")
+    
+    def _embed_cover_mp3(self, file_path, cover_data):
+        """Intègre la pochette dans un fichier MP3"""
+        from mutagen.id3 import ID3, APIC, ID3NoHeaderError
+        
+        try:
+            print(f"🔄 Chargement MP3: {file_path}")
+            audio = ID3(file_path)
+        except ID3NoHeaderError:
+            print(f"🔄 Création nouveau header ID3: {file_path}")
+            audio = ID3()
+        
+        # SUPPRIMER TOUTES LES ANCIENNES POCHETTES D'ABORD
+        apic_keys = [key for key in audio.keys() if key.startswith('APIC')]
+        for key in apic_keys:
+            print(f"🗑️ Suppression ancienne pochette: {key}")
+            del audio[key]
+        
+        # Ajouter la nouvelle pochette
+        audio['APIC'] = APIC(
+            encoding=3,  # UTF-8
+            mime='image/jpeg',
+            type=3,  # Front cover
+            desc='Cover',
+            data=cover_data
+        )
+        
+        print(f"💾 Sauvegarde tags MP3: {file_path}")
+        audio.save(file_path)
+    
+    def _embed_cover_flac(self, file_path, cover_data):
+        """Intègre la pochette dans un fichier FLAC"""
+        from mutagen.flac import FLAC, Picture
+        
+        print(f"🔄 Chargement FLAC: {file_path}")
+        audio = FLAC(file_path)
+        
+        # SUPPRIMER TOUTES LES ANCIENNES POCHETTES D'ABORD
+        existing_pictures = len(audio.pictures)
+        print(f"🗑️ Suppression de {existing_pictures} anciennes pochettes FLAC")
+        audio.clear_pictures()
+        
+        # Créer l'objet Picture
+        picture = Picture()
+        picture.data = cover_data
+        picture.type = 3  # Front cover
+        picture.mime = 'image/jpeg'
+        picture.desc = 'Cover'
+        
+        # Ajouter la nouvelle pochette
+        audio.add_picture(picture)
+        
+        print(f"💾 Sauvegarde tags FLAC: {file_path}")
+        audio.save()
+    
+    def _embed_cover_mp4(self, file_path, cover_data):
+        """Intègre la pochette dans un fichier MP4/M4A"""
+        from mutagen.mp4 import MP4, MP4Cover
+        
+        print(f"🔄 Chargement MP4: {file_path}")
+        audio = MP4(file_path)
+        
+        # SUPPRIMER TOUTES LES ANCIENNES POCHETTES D'ABORD
+        if 'covr' in audio:
+            existing_covers = len(audio['covr'])
+            print(f"🗑️ Suppression de {existing_covers} anciennes pochettes MP4")
+            del audio['covr']
+        
+        # Ajouter la nouvelle pochette
+        audio['covr'] = [MP4Cover(cover_data, MP4Cover.FORMAT_JPEG)]
+        
+        print(f"💾 Sauvegarde tags MP4: {file_path}")
+        audio.save()
+    
+    def _verify_cover_embedded(self, file_path, format_type):
+        """Vérifie que la pochette a bien été intégrée dans le fichier"""
+        try:
+            if format_type == 'mp3':
+                from mutagen.id3 import ID3
+                audio = ID3(file_path)
+                apic_keys = [key for key in audio.keys() if key.startswith('APIC')]
+                if apic_keys:
+                    cover_size = len(audio[apic_keys[0]].data)
+                    print(f"✅ Vérification MP3: pochette de {cover_size} bytes trouvée")
+                else:
+                    print(f"❌ Vérification MP3: AUCUNE pochette trouvée!")
+                    
+            elif format_type == 'flac':
+                from mutagen.flac import FLAC
+                audio = FLAC(file_path)
+                if audio.pictures:
+                    cover_size = len(audio.pictures[0].data)
+                    print(f"✅ Vérification FLAC: pochette de {cover_size} bytes trouvée")
+                else:
+                    print(f"❌ Vérification FLAC: AUCUNE pochette trouvée!")
+                    
+            elif format_type == 'mp4':
+                from mutagen.mp4 import MP4
+                audio = MP4(file_path)
+                if 'covr' in audio and audio['covr']:
+                    cover_size = len(audio['covr'][0])
+                    print(f"✅ Vérification MP4: pochette de {cover_size} bytes trouvée")
+                else:
+                    print(f"❌ Vérification MP4: AUCUNE pochette trouvée!")
+                    
+        except Exception as e:
+            print(f"❌ Erreur vérification {format_type}: {e}")
     
     def _display_cover_results(self, dialog, content_area, results, spinner, loading_label):
         """Affiche les résultats de recherche de pochettes"""
@@ -795,15 +1046,146 @@ class AlbumEditWindow(Gtk.Window):
             scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
             content_area.pack_start(scrolled, True, True, 0)
             
-            # Grille de pochettes (pour plus tard)
-            results_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            for i, result in enumerate(results[:5]):  # Limiter à 5 résultats
-                result_label = Gtk.Label(f"{i+1}. {result.source} - {result.url[:50]}...")
-                results_box.pack_start(result_label, False, False, 0)
+            # Grille de pochettes avec vraies images
+            grid = Gtk.Grid()
+            grid.set_column_spacing(20)
+            grid.set_row_spacing(20)
+            grid.set_margin_top(20)
+            grid.set_margin_bottom(20)
+            grid.set_margin_left(20)
+            grid.set_margin_right(20)
             
-            scrolled.add(results_box)
+            self.selected_cover = None
+            
+            for i, result in enumerate(results[:4]):  # Limiter à 4 résultats (2x2)
+                # Box vertical pour image seulement (pas de frame, pas de label)
+                vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+                vbox.set_margin_top(10)
+                vbox.set_margin_bottom(10)
+                
+                # Image placeholder d'abord (300x300)
+                image = Gtk.Image()
+                image.set_size_request(300, 300)
+                image.set_from_icon_name("image-loading", Gtk.IconSize.DIALOG)
+                vbox.pack_start(image, False, False, 0)
+                
+                # Faire le vbox cliquable directement avec frame pour sélection
+                event_box = Gtk.EventBox()
+                
+                # Frame pour l'encadrement (invisible par défaut)
+                frame = Gtk.Frame()
+                frame.set_shadow_type(Gtk.ShadowType.NONE)
+                frame.add(vbox)
+                
+                event_box.add(frame)
+                event_box.connect("button-press-event", self._on_cover_selected, result, event_box, frame)
+                
+                # Positionner dans la grille (2 colonnes)
+                row = i // 2
+                col = i % 2
+                grid.attach(event_box, col, row, 1, 1)
+                
+                # Charger l'image en arrière-plan (300x300)
+                self._load_cover_image_async(result, image, 300)
+            
+            scrolled.add(grid)
         
         dialog.show_all()
+    
+    def _load_cover_image_async(self, cover_result, image_widget, size=300):
+        """Charge une image de pochette en arrière-plan"""
+        def load_image():
+            try:
+                import requests
+                from PIL import Image as PILImage
+                import io
+                
+                # Utiliser l'URL de miniature si disponible, sinon l'URL complète
+                url = cover_result.thumbnail_url or cover_result.url
+                
+                response = requests.get(url, timeout=10)
+                response.raise_for_status()
+                
+                # Convertir en GdkPixbuf
+                pil_image = PILImage.open(io.BytesIO(response.content))
+                
+                # Redimensionner à la taille demandée
+                pil_image.thumbnail((size, size), PILImage.Resampling.LANCZOS)
+                
+                # Convertir en format compatible GTK
+                if pil_image.mode != 'RGB':
+                    pil_image = pil_image.convert('RGB')
+                
+                # Sauver temporairement et charger avec GTK
+                temp_path = f"/tmp/cover_{hash(url)}.jpg"
+                pil_image.save(temp_path, 'JPEG')
+                
+                # Charger dans GTK
+                GLib.idle_add(self._update_cover_image, image_widget, temp_path, size)
+                
+            except Exception as e:
+                print(f"Erreur chargement image {url}: {e}")
+                GLib.idle_add(self._update_cover_image, image_widget, None, size)
+        
+        import threading
+        thread = threading.Thread(target=load_image)
+        thread.daemon = True
+        thread.start()
+    
+    def _update_cover_image(self, image_widget, image_path, size=300):
+        """Met à jour l'image dans le thread principal GTK"""
+        try:
+            if image_path and os.path.exists(image_path):
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(image_path, size, size, True)
+                image_widget.set_from_pixbuf(pixbuf)
+                # Nettoyer le fichier temporaire
+                try:
+                    os.remove(image_path)
+                except:
+                    pass
+            else:
+                image_widget.set_from_icon_name("image-missing", Gtk.IconSize.DIALOG)
+        except Exception as e:
+            print(f"Erreur mise à jour image: {e}")
+            image_widget.set_from_icon_name("image-missing", Gtk.IconSize.DIALOG)
+    
+    def _on_cover_selected(self, event_box, event, cover_result, container, frame):
+        """Gère la sélection d'une pochette"""
+        # Enlever la sélection précédente
+        if hasattr(self, '_selected_frame'):
+            self._selected_frame.set_shadow_type(Gtk.ShadowType.NONE)
+            # Retirer le style CSS personnalisé
+            style_context = self._selected_frame.get_style_context()
+            style_context.remove_class("selected-cover")
+        
+        # Marquer comme sélectionné avec un encadrement bleu
+        frame.set_shadow_type(Gtk.ShadowType.IN)
+        
+        # Ajouter un style CSS pour l'encadrement bleu
+        style_context = frame.get_style_context()
+        style_context.add_class("selected-cover")
+        
+        # Ajouter le CSS si pas déjà fait
+        if not hasattr(self, '_css_provider_added'):
+            css_provider = Gtk.CssProvider()
+            css_provider.load_from_data(b"""
+                .selected-cover {
+                    border: 3px solid #0066CC;
+                    border-radius: 5px;
+                }
+            """)
+            
+            screen = frame.get_screen()
+            style_context.add_provider_for_screen(
+                screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            )
+            self._css_provider_added = True
+        
+        self._selected_frame = frame
+        self.selected_cover = cover_result
+        
+        print(f"🎯 POCHETTE SÉLECTIONNÉE: {cover_result.source} - {cover_result.url}")
+        print(f"🎯 self.selected_cover défini: {self.selected_cover}")
     
     def _display_cover_error(self, dialog, content_area, error_msg, spinner, loading_label):
         """Affiche une erreur de recherche"""

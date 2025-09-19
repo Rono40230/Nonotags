@@ -287,6 +287,62 @@ class AlbumCard(Gtk.Frame):
         
         print(f"✅ Carte mise à jour avec nouveau chemin: {new_folder_path}")
     
+    def refresh_cover(self):
+        """Met à jour la pochette de la carte après téléchargement"""
+        try:
+            # Trouver le frame qui contient la pochette
+            for child in self.get_children():
+                if isinstance(child, Gtk.Box):
+                    for box_child in child.get_children():
+                        if isinstance(box_child, Gtk.Frame):  # Cover frame
+                            # Supprimer l'ancien widget
+                            old_cover = box_child.get_child()
+                            if old_cover:
+                                box_child.remove(old_cover)
+                            
+                            # Créer le nouveau widget pochette
+                            new_cover = self._create_cover_widget()
+                            box_child.add(new_cover)
+                            box_child.show_all()
+                            
+                            print(f"🔄 Pochette de carte rafraîchie")
+                            return True
+            
+            print(f"⚠️ Frame pochette introuvable")
+            return False
+            
+        except Exception as e:
+            print(f"❌ Erreur rafraîchissement pochette: {e}")
+            return False
+    
+    def update_cover(self):
+        """Met à jour la pochette de la carte après téléchargement d'une nouvelle pochette"""
+        try:
+            # Récupérer le frame qui contient la pochette
+            for child in self.get_children():
+                if isinstance(child, Gtk.Box):
+                    for box_child in child.get_children():
+                        if isinstance(box_child, Gtk.Frame):  # Cover frame
+                            # Supprimer l'ancien widget de pochette
+                            old_cover = box_child.get_child()
+                            if old_cover:
+                                box_child.remove(old_cover)
+                            
+                            # Créer et ajouter la nouvelle pochette
+                            new_cover_widget = self._create_cover_widget()
+                            box_child.add(new_cover_widget)
+                            box_child.show_all()
+                            
+                            print(f"✅ Pochette de carte mise à jour")
+                            return True
+            
+            print(f"⚠️ Frame de pochette non trouvé pour mise à jour")
+            return False
+            
+        except Exception as e:
+            print(f"❌ Erreur mise à jour pochette carte: {e}")
+            return False
+    
     def on_selection_toggled(self, checkbox):
         """Gère la sélection/déselection de l'album"""
         is_selected = checkbox.get_active()
