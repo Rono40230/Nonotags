@@ -1,0 +1,123 @@
+/* Styles pour les boutons Nonotags avec dégradé de bleu - Compatible GTK+ 3.0 */
+
+/* Bouton "Importer des albums" - Bleu le plus foncé */
+.button-import {
+    background-image: linear-gradient(to bottom, #0066CC, #004499);
+    color: white;
+    border: 1px solid #003366;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    min-width: 200px;
+    min-height: 40px;
+}
+
+.button-import:hover {
+    background-image: linear-gradient(to bottom, #0077DD, #0055AA);
+    border-color: #004477;
+}
+
+.button-import:active {
+    background-image: linear-gradient(to bottom, #004499, #0066CC);
+}
+
+/* Bouton "Ajouter des exceptions" - Bleu moyen-foncé */
+.button-exceptions {
+    background-image: linear-gradient(to bottom, #3388DD, #2266BB);
+    color: white;
+    border: 1px solid #1155AA;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    min-width: 200px;
+    min-height: 40px;
+}
+
+.button-exceptions:hover {
+    background-image: linear-gradient(to bottom, #4499EE, #3377CC);
+    border-color: #2266BB;
+}
+
+.button-exceptions:active {
+    background-image: linear-gradient(to bottom, #2266BB, #3388DD);
+}
+
+/* Bouton "Gestionnaire de Playlists" - Bleu moyen-clair */
+.button-playlists {
+    background-image: linear-gradient(to bottom, #55AAEE, #3388DD);
+    color: white;
+    border: 1px solid #2277CC;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    min-width: 200px;
+    min-height: 40px;
+}
+
+.button-playlists:hover {
+    background-image: linear-gradient(to bottom, #66BBFF, #4499EE);
+    border-color: #3388DD;
+}
+
+.button-playlists:active {
+    background-image: linear-gradient(to bottom, #3388DD, #55AAEE);
+}
+
+/* Bouton "Ouvrir l'application" - Bleu le plus clair */
+.button-open-app {
+    background-image: linear-gradient(to bottom, #77CCFF, #55AAEE);
+    color: white;
+    border: 1px solid #4499EE;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    min-width: 200px;
+    min-height: 40px;
+}
+
+.button-open-app:hover {
+    background-image: linear-gradient(to bottom, #88DDFF, #66BBFF);
+    border-color: #55AAEE;
+}
+
+.button-open-app:active {
+    background-image: linear-gradient(to bottom, #55AAEE, #77CCFF);
+}
+
+/* Bouton "Editer la sélection" - Bleu moyen pour la fenêtre principale */
+.button-edit-selection {
+    background-image: linear-gradient(to bottom, #3388DD, #2266BB);
+    color: white;
+    border: 1px solid #1155AA;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    min-width: 200px;
+    min-height: 40px;
+}
+
+.button-edit-selection:hover {
+    background-image: linear-gradient(to bottom, #4499EE, #3377CC);
+    border-color: #2266BB;
+}
+
+.button-edit-selection:active {
+    background-image: linear-gradient(to bottom, #2266BB, #3388DD);
+}
+
+/* Style général pour les boutons modernes - Version GTK+ 3.0 compatible */
+.modern-button {
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    min-width: 200px;
+    min-height: 40px;
+}
+
+.modern-button:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modern-button:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,7 @@
+#EXTM3U
+#EXTINF:180,Artiste Mixte - Chanson Absolue
+/home/music/absolute_song.mp3
+#EXTINF:200,Artiste Mixte - Chanson Relative  
+relative_song.mp3
+#EXTINF:220,Artiste Mixte - Autre Absolue
+/home/music/rock/another_absolute.flac

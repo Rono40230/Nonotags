@@ -6,7 +6,8 @@ Module dédié pour la fenêtre de démarrage avec navigation et sélection de d
 import gi
 gi.require_version('Gtk', '3.0')
 
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
+import os
 
 
 class StartupWindow(Gtk.Window):
@@ -16,8 +17,11 @@ class StartupWindow(Gtk.Window):
         super().__init__(title="🎵 Nonotags")
         self.app = app
         
+        # Charger le CSS pour les styles
+        self._load_css()
+        
         # Configuration de la fenêtre
-        self.set_default_size(400, 350)
+        self.set_default_size(400, 400)
         self.set_resizable(False)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.connect("delete-event", self.on_startup_window_close)
@@ -36,19 +40,25 @@ class StartupWindow(Gtk.Window):
         buttons_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         
         import_btn = Gtk.Button.new_with_label("📁 Importer des albums")
-        import_btn.get_style_context().add_class("modern-button")
+        import_btn.get_style_context().add_class("button-import")
         import_btn.set_size_request(250, 40)
         import_btn.connect("clicked", self.on_import_clicked)
         buttons_box.pack_start(import_btn, False, False, 0)
         
         exceptions_btn = Gtk.Button.new_with_label("⚙️ Ajouter des exceptions d'importation")
-        exceptions_btn.get_style_context().add_class("modern-button")
+        exceptions_btn.get_style_context().add_class("button-exceptions")
         exceptions_btn.set_size_request(250, 40)
         exceptions_btn.connect("clicked", self.on_exceptions_clicked)
         buttons_box.pack_start(exceptions_btn, False, False, 0)
         
+        playlists_btn = Gtk.Button.new_with_label("🎵 Gestionnaire de Playlists")
+        playlists_btn.get_style_context().add_class("button-playlists")
+        playlists_btn.set_size_request(250, 40)
+        playlists_btn.connect("clicked", self.on_playlists_clicked)
+        buttons_box.pack_start(playlists_btn, False, False, 0)
+        
         open_app_btn = Gtk.Button.new_with_label("🚀 Ouvrir l'application")
-        open_app_btn.get_style_context().add_class("modern-button")
+        open_app_btn.get_style_context().add_class("button-open-app")
         open_app_btn.set_size_request(250, 40)
         open_app_btn.connect("clicked", self.on_open_app_clicked)
         buttons_box.pack_start(open_app_btn, False, False, 0)
@@ -87,6 +97,14 @@ class StartupWindow(Gtk.Window):
         
         exceptions_window = ExceptionsWindow(parent=self)
         exceptions_window.show_all()
+    
+    def on_playlists_clicked(self, button):
+        """Ouvre le gestionnaire de playlists"""
+        # Importer et ouvrir la fenêtre du gestionnaire de playlists
+        from ui.views.playlist_manager_window import PlaylistManagerWindow
+        
+        playlist_window = PlaylistManagerWindow(parent=self)
+        playlist_window.show_all()
         
     def on_open_app_clicked(self, button):
         """Ouvre la fenêtre principale et ferme la fenêtre de démarrage"""
@@ -97,3 +115,22 @@ class StartupWindow(Gtk.Window):
         """Gestionnaire de fermeture de la fenêtre de démarrage"""
         Gtk.main_quit()
         return False
+    
+    def _load_css(self):
+        """Charge le fichier CSS pour les styles des boutons"""
+        try:
+            css_provider = Gtk.CssProvider()
+            css_file = os.path.join(os.path.dirname(__file__), "resources", "styles.css")
+            
+            if os.path.exists(css_file):
+                css_provider.load_from_path(css_file)
+                screen = Gdk.Screen.get_default()
+                style_context = Gtk.StyleContext()
+                style_context.add_provider_for_screen(
+                    screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+                )
+                print(f"✅ CSS chargé depuis: {css_file}")
+            else:
+                print(f"⚠️ Fichier CSS introuvable: {css_file}")
+        except Exception as e:
+            print(f"❌ Erreur lors du chargement du CSS: {e}")

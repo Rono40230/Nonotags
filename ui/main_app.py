@@ -6,7 +6,7 @@ Gestionnaire de l'application avec fenêtre principale et navigation
 import gi
 gi.require_version('Gtk', '3.0')
 
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk, GLib, Gdk
 import os
 from typing import List, Dict
 from ui.startup_window import StartupWindow
@@ -155,6 +155,9 @@ class NonotagsApp:
         self.main_window = Gtk.Window()
         self.main_window.set_title("🎵 Nonotags - Gestionnaire de Tags MP3")
         
+        # Charger le CSS pour les styles
+        self._load_css()
+        
         # Force l'affichage en plein écran
         self.main_window.maximize()  # Maximise la fenêtre (recommandé)
         # Alternative : self.main_window.fullscreen()  # Plein écran sans barre de titre
@@ -179,18 +182,24 @@ class NonotagsApp:
         action_box.set_margin_top(10)
         
         import_btn = Gtk.Button.new_with_label("📂 Importer des fichiers")
-        import_btn.get_style_context().add_class("modern-button")
+        import_btn.get_style_context().add_class("button-import")
         import_btn.connect("clicked", self.on_import_clicked)
         action_box.pack_start(import_btn, False, False, 0)
         
         edit_selection_btn = Gtk.Button.new_with_label("✏️ Editer la sélection d'albums")
-        edit_selection_btn.get_style_context().add_class("modern-button")
+        edit_selection_btn.get_style_context().add_class("button-edit-selection")
         edit_selection_btn.connect("clicked", self.on_edit_selection_clicked)
         action_box.pack_start(edit_selection_btn, False, False, 0)
         
+        # Bouton gestionnaire de playlists
+        playlists_btn = Gtk.Button.new_with_label("🎵 Gestionnaire de Playlists")
+        playlists_btn.get_style_context().add_class("button-playlists")
+        playlists_btn.connect("clicked", self.on_playlists_clicked)
+        action_box.pack_start(playlists_btn, False, False, 0)
+        
         # Bouton pour gérer les exceptions de casse
         exceptions_btn = Gtk.Button.new_with_label("📝 Exceptions de casse")
-        exceptions_btn.get_style_context().add_class("modern-button")
+        exceptions_btn.get_style_context().add_class("button-exceptions")
         exceptions_btn.connect("clicked", self.on_exceptions_clicked)
         action_box.pack_start(exceptions_btn, False, False, 0)
         
@@ -341,6 +350,15 @@ class NonotagsApp:
             exceptions_window.show_all()
         except Exception as e:
             print(f"❌ Erreur lors de l'ouverture de la fenêtre des exceptions: {e}")
+    
+    def on_playlists_clicked(self, button):
+        """Ouvre le gestionnaire de playlists"""
+        try:
+            from ui.views.playlist_manager_window import PlaylistManagerWindow
+            playlist_window = PlaylistManagerWindow(parent=self.main_window)
+            playlist_window.show_all()
+        except Exception as e:
+            print(f"❌ Erreur lors de l'ouverture du gestionnaire de playlists: {e}")
     
     def calculate_cards_per_line(self, window_width=None):
         """Calcule le nombre optimal de cartes par ligne selon la largeur disponible"""
@@ -567,3 +585,22 @@ class NonotagsApp:
                 print("❌ Pas de dossier actuel pour rafraîchissement")
         except Exception as e:
             print(f"❌ Erreur lors du rafraîchissement: {e}")
+    
+    def _load_css(self):
+        """Charge le fichier CSS pour les styles des boutons"""
+        try:
+            css_provider = Gtk.CssProvider()
+            css_file = os.path.join(os.path.dirname(__file__), "resources", "styles.css")
+            
+            if os.path.exists(css_file):
+                css_provider.load_from_path(css_file)
+                screen = Gdk.Screen.get_default()
+                style_context = Gtk.StyleContext()
+                style_context.add_provider_for_screen(
+                    screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+                )
+                print(f"✅ CSS chargé depuis: {css_file}")
+            else:
+                print(f"⚠️ Fichier CSS introuvable: {css_file}")
+        except Exception as e:
+            print(f"❌ Erreur lors du chargement du CSS: {e}")
