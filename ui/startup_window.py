@@ -57,6 +57,12 @@ class StartupWindow(Gtk.Window):
         playlists_btn.connect("clicked", self.on_playlists_clicked)
         buttons_box.pack_start(playlists_btn, False, False, 0)
         
+        converter_btn = Gtk.Button.new_with_label("🔄 Convertisseur Audio")
+        converter_btn.get_style_context().add_class("button-converter")
+        converter_btn.set_size_request(250, 40)
+        converter_btn.connect("clicked", self.on_converter_clicked)
+        buttons_box.pack_start(converter_btn, False, False, 0)
+        
         open_app_btn = Gtk.Button.new_with_label("🚀 Ouvrir l'application")
         open_app_btn.get_style_context().add_class("button-open-app")
         open_app_btn.set_size_request(250, 40)
@@ -105,6 +111,14 @@ class StartupWindow(Gtk.Window):
         
         playlist_window = PlaylistManagerWindow(parent=self)
         playlist_window.show_all()
+    
+    def on_converter_clicked(self, button):
+        """Ouvre le convertisseur audio"""
+        # Importer et ouvrir la fenêtre du convertisseur audio
+        from ui.views.audio_converter_window import AudioConverterWindow
+        
+        converter_window = AudioConverterWindow()
+        converter_window.show_all()
         
     def on_open_app_clicked(self, button):
         """Ouvre la fenêtre principale et ferme la fenêtre de démarrage"""

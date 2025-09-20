@@ -1,7 +1,0 @@
-#EXTM3U
-#EXTINF:245,Rock Band - Rock Song 1
-/home/music/rock/song1.mp3
-#EXTINF:198,Rock Band - Rock Song 2
-/home/music/rock/song2.mp3
-#EXTINF:267,Metal Band - Heavy Track
-/home/music/metal/heavy.flac

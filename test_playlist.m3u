@@ -1,7 +1,0 @@
-#EXTM3U
-#EXTINF:225,Artiste Test - Titre Test 1
-./test_audio1.mp3
-#EXTINF:187,Artiste Test - Titre Test 2
-./test_audio2.mp3
-#EXTINF:203,Autre Artiste - Chanson Test
-./subdir/test_audio3.flac

@@ -191,17 +191,23 @@ class NonotagsApp:
         edit_selection_btn.connect("clicked", self.on_edit_selection_clicked)
         action_box.pack_start(edit_selection_btn, False, False, 0)
         
+        # Bouton pour gérer les exceptions de casse
+        exceptions_btn = Gtk.Button.new_with_label("📝 Exceptions de casse")
+        exceptions_btn.get_style_context().add_class("button-exceptions")
+        exceptions_btn.connect("clicked", self.on_exceptions_clicked)
+        action_box.pack_start(exceptions_btn, False, False, 0)
+        
         # Bouton gestionnaire de playlists
         playlists_btn = Gtk.Button.new_with_label("🎵 Gestionnaire de Playlists")
         playlists_btn.get_style_context().add_class("button-playlists")
         playlists_btn.connect("clicked", self.on_playlists_clicked)
         action_box.pack_start(playlists_btn, False, False, 0)
         
-        # Bouton pour gérer les exceptions de casse
-        exceptions_btn = Gtk.Button.new_with_label("📝 Exceptions de casse")
-        exceptions_btn.get_style_context().add_class("button-exceptions")
-        exceptions_btn.connect("clicked", self.on_exceptions_clicked)
-        action_box.pack_start(exceptions_btn, False, False, 0)
+        # Bouton convertisseur audio
+        converter_btn = Gtk.Button.new_with_label("� Convertisseur Audio")
+        converter_btn.get_style_context().add_class("button-converter")
+        converter_btn.connect("clicked", self.on_converter_clicked)
+        action_box.pack_start(converter_btn, False, False, 0)
         
         main_box.pack_start(action_box, False, False, 0)
         
@@ -359,6 +365,15 @@ class NonotagsApp:
             playlist_window.show_all()
         except Exception as e:
             print(f"❌ Erreur lors de l'ouverture du gestionnaire de playlists: {e}")
+    
+    def on_converter_clicked(self, button):
+        """Ouvre le convertisseur audio"""
+        try:
+            from ui.views.audio_converter_window import AudioConverterWindow
+            converter_window = AudioConverterWindow()
+            converter_window.show_all()
+        except Exception as e:
+            print(f"❌ Erreur lors de l'ouverture du convertisseur audio: {e}")
     
     def calculate_cards_per_line(self, window_width=None):
         """Calcule le nombre optimal de cartes par ligne selon la largeur disponible"""

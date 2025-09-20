@@ -1,7 +1,0 @@
-#EXTM3U
-#EXTINF:180,Artiste Relatif - Chanson Relative 1
-relative_song1.mp3
-#EXTINF:200,Artiste Relatif - Chanson Relative 2  
-./relative_song2.mp3
-#EXTINF:220,Artiste Relatif - Chanson Relative 3
-subdir/relative_song3.flac

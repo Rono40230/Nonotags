@@ -63,6 +63,27 @@
     background-image: linear-gradient(to bottom, #3388DD, #55AAEE);
 }
 
+/* Bouton "Convertisseur Audio" - Bleu-violet pour la conversion */
+.button-converter {
+    background-image: linear-gradient(to bottom, #6644CC, #4422AA);
+    color: white;
+    border: 1px solid #332199;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    min-width: 200px;
+    min-height: 40px;
+}
+
+.button-converter:hover {
+    background-image: linear-gradient(to bottom, #7755DD, #5533BB);
+    border-color: #4422AA;
+}
+
+.button-converter:active {
+    background-image: linear-gradient(to bottom, #4422AA, #6644CC);
+}
+
 /* Bouton "Ouvrir l'application" - Bleu le plus clair */
 .button-open-app {
     background-image: linear-gradient(to bottom, #77CCFF, #55AAEE);
