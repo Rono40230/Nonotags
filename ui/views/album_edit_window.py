@@ -48,11 +48,17 @@ class AlbumEditWindow(Gtk.Window):
         # Timer pour mise à jour position
         self.position_timer = None
         
+        # Timer pour sauvegarde automatique des métadonnées (debounce)
+        self.metadata_save_timer = None
+        
         # Configuration de la fenêtre - PLEIN ÉCRAN comme spécifié
         self.set_default_size(1200, 800)
         self.maximize()  # Plein écran par défaut
         self.set_resizable(True)
         self.set_position(Gtk.WindowPosition.CENTER)
+        
+        # Signal de fermeture pour rafraîchir la carte parente
+        self.connect("delete-event", self.on_window_closing)
         
         # Conteneur principal
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -500,6 +506,9 @@ class AlbumEditWindow(Gtk.Window):
         while iter:
             self.metadata_store.set_value(iter, 5, new_album)  # Colonne Album
             iter = self.metadata_store.iter_next(iter)
+        
+        # Programmer la sauvegarde automatique
+        self._schedule_metadata_save()
     
     def on_artist_changed(self, entry):
         """Mise à jour en temps réel des colonnes Artiste et Interprète"""
@@ -509,6 +518,9 @@ class AlbumEditWindow(Gtk.Window):
             self.metadata_store.set_value(iter, 3, new_artist)  # Interprète
             self.metadata_store.set_value(iter, 4, new_artist)  # Artiste
             iter = self.metadata_store.iter_next(iter)
+        
+        # Programmer la sauvegarde automatique
+        self._schedule_metadata_save()
     
     def on_year_changed(self, entry):
         """Mise à jour en temps réel de la colonne Année"""
@@ -517,6 +529,9 @@ class AlbumEditWindow(Gtk.Window):
         while iter:
             self.metadata_store.set_value(iter, 6, new_year)  # Colonne Année
             iter = self.metadata_store.iter_next(iter)
+        
+        # Programmer la sauvegarde automatique
+        self._schedule_metadata_save()
     
     def on_genre_changed(self, combo):
         """Mise à jour en temps réel de la colonne Genre"""
@@ -525,6 +540,9 @@ class AlbumEditWindow(Gtk.Window):
         while iter:
             self.metadata_store.set_value(iter, 8, new_genre)  # Colonne Genre
             iter = self.metadata_store.iter_next(iter)
+        
+        # Programmer la sauvegarde automatique
+        self._schedule_metadata_save()
     
     # === CALLBACKS TABLEAU ===
     def on_title_edited(self, renderer, path, new_text):
@@ -1028,6 +1046,100 @@ class AlbumEditWindow(Gtk.Window):
         except Exception as e:
             print(f"❌ Erreur vérification {format_type}: {e}")
     
+    def _schedule_metadata_save(self):
+        """Planifie la sauvegarde des métadonnées avec un délai (debounce)"""
+        if self.metadata_save_timer:
+            GLib.source_remove(self.metadata_save_timer)
+        self.metadata_save_timer = GLib.timeout_add(500, self._save_metadata_to_files)
+    
+    def _save_metadata_to_files(self):
+        """Sauvegarde les métadonnées dans tous les fichiers audio"""
+        try:
+            if not self.tracks:
+                return False
+            
+            new_album = self.album_entry.get_text().strip()
+            new_artist = self.artist_entry.get_text().strip()
+            new_year = self.year_entry.get_text().strip()
+            new_genre = self.genre_combo.get_active_text() or ""
+            
+            for track in self.tracks:
+                file_path = track['file_path']
+                if not os.path.exists(file_path):
+                    continue
+                
+                if file_path.lower().endswith('.mp3'):
+                    self._save_metadata_mp3(file_path, new_album, new_artist, new_year, new_genre)
+                elif file_path.lower().endswith('.flac'):
+                    self._save_metadata_flac(file_path, new_album, new_artist, new_year, new_genre)
+                elif file_path.lower().endswith(('.m4a', '.mp4')):
+                    self._save_metadata_mp4(file_path, new_album, new_artist, new_year, new_genre)
+            
+            print(f"✅ Métadonnées sauvées automatiquement")
+            
+        except Exception as e:
+            print(f"❌ Erreur sauvegarde métadonnées: {e}")
+        
+        self.metadata_save_timer = None
+        return False
+    
+    def _save_metadata_mp3(self, file_path, album, artist, year, genre):
+        """Sauvegarde métadonnées MP3"""
+        try:
+            from mutagen.id3 import ID3, TIT2, TPE1, TPE2, TALB, TDRC, TCON, ID3NoHeaderError
+            try:
+                audio = ID3(file_path)
+            except ID3NoHeaderError:
+                audio = ID3()
+            
+            if artist:
+                audio['TPE1'] = TPE1(encoding=3, text=artist)  # Artiste
+                audio['TPE2'] = TPE2(encoding=3, text=artist)  # Artiste de l'album
+            if album:
+                audio['TALB'] = TALB(encoding=3, text=album)
+            if year:
+                audio['TDRC'] = TDRC(encoding=3, text=year)
+            if genre:
+                audio['TCON'] = TCON(encoding=3, text=genre)
+            
+            audio.save(file_path)
+        except Exception as e:
+            print(f"❌ Erreur MP3 {file_path}: {e}")
+    
+    def _save_metadata_flac(self, file_path, album, artist, year, genre):
+        """Sauvegarde métadonnées FLAC"""
+        try:
+            audio = FLAC(file_path)
+            if artist:
+                audio['ARTIST'] = artist
+                audio['ALBUMARTIST'] = artist  # Artiste de l'album
+            if album:
+                audio['ALBUM'] = album
+            if year:
+                audio['DATE'] = year
+            if genre:
+                audio['GENRE'] = genre
+            audio.save()
+        except Exception as e:
+            print(f"❌ Erreur FLAC {file_path}: {e}")
+    
+    def _save_metadata_mp4(self, file_path, album, artist, year, genre):
+        """Sauvegarde métadonnées MP4"""
+        try:
+            audio = MP4(file_path)
+            if artist:
+                audio['\xa9ART'] = [artist]
+                audio['aART'] = [artist]  # Artiste de l'album
+            if album:
+                audio['\xa9alb'] = [album]
+            if year:
+                audio['\xa9day'] = [year]
+            if genre:
+                audio['\xa9gen'] = [genre]
+            audio.save()
+        except Exception as e:
+            print(f"❌ Erreur MP4 {file_path}: {e}")
+    
     def _display_cover_results(self, dialog, content_area, results, spinner, loading_label):
         """Affiche les résultats de recherche de pochettes"""
         # Supprimer le spinner
@@ -1229,6 +1341,19 @@ class AlbumEditWindow(Gtk.Window):
             # Aucune pochette trouvée, utiliser l'icône par défaut
             self.cover_image.set_from_icon_name("image-x-generic", Gtk.IconSize.DIALOG)
             print(f"❌ Aucune pochette trouvée dans: {track_folder}")
+    
+    def on_window_closing(self, window, event):
+        """Gestionnaire de fermeture de la fenêtre d'édition"""
+        
+        # Nettoyer le lecteur audio
+        if hasattr(self, 'audio_player'):
+            self.audio_player.cleanup()
+        
+        # Arrêter le timer
+        if hasattr(self, 'position_timer') and self.position_timer:
+            GLib.source_remove(self.position_timer)
+        
+        return False
     
     def on_startup_window_close(self, window, event):
         """Gestionnaire de fermeture de la fenêtre"""
