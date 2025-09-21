@@ -14,6 +14,7 @@ from mutagen.mp4 import MP4
 from mutagen.flac import FLAC
 from services.audio_player import AudioPlayer, PlayerState
 from services.cover_search import CoverSearchService
+from core.case_corrector import CaseCorrector
 
 class AlbumEditWindow(Gtk.Window):
     """Fenêtre d'édition conforme au cahier des charges - 4 blocs"""
@@ -37,6 +38,7 @@ class AlbumEditWindow(Gtk.Window):
         # Services
         self.audio_player = AudioPlayer()
         self.cover_search = CoverSearchService()
+        self.case_corrector = CaseCorrector()
         self.current_track_index = 0
         
         # Callbacks du lecteur audio
@@ -549,6 +551,25 @@ class AlbumEditWindow(Gtk.Window):
         """Édition du titre d'une piste"""
         iter = self.metadata_store.get_iter(path)
         self.metadata_store.set_value(iter, 2, new_text)  # Colonne Titre
+        
+        # Sauvegarder le titre dans les métadonnées physiques et renommer le fichier
+        file_path = self.metadata_store.get_value(iter, 9)  # Path caché
+        track_num = self.metadata_store.get_value(iter, 7)  # N° piste
+        if file_path and os.path.exists(file_path):
+            new_file_path = self._save_title_to_file(file_path, new_text, track_num)
+            if new_file_path and new_file_path != file_path:
+                # Mettre à jour le tableau avec le nouveau nom de fichier
+                new_filename = os.path.splitext(os.path.basename(new_file_path))[0]
+                self.metadata_store.set_value(iter, 1, new_filename)  # Colonne Nom fichier
+                self.metadata_store.set_value(iter, 9, new_file_path)  # Path caché
+                
+                # Mettre à jour self.tracks pour le lecteur audio
+                for track in self.tracks:
+                    if track.get('file_path') == file_path:
+                        track['file_path'] = new_file_path
+                        track['title'] = new_text
+                        track['display_filename'] = new_filename
+                        break
     
     def on_row_activated(self, tree_view, path, column):
         """Double-clic sur une ligne du tableau"""
@@ -1083,6 +1104,54 @@ class AlbumEditWindow(Gtk.Window):
         self.metadata_save_timer = None
         return False
     
+    def _save_title_to_file(self, file_path, title, track_num=None):
+        """Sauvegarde un titre individuel dans les métadonnées physiques et renomme le fichier"""
+        try:
+            # 1. Sauvegarder les métadonnées
+            if file_path.lower().endswith('.mp3'):
+                from mutagen.id3 import ID3, TIT2, ID3NoHeaderError
+                try:
+                    audio = ID3(file_path)
+                except ID3NoHeaderError:
+                    audio = ID3()
+                audio['TIT2'] = TIT2(encoding=3, text=title)
+                audio.save(file_path)
+                
+            elif file_path.lower().endswith('.flac'):
+                from mutagen.flac import FLAC
+                audio = FLAC(file_path)
+                audio['TITLE'] = title
+                audio.save()
+                
+            elif file_path.lower().endswith(('.m4a', '.mp4')):
+                from mutagen.mp4 import MP4
+                audio = MP4(file_path)
+                audio['\xa9nam'] = title
+                audio.save()
+            
+            # 2. Renommer le fichier selon la règle "N° - Titre"
+            new_file_path = file_path
+            if track_num and title:
+                directory = os.path.dirname(file_path)
+                extension = os.path.splitext(file_path)[1]
+                
+                # Nettoyer le titre pour le nom de fichier
+                clean_title = "".join(c for c in title if c.isalnum() or c in (' ', '-', '_')).strip()
+                new_filename = f"{track_num} - {clean_title}{extension}"
+                new_file_path = os.path.join(directory, new_filename)
+                
+                # Renommer seulement si le nom change
+                if new_file_path != file_path:
+                    os.rename(file_path, new_file_path)
+                    print(f"📁 Fichier renommé: {os.path.basename(file_path)} → {os.path.basename(new_file_path)}")
+            
+            print(f"✅ Titre sauvegardé: {os.path.basename(new_file_path)} → '{title}'")
+            return new_file_path
+            
+        except Exception as e:
+            print(f"❌ Erreur sauvegarde titre {file_path}: {e}")
+            return file_path
+    
     def _save_metadata_mp3(self, file_path, album, artist, year, genre):
         """Sauvegarde métadonnées MP3"""
         try:
@@ -1096,7 +1165,9 @@ class AlbumEditWindow(Gtk.Window):
                 audio['TPE1'] = TPE1(encoding=3, text=artist)  # Artiste
                 audio['TPE2'] = TPE2(encoding=3, text=artist)  # Artiste de l'album
             if album:
-                audio['TALB'] = TALB(encoding=3, text=album)
+                # Appliquer sentence case sur l'album
+                corrected_album = self.case_corrector.correct_text_case(album, 'album').corrected
+                audio['TALB'] = TALB(encoding=3, text=corrected_album)
             if year:
                 audio['TDRC'] = TDRC(encoding=3, text=year)
             if genre:
@@ -1114,7 +1185,9 @@ class AlbumEditWindow(Gtk.Window):
                 audio['ARTIST'] = artist
                 audio['ALBUMARTIST'] = artist  # Artiste de l'album
             if album:
-                audio['ALBUM'] = album
+                # Appliquer sentence case sur l'album
+                corrected_album = self.case_corrector.correct_text_case(album, 'album').corrected
+                audio['ALBUM'] = corrected_album
             if year:
                 audio['DATE'] = year
             if genre:
@@ -1131,7 +1204,9 @@ class AlbumEditWindow(Gtk.Window):
                 audio['\xa9ART'] = [artist]
                 audio['aART'] = [artist]  # Artiste de l'album
             if album:
-                audio['\xa9alb'] = [album]
+                # Appliquer sentence case sur l'album
+                corrected_album = self.case_corrector.correct_text_case(album, 'album').corrected
+                audio['\xa9alb'] = [corrected_album]
             if year:
                 audio['\xa9day'] = [year]
             if genre:

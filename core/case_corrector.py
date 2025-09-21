@@ -283,11 +283,11 @@ class CaseCorrector:
         result_text = text
         original_text = text
         
-# RÈGLE 9-10 : Sentence Case de base (selon type)
-        step_text = result_text
-        result_text = self._apply_sentence_case(result_text)
-        
-        rules_applied.append(CaseCorrectionRule.SENTENCE_CASE)
+# RÈGLE 9-10 : Sentence Case de base (selon type) - seulement pour titres et albums
+        if text_type in ['title', 'album']:
+            step_text = result_text
+            result_text = self._apply_sentence_case(result_text)
+            rules_applied.append(CaseCorrectionRule.SENTENCE_CASE)
         
         # RÈGLE 11 : Protection des chiffres romains  
         step_text = result_text

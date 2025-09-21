@@ -236,9 +236,10 @@ class CaseCorrector:
         rules_applied = []
         step_text = text
         
-        # 1. Application du sentence case (première lettre en majuscule)
-        step_text = self._apply_sentence_case(step_text)
-        rules_applied.append(CaseCorrectionRule.SENTENCE_CASE)
+        # 1. Application du sentence case (première lettre en majuscule) - seulement pour titres et albums
+        if text_type in ['title', 'album']:
+            step_text = self._apply_sentence_case(step_text)
+            rules_applied.append(CaseCorrectionRule.SENTENCE_CASE)
         
         # 2. Protection des chiffres romains
         step_text = self._protect_roman_numerals(step_text)
