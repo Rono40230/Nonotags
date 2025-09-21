@@ -15,6 +15,7 @@ from mutagen.flac import FLAC
 from services.audio_player import AudioPlayer, PlayerState
 from services.cover_search import CoverSearchService
 from core.case_corrector import CaseCorrector
+from services.metadata_event_manager import metadata_event_manager
 
 class AlbumEditWindow(Gtk.Window):
     """Fenêtre d'édition conforme au cahier des charges - 4 blocs"""
@@ -1098,11 +1099,60 @@ class AlbumEditWindow(Gtk.Window):
             
             print(f"✅ Métadonnées sauvées automatiquement")
             
+            # SYSTÈME D'ÉVÉNEMENTS DÉSACTIVÉ TEMPORAIREMENT - CAUSE CORRUPTION MULTI-ALBUMS
+            # self._emit_metadata_changed_events(new_album, new_artist, new_year, new_genre)
+            
         except Exception as e:
             print(f"❌ Erreur sauvegarde métadonnées: {e}")
         
         self.metadata_save_timer = None
         return False
+
+    def _emit_metadata_changed_events(self, new_album, new_artist, new_year, new_genre):
+        """Émet les événements de changement de métadonnées pour tous les albums modifiés"""
+        try:
+            album_paths = []
+            updated_metadata = {}
+            
+            # Préparer les données pour chaque album modifié
+            for album in self.selected_albums:
+                album_path = album.get('folder_path') or album.get('path', '')
+                if album_path:
+                    album_paths.append(album_path)
+                    
+                    # Préparer les métadonnées mises à jour
+                    metadata_update = {}
+                    
+                    # En mode multi-albums : seulement les champs non vides
+                    if len(self.selected_albums) > 1:
+                        if new_album:
+                            metadata_update['album'] = new_album
+                            metadata_update['title'] = new_album
+                        if new_artist:
+                            metadata_update['artist'] = new_artist
+                        if new_year:
+                            metadata_update['year'] = new_year
+                        if new_genre:
+                            metadata_update['genre'] = new_genre
+                    else:
+                        # En mode single album : tous les champs
+                        metadata_update['album'] = new_album or album.get('album', '')
+                        metadata_update['title'] = new_album or album.get('title', '')
+                        metadata_update['artist'] = new_artist or album.get('artist', '')
+                        metadata_update['year'] = new_year or album.get('year', '')
+                        metadata_update['genre'] = new_genre or album.get('genre', '')
+                    
+                    # Mettre à jour les données de l'album aussi
+                    album.update(metadata_update)
+                    updated_metadata[album_path] = metadata_update
+            
+            # Émettre les événements pour tous les albums modifiés
+            if album_paths:
+                metadata_event_manager.notify_metadata_changed(album_paths, updated_metadata)
+                print(f"📡 Événements émis pour {len(album_paths)} albums")
+            
+        except Exception as e:
+            print(f"❌ Erreur émission événements: {e}")
     
     def _save_title_to_file(self, file_path, title, track_num=None):
         """Sauvegarde un titre individuel dans les métadonnées physiques et renomme le fichier"""
@@ -1420,6 +1470,27 @@ class AlbumEditWindow(Gtk.Window):
     def on_window_closing(self, window, event):
         """Gestionnaire de fermeture de la fenêtre d'édition"""
         
+        # Forcer une sauvegarde finale et émission d'événements si nécessaire
+        if hasattr(self, 'metadata_save_timer') and self.metadata_save_timer:
+            GLib.source_remove(self.metadata_save_timer)
+            self._save_metadata_delayed()  # Sauvegarde immédiate
+        
+        # Rafraîchir la carte parente une dernière fois
+        if hasattr(self, 'parent_card') and self.parent_card:
+            try:
+                # Mode single album : rafraîchir la carte parente
+                GLib.idle_add(self.parent_card._update_display)
+                print(f"🔄 Rafraîchissement final de la carte parente")
+            except Exception as e:
+                print(f"⚠️ Erreur rafraîchissement carte parente: {e}")
+        # MODE MULTI-ALBUMS DÉSACTIVÉ - CAUSE CORRUPTION
+        # else:
+        #     try:
+        #         if hasattr(self, 'selected_albums') and self.selected_albums:
+        #             self._refresh_all_modified_cards()
+        #     except Exception as e:
+        #         print(f"⚠️ Erreur rafraîchissement multi-cartes: {e}")
+        
         # Nettoyer le lecteur audio
         if hasattr(self, 'audio_player'):
             self.audio_player.cleanup()
@@ -1429,6 +1500,46 @@ class AlbumEditWindow(Gtk.Window):
             GLib.source_remove(self.position_timer)
         
         return False
+    
+    def _refresh_all_modified_cards(self):
+        """Rafraîchit toutes les cartes correspondant aux albums modifiés (mode multi-albums)"""
+        try:
+            # Récupérer l'instance de l'application principale (NonotagsApp)
+            app_instance = None
+            for widget in Gtk.Window.list_toplevels():
+                if hasattr(widget, 'albums_grid'):  # NonotagsApp a albums_grid
+                    app_instance = widget
+                    break
+            
+            if not app_instance:
+                print("⚠️ Impossible de trouver l'instance de l'application principale")
+                return
+            
+            # Récupérer toutes les cartes existantes
+            all_cards = app_instance.albums_grid.get_children()
+            
+            # Créer un set des chemins d'albums modifiés pour recherche rapide
+            modified_paths = set()
+            for album in self.selected_albums:
+                path = album.get('folder_path') or album.get('path', '')
+                if path:
+                    modified_paths.add(path)
+            
+            # Rafraîchir chaque carte correspondant aux albums modifiés
+            refreshed_count = 0
+            for card in all_cards:
+                if hasattr(card, 'album_data'):
+                    card_path = card.album_data.get('folder_path') or card.album_data.get('path', '')
+                    if card_path in modified_paths:
+                        GLib.idle_add(card._update_display)
+                        refreshed_count += 1
+            
+            print(f"🔄 {refreshed_count} cartes rafraîchies après édition multi-albums")
+            
+        except Exception as e:
+            print(f"❌ Erreur lors du rafraîchissement multi-cartes: {e}")
+            import traceback
+            traceback.print_exc()
     
     def on_startup_window_close(self, window, event):
         """Gestionnaire de fermeture de la fenêtre"""

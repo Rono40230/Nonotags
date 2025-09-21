@@ -21,6 +21,9 @@ try:
 except ImportError:
     MUTAGEN_AVAILABLE = False
 
+# Import du gestionnaire d'événements
+from services.metadata_event_manager import metadata_event_manager
+
 class AlbumCard(Gtk.Frame):
     """Widget représentant une carte d'album"""
     
@@ -148,6 +151,40 @@ class AlbumCard(Gtk.Frame):
         
         vbox.pack_start(button_box, False, False, 0)
         self.add(vbox)
+        
+        # S'enregistrer comme observateur pour les changements de métadonnées
+        self._register_metadata_observer()
+    
+    def _register_metadata_observer(self):
+        """Enregistre cette card comme observateur des changements de métadonnées"""
+        album_path = self.album_data.get('folder_path') or self.album_data.get('path', '')
+        if album_path:
+            metadata_event_manager.register_observer(album_path, self._on_metadata_changed)
+    
+    def _on_metadata_changed(self, updated_metadata=None):
+        """Callback appelé quand les métadonnées de cet album changent"""
+        try:
+            # Mettre à jour les données si fournies
+            if updated_metadata:
+                self.album_data.update(updated_metadata)
+            
+            # Rafraîchir l'affichage
+            self._update_display()
+            self.refresh_cover()
+            
+            album_name = os.path.basename(self.album_data.get('folder_path', ''))
+            print(f"🔄 Card auto-rafraîchie: {album_name}")
+        except Exception as e:
+            print(f"❌ Erreur auto-rafraîchissement card: {e}")
+    
+    def __del__(self):
+        """Destructeur pour nettoyer l'observateur"""
+        try:
+            album_path = self.album_data.get('folder_path') or self.album_data.get('path', '')
+            if album_path:
+                metadata_event_manager.unregister_observer(album_path, self._on_metadata_changed)
+        except:
+            pass  # Ignorer les erreurs lors de la destruction
     
     def on_edit_clicked(self, button):
         """Ouvre la fenêtre d'édition"""
@@ -259,20 +296,100 @@ class AlbumCard(Gtk.Frame):
     
     def _update_display(self):
         """Met à jour l'affichage de la carte après édition"""
-        # Parcourir la hiérarchie pour trouver le label du titre
-        for child in self.get_children():
-            if isinstance(child, Gtk.Box):
-                for box_child in child.get_children():
-                    if isinstance(box_child, Gtk.Box):  # Info box
-                        labels = [w for w in box_child.get_children() if isinstance(w, Gtk.Label)]
-                        if len(labels) >= 2:  # Artiste + Titre + ...
-                            title_label = labels[1]  # Le 2ème label = titre
-                            # SIMPLE : nouveau nom du dossier
-                            folder_path = self.album_data.get('folder_path') or self.album_data.get('path')
-                            new_title = os.path.basename(folder_path) if folder_path else self.album_data.get('album', 'Album Inconnu')
-                            title_label.set_text(new_title)
-                            print(f"✅ Titre mis à jour: {new_title}")
-                            return
+        try:
+            # RECHARGER les métadonnées depuis les fichiers au lieu d'utiliser les anciennes données
+            folder_path = self.album_data.get('folder_path') or self.album_data.get('path', '')
+            if folder_path and os.path.exists(folder_path):
+                # Recharger les métadonnées depuis le premier fichier audio du dossier
+                audio_files = [f for f in os.listdir(folder_path) 
+                              if f.lower().endswith(('.mp3', '.flac', '.m4a', '.mp4'))]
+                
+                if audio_files:
+                    first_file = os.path.join(folder_path, audio_files[0])
+                    fresh_metadata = self._load_metadata_from_file(first_file)
+                    
+                    # Mettre à jour album_data avec les nouvelles métadonnées
+                    self.album_data.update(fresh_metadata)
+                    print(f"🔄 Métadonnées rechargées depuis: {audio_files[0]}")
+        
+            # Parcourir la hiérarchie pour trouver les labels
+            for child in self.get_children():
+                if isinstance(child, Gtk.Box):
+                    for box_child in child.get_children():
+                        if isinstance(box_child, Gtk.Box):  # Info box
+                            labels = [w for w in box_child.get_children() if isinstance(w, Gtk.Label)]
+                            if len(labels) >= 3:  # Artiste + Titre + Genre (minimum)
+                                # Label 0 : Artiste
+                                artist_label = labels[0]
+                                new_artist = self.album_data.get("artist", "Artiste Inconnu")
+                                artist_label.set_markup(f'<b>{new_artist}</b>')
+                                print(f"✅ Artiste mis à jour: {new_artist}")
+                                
+                                # Label 1 : Titre (nom du dossier)
+                                title_label = labels[1]
+                                folder_path = self.album_data.get('folder_path') or self.album_data.get('path')
+                                new_title = os.path.basename(folder_path) if folder_path else self.album_data.get('album', 'Album Inconnu')
+                                title_label.set_text(new_title)
+                                print(f"✅ Titre mis à jour: {new_title}")
+                                
+                                # Label 2 : Genre
+                                genre_label = labels[2]
+                                new_genre = self.album_data.get("genre", "Genre inconnu")
+                                genre_label.set_text(new_genre)
+                                print(f"✅ Genre mis à jour: {new_genre}")
+                                
+                                # Label 3 (optionnel) : Nombre de pistes
+                                if len(labels) >= 4:
+                                    tracks_label = labels[3]
+                                    tracks_count = self.album_data.get('tracks', 0)
+                                    tracks_label.set_text(f"{tracks_count} pistes")
+                                    print(f"✅ Pistes mises à jour: {tracks_count}")
+                                
+                                return
+        except Exception as e:
+            print(f"❌ Erreur mise à jour affichage: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _load_metadata_from_file(self, file_path):
+        """Charge les métadonnées depuis un fichier audio"""
+        try:
+            from mutagen.id3 import ID3
+            from mutagen.mp3 import MP3
+            from mutagen.mp4 import MP4
+            from mutagen.flac import FLAC
+            
+            metadata = {}
+            
+            if file_path.lower().endswith('.mp3'):
+                audio = MP3(file_path, ID3=ID3)
+                if audio.tags:
+                    metadata['artist'] = str(audio.tags.get('TPE1', [''])[0]) if audio.tags.get('TPE1') else ''
+                    metadata['album'] = str(audio.tags.get('TALB', [''])[0]) if audio.tags.get('TALB') else ''
+                    metadata['genre'] = str(audio.tags.get('TCON', [''])[0]) if audio.tags.get('TCON') else ''
+                    metadata['year'] = str(audio.tags.get('TDRC', [''])[0]) if audio.tags.get('TDRC') else ''
+                    
+            elif file_path.lower().endswith('.flac'):
+                audio = FLAC(file_path)
+                if audio.tags:
+                    metadata['artist'] = audio.get('ARTIST', [''])[0] if audio.get('ARTIST') else ''
+                    metadata['album'] = audio.get('ALBUM', [''])[0] if audio.get('ALBUM') else ''
+                    metadata['genre'] = audio.get('GENRE', [''])[0] if audio.get('GENRE') else ''
+                    metadata['year'] = audio.get('DATE', [''])[0] if audio.get('DATE') else ''
+                    
+            elif file_path.lower().endswith(('.m4a', '.mp4')):
+                audio = MP4(file_path)
+                if audio.tags:
+                    metadata['artist'] = audio.get('\xa9ART', [''])[0] if audio.get('\xa9ART') else ''
+                    metadata['album'] = audio.get('\xa9alb', [''])[0] if audio.get('\xa9alb') else ''
+                    metadata['genre'] = audio.get('\xa9gen', [''])[0] if audio.get('\xa9gen') else ''
+                    metadata['year'] = str(audio.get('\xa9day', [''])[0]) if audio.get('\xa9day') else ''
+            
+            return metadata
+            
+        except Exception as e:
+            print(f"❌ Erreur chargement métadonnées: {e}")
+            return {}
     
     def update_folder_path(self, new_folder_path: str):
         """Met à jour le chemin du dossier après renommage et rafraîchit l'affichage"""
