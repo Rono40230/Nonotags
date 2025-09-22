@@ -21,8 +21,8 @@ try:
 except ImportError:
     MUTAGEN_AVAILABLE = False
 
-# Import du gestionnaire d'événements
-from services.metadata_event_manager import metadata_event_manager
+# Import du gestionnaire d'événements - DÉSACTIVÉ, remplacé par RefreshManager
+# from services.metadata_event_manager import metadata_event_manager
 
 class AlbumCard(Gtk.Frame):
     """Widget représentant une carte d'album"""
@@ -31,6 +31,9 @@ class AlbumCard(Gtk.Frame):
         super().__init__()
         self.album_data = album_data
         self.parent_app = parent_app
+        
+        # Sauvegarder le chemin d'album original pour éviter la corruption lors d'éditions multi-albums
+        self.original_album_path = album_data.get('folder_path') or album_data.get('path', '')
         
         self.set_shadow_type(Gtk.ShadowType.OUT)
         self.get_style_context().add_class("album-card")
@@ -90,12 +93,22 @@ class AlbumCard(Gtk.Frame):
         artist_label.set_max_width_chars(25)
         info_box.pack_start(artist_label, False, False, 0)
         
-        # Ligne 2 : Titre = nom du dossier (SIMPLE)
-        folder_path = album_data.get('folder_path') or album_data.get('path')
-        album_title = os.path.basename(folder_path) if folder_path else album_data.get('album', 'Album Inconnu')
+        # Ligne 2 : Titre = métadonnées album (priorité) puis nom du dossier (fallback)
+        # Priorité aux métadonnées de l'album plutôt qu'au nom du dossier
+        album_title = album_data.get('album', '')
+        if not album_title:
+            # Fallback sur le nom du dossier seulement si pas de métadonnées album
+            folder_path = album_data.get('folder_path') or album_data.get('path')
+            album_title = os.path.basename(folder_path) if folder_path else 'Album Inconnu'
         
-        # Le titre = nom du dossier, point final
-        year_title_text = album_title
+        # Ajouter l'année au format (Année) Titre
+        year = album_data.get('year', album_data.get('date', ''))
+        if year:
+            # Extraire seulement l'année si c'est une date complète
+            year_str = str(year)[:4] if str(year) else ''
+            year_title_text = f"({year_str}) {album_title}" if year_str else album_title
+        else:
+            year_title_text = album_title
         year_title_label = Gtk.Label()
         year_title_label.set_text(year_title_text)
         year_title_label.set_halign(Gtk.Align.CENTER)
@@ -115,76 +128,53 @@ class AlbumCard(Gtk.Frame):
         genre_label.set_max_width_chars(25)
         info_box.pack_start(genre_label, False, False, 0)
         
-        # Ligne 4 : Nombre de pistes
-        tracks_text = f"{album_data.get('tracks', 0)} pistes"
-        tracks_label = Gtk.Label()
-        tracks_label.set_text(tracks_text)
-        tracks_label.set_halign(Gtk.Align.CENTER)
-        tracks_label.set_justify(Gtk.Justification.CENTER)
-        tracks_label.get_style_context().add_class("subtitle-label")
-        tracks_label.set_ellipsize(Pango.EllipsizeMode.END)
-        tracks_label.set_max_width_chars(25)
-        info_box.pack_start(tracks_label, False, False, 0)
-        
         vbox.pack_start(info_box, False, False, 0)
         
-        # Boutons d'action (verticaux, centrés, hauteur réduite)
-        button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-        button_box.set_halign(Gtk.Align.CENTER)
-        button_box.set_margin_top(8)
+        # Boutons d'action compacts sans classe CSS contraignante
+        self.edit_button = Gtk.Button(label="Éditer l'album")
+        self.edit_button.set_size_request(-1, 20)  
+        self.edit_button.connect("clicked", self.on_edit_clicked)
         
-        edit_btn = Gtk.Button.new_with_label("✏️ Éditer")
-        edit_btn.get_style_context().add_class("modern-button")
-        edit_btn.set_size_request(200, 32)
-        edit_btn.connect("clicked", self.on_edit_clicked)
-        button_box.pack_start(edit_btn, False, False, 0)
+        self.playlist_button = Gtk.Button(label="Créer la playlist de l'album")
+        self.playlist_button.set_size_request(-1, 20)  
+        self.playlist_button.connect("clicked", self.on_playlist_clicked)
         
-        playlist_btn = Gtk.Button.new_with_label("📋 Créer la playlist")
-        playlist_btn.set_size_request(200, 32)
-        playlist_btn.connect("clicked", self.on_playlist_clicked)
-        button_box.pack_start(playlist_btn, False, False, 0)
+        self.remove_button = Gtk.Button(label="Supprimer de la liste")
+        self.remove_button.set_size_request(-1, 20)  
+        self.remove_button.connect("clicked", self.on_remove_clicked)
         
-        remove_btn = Gtk.Button.new_with_label("🗑️ Retirer de la liste")
-        remove_btn.set_size_request(200, 32)
-        remove_btn.connect("clicked", self.on_remove_clicked)
-        button_box.pack_start(remove_btn, False, False, 0)
+        # Ajouter les boutons à la vbox
+        vbox.pack_start(self.edit_button, False, False, 2)
+        vbox.pack_start(self.playlist_button, False, False, 2)
+        vbox.pack_start(self.remove_button, False, False, 2)
         
-        vbox.pack_start(button_box, False, False, 0)
         self.add(vbox)
         
-        # S'enregistrer comme observateur pour les changements de métadonnées
-        self._register_metadata_observer()
+        # S'enregistrer comme observateur pour les changements de métadonnées - DÉSACTIVÉ
+        # Remplacé par RefreshManager qui gère centralement les mises à jour
+        # self._register_metadata_observer()
     
     def _register_metadata_observer(self):
-        """Enregistre cette card comme observateur des changements de métadonnées"""
-        album_path = self.album_data.get('folder_path') or self.album_data.get('path', '')
-        if album_path:
-            metadata_event_manager.register_observer(album_path, self._on_metadata_changed)
+        """Enregistre cette card comme observateur des changements de métadonnées - DÉSACTIVÉ"""
+        # album_path = self.album_data.get('folder_path') or self.album_data.get('path', '')
+        # if album_path:
+        #     metadata_event_manager.register_observer(album_path, self._on_metadata_changed)
+        pass
     
-    def _on_metadata_changed(self, updated_metadata=None):
-        """Callback appelé quand les métadonnées de cet album changent"""
-        try:
-            # Mettre à jour les données si fournies
-            if updated_metadata:
-                self.album_data.update(updated_metadata)
-            
-            # Rafraîchir l'affichage
-            self._update_display()
-            self.refresh_cover()
-            
-            album_name = os.path.basename(self.album_data.get('folder_path', ''))
-            print(f"🔄 Card auto-rafraîchie: {album_name}")
-        except Exception as e:
-            print(f"❌ Erreur auto-rafraîchissement card: {e}")
+    def _on_metadata_changed(self, file_path):
+        """Callback appelé quand les métadonnées changent - DÉSACTIVÉ"""
+        # GLib.idle_add(self._update_display)
+        pass
     
     def __del__(self):
-        """Destructeur pour nettoyer l'observateur"""
-        try:
-            album_path = self.album_data.get('folder_path') or self.album_data.get('path', '')
-            if album_path:
-                metadata_event_manager.unregister_observer(album_path, self._on_metadata_changed)
-        except:
-            pass  # Ignorer les erreurs lors de la destruction
+        """Destructeur pour nettoyer l'observateur - DÉSACTIVÉ"""
+        # try:
+        #     album_path = self.album_data.get('folder_path') or self.album_data.get('path', '')
+        #     if album_path:
+        #         metadata_event_manager.unregister_observer(album_path, self._on_metadata_changed)
+        # except:
+        #     pass  # Ignorer les erreurs lors de la destruction
+        pass
     
     def on_edit_clicked(self, button):
         """Ouvre la fenêtre d'édition"""
@@ -297,8 +287,8 @@ class AlbumCard(Gtk.Frame):
     def _update_display(self):
         """Met à jour l'affichage de la carte après édition"""
         try:
-            # RECHARGER les métadonnées depuis les fichiers au lieu d'utiliser les anciennes données
-            folder_path = self.album_data.get('folder_path') or self.album_data.get('path', '')
+            # Utiliser le chemin d'album ORIGINAL au lieu des données corrompues
+            folder_path = self.original_album_path
             if folder_path and os.path.exists(folder_path):
                 # Recharger les métadonnées depuis le premier fichier audio du dossier
                 audio_files = [f for f in os.listdir(folder_path) 
@@ -308,9 +298,19 @@ class AlbumCard(Gtk.Frame):
                     first_file = os.path.join(folder_path, audio_files[0])
                     fresh_metadata = self._load_metadata_from_file(first_file)
                     
-                    # Mettre à jour album_data avec les nouvelles métadonnées
-                    self.album_data.update(fresh_metadata)
-                    print(f"🔄 Métadonnées rechargées depuis: {audio_files[0]}")
+                    # REMPLACER complètement album_data au lieu de seulement mettre à jour
+                    # Utiliser le chemin original préservé au lieu du chemin corrompu
+                    self.album_data = fresh_metadata.copy()  # Nouvelles métadonnées complètes
+                    self.album_data['folder_path'] = self.original_album_path  # Utiliser le chemin ORIGINAL
+                    self.album_data['path'] = self.original_album_path  # Utiliser le chemin ORIGINAL
+                    
+                    print(f"🔄 Métadonnées rechargées depuis: {audio_files[0]} pour {os.path.basename(folder_path)}")
+                    print(f"   📀 Nouveau titre: {fresh_metadata.get('album', 'Inconnu')}")
+                    print(f"   🎤 Nouvel artiste: {fresh_metadata.get('artist', 'Inconnu')}")
+                else:
+                    print(f"⚠️ Aucun fichier audio trouvé dans: {folder_path}")
+            else:
+                print(f"⚠️ Dossier introuvable: {folder_path}")
         
             # Parcourir la hiérarchie pour trouver les labels
             for child in self.get_children():
@@ -325,25 +325,32 @@ class AlbumCard(Gtk.Frame):
                                 artist_label.set_markup(f'<b>{new_artist}</b>')
                                 print(f"✅ Artiste mis à jour: {new_artist}")
                                 
-                                # Label 1 : Titre (nom du dossier)
+                                # Label 1 : Titre (métadonnées album plutôt que nom du dossier)
                                 title_label = labels[1]
-                                folder_path = self.album_data.get('folder_path') or self.album_data.get('path')
-                                new_title = os.path.basename(folder_path) if folder_path else self.album_data.get('album', 'Album Inconnu')
-                                title_label.set_text(new_title)
-                                print(f"✅ Titre mis à jour: {new_title}")
+                                # Priorité aux métadonnées de l'album plutôt qu'au nom du dossier
+                                new_title = self.album_data.get('album', '')
+                                if not new_title:
+                                    # Fallback sur le nom du dossier seulement si pas de métadonnées album
+                                    folder_path = self.album_data.get('folder_path') or self.album_data.get('path')
+                                    new_title = os.path.basename(folder_path) if folder_path else 'Album Inconnu'
+                                
+                                # Ajouter l'année au format (Année) Titre
+                                year = self.album_data.get('year', self.album_data.get('date', ''))
+                                if year:
+                                    # Extraire seulement l'année si c'est une date complète
+                                    year_str = str(year)[:4] if str(year) else ''
+                                    new_title_with_year = f"({year_str}) {new_title}" if year_str else new_title
+                                else:
+                                    new_title_with_year = new_title
+                                
+                                title_label.set_text(new_title_with_year)
+                                print(f"✅ Titre mis à jour: {new_title_with_year}")
                                 
                                 # Label 2 : Genre
                                 genre_label = labels[2]
                                 new_genre = self.album_data.get("genre", "Genre inconnu")
                                 genre_label.set_text(new_genre)
                                 print(f"✅ Genre mis à jour: {new_genre}")
-                                
-                                # Label 3 (optionnel) : Nombre de pistes
-                                if len(labels) >= 4:
-                                    tracks_label = labels[3]
-                                    tracks_count = self.album_data.get('tracks', 0)
-                                    tracks_label.set_text(f"{tracks_count} pistes")
-                                    print(f"✅ Pistes mises à jour: {tracks_count}")
                                 
                                 return
         except Exception as e:
@@ -359,15 +366,24 @@ class AlbumCard(Gtk.Frame):
             from mutagen.mp4 import MP4
             from mutagen.flac import FLAC
             
+            print(f"🔍 DEBUG: Lecture métadonnées depuis: {file_path}")
+            
             metadata = {}
             
             if file_path.lower().endswith('.mp3'):
                 audio = MP3(file_path, ID3=ID3)
                 if audio.tags:
-                    metadata['artist'] = str(audio.tags.get('TPE1', [''])[0]) if audio.tags.get('TPE1') else ''
-                    metadata['album'] = str(audio.tags.get('TALB', [''])[0]) if audio.tags.get('TALB') else ''
-                    metadata['genre'] = str(audio.tags.get('TCON', [''])[0]) if audio.tags.get('TCON') else ''
-                    metadata['year'] = str(audio.tags.get('TDRC', [''])[0]) if audio.tags.get('TDRC') else ''
+                    artist = str(audio.tags.get('TPE1', [''])[0]) if audio.tags.get('TPE1') else ''
+                    album = str(audio.tags.get('TALB', [''])[0]) if audio.tags.get('TALB') else ''
+                    genre = str(audio.tags.get('TCON', [''])[0]) if audio.tags.get('TCON') else ''
+                    year = str(audio.tags.get('TDRC', [''])[0]) if audio.tags.get('TDRC') else ''
+                    
+                    metadata['artist'] = artist
+                    metadata['album'] = album
+                    metadata['genre'] = genre
+                    metadata['year'] = year
+                    
+                    print(f"🔍 DEBUG: Métadonnées lues - Artist: '{artist}', Album: '{album}', Genre: '{genre}', Year: '{year}'")
                     
             elif file_path.lower().endswith('.flac'):
                 audio = FLAC(file_path)

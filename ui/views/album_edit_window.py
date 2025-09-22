@@ -15,7 +15,8 @@ from mutagen.flac import FLAC
 from services.audio_player import AudioPlayer, PlayerState
 from services.cover_search import CoverSearchService
 from core.case_corrector import CaseCorrector
-from services.metadata_event_manager import metadata_event_manager
+# from services.metadata_event_manager import metadata_event_manager  # DÉSACTIVÉ - Remplacé par RefreshManager
+from core.refresh_manager import refresh_manager
 
 class AlbumEditWindow(Gtk.Window):
     """Fenêtre d'édition conforme au cahier des charges - 4 blocs"""
@@ -1080,33 +1081,73 @@ class AlbumEditWindow(Gtk.Window):
             if not self.tracks:
                 return False
             
-            new_album = self.album_entry.get_text().strip()
+            # Récupérer les valeurs communes (partagées entre tous les albums)
             new_artist = self.artist_entry.get_text().strip()
             new_year = self.year_entry.get_text().strip()
             new_genre = self.genre_combo.get_active_text() or ""
             
-            for track in self.tracks:
-                file_path = track['file_path']
-                if not os.path.exists(file_path):
-                    continue
-                
-                if file_path.lower().endswith('.mp3'):
-                    self._save_metadata_mp3(file_path, new_album, new_artist, new_year, new_genre)
-                elif file_path.lower().endswith('.flac'):
-                    self._save_metadata_flac(file_path, new_album, new_artist, new_year, new_genre)
-                elif file_path.lower().endswith(('.m4a', '.mp4')):
-                    self._save_metadata_mp4(file_path, new_album, new_artist, new_year, new_genre)
+            # Logique différente selon le mode d'édition
+            is_multi_album = len(self.selected_albums) > 1
+            
+            if is_multi_album:
+                print(f"💾 Sauvegarde multi-albums: Préservation des titres individuels")
+                # MODE MULTI-ALBUMS: Préserver les titres d'albums individuels
+                self._save_metadata_multi_album(new_artist, new_year, new_genre)
+            else:
+                print(f"💾 Sauvegarde album unique: Application du titre saisi")
+                # MODE ALBUM UNIQUE: Utiliser le titre saisi
+                new_album = self.album_entry.get_text().strip()
+                self._save_metadata_single_album(new_album, new_artist, new_year, new_genre)
             
             print(f"✅ Métadonnées sauvées automatiquement")
-            
-            # SYSTÈME D'ÉVÉNEMENTS DÉSACTIVÉ TEMPORAIREMENT - CAUSE CORRUPTION MULTI-ALBUMS
-            # self._emit_metadata_changed_events(new_album, new_artist, new_year, new_genre)
             
         except Exception as e:
             print(f"❌ Erreur sauvegarde métadonnées: {e}")
         
         self.metadata_save_timer = None
         return False
+    
+    def _save_metadata_single_album(self, new_album, new_artist, new_year, new_genre):
+        """Sauvegarde pour un seul album - applique toutes les valeurs saisies"""
+        for track in self.tracks:
+            file_path = track['file_path']
+            if not os.path.exists(file_path):
+                continue
+            
+            if file_path.lower().endswith('.mp3'):
+                self._save_metadata_mp3(file_path, new_album, new_artist, new_year, new_genre)
+            elif file_path.lower().endswith('.flac'):
+                self._save_metadata_flac(file_path, new_album, new_artist, new_year, new_genre)
+            elif file_path.lower().endswith(('.m4a', '.mp4')):
+                self._save_metadata_mp4(file_path, new_album, new_artist, new_year, new_genre)
+    
+    def _save_metadata_multi_album(self, new_artist, new_year, new_genre):
+        """Sauvegarde pour plusieurs albums - préserve les titres individuels"""
+        # Créer un mapping album_path -> titre_original pour préserver les titres
+        album_titles = {}
+        for album in self.selected_albums:
+            album_path = album.get('folder_path') or album.get('path', '')
+            album_title = album.get('album', os.path.basename(album_path))
+            album_titles[album_path] = album_title
+            print(f"📀 Album {os.path.basename(album_path)} → Titre préservé: '{album_title}'")
+        
+        for track in self.tracks:
+            file_path = track['file_path']
+            if not os.path.exists(file_path):
+                continue
+            
+            # Déterminer le titre de l'album pour ce fichier
+            track_album_path = os.path.dirname(file_path)
+            original_album_title = album_titles.get(track_album_path, "Album Inconnu")
+            
+            print(f"💾 Fichier {os.path.basename(file_path)} → Album: '{original_album_title}'")
+            
+            if file_path.lower().endswith('.mp3'):
+                self._save_metadata_mp3(file_path, original_album_title, new_artist, new_year, new_genre)
+            elif file_path.lower().endswith('.flac'):
+                self._save_metadata_flac(file_path, original_album_title, new_artist, new_year, new_genre)
+            elif file_path.lower().endswith(('.m4a', '.mp4')):
+                self._save_metadata_mp4(file_path, original_album_title, new_artist, new_year, new_genre)
 
     def _emit_metadata_changed_events(self, new_album, new_artist, new_year, new_genre):
         """Émet les événements de changement de métadonnées pour tous les albums modifiés"""
@@ -1148,8 +1189,8 @@ class AlbumEditWindow(Gtk.Window):
             
             # Émettre les événements pour tous les albums modifiés
             if album_paths:
-                metadata_event_manager.notify_metadata_changed(album_paths, updated_metadata)
-                print(f"📡 Événements émis pour {len(album_paths)} albums")
+                # metadata_event_manager.notify_metadata_changed(album_paths, updated_metadata)  # DÉSACTIVÉ - Remplacé par RefreshManager
+                print(f"📡 Ancien système d'événements désactivé pour {len(album_paths)} albums")
             
         except Exception as e:
             print(f"❌ Erreur émission événements: {e}")
@@ -1475,21 +1516,23 @@ class AlbumEditWindow(Gtk.Window):
             GLib.source_remove(self.metadata_save_timer)
             self._save_metadata_delayed()  # Sauvegarde immédiate
         
-        # Rafraîchir la carte parente une dernière fois
-        if hasattr(self, 'parent_card') and self.parent_card:
-            try:
-                # Mode single album : rafraîchir la carte parente
-                GLib.idle_add(self.parent_card._update_display)
-                print(f"🔄 Rafraîchissement final de la carte parente")
-            except Exception as e:
-                print(f"⚠️ Erreur rafraîchissement carte parente: {e}")
-        # MODE MULTI-ALBUMS DÉSACTIVÉ - CAUSE CORRUPTION
-        # else:
-        #     try:
-        #         if hasattr(self, 'selected_albums') and self.selected_albums:
-        #             self._refresh_all_modified_cards()
-        #     except Exception as e:
-        #         print(f"⚠️ Erreur rafraîchissement multi-cartes: {e}")
+        # Collecter les albums modifiés pour notification
+        modified_albums = []
+        if hasattr(self, 'tracks') and self.tracks:
+            # Extraire les dossiers d'albums uniques
+            album_folders = set()
+            for track in self.tracks:
+                if 'file_path' in track:
+                    album_folder = os.path.dirname(track['file_path'])
+                    album_folders.add(album_folder)
+            modified_albums = list(album_folders)
+        
+        # Notifier le RefreshManager des changements
+        if modified_albums:
+            refresh_manager.notify_metadata_changed(modified_albums, immediate=True)
+            print(f"🔄 RefreshManager notifié: {len(modified_albums)} albums modifiés")
+        else:
+            print("🔄 Aucun album à rafraîchir")
         
         # Nettoyer le lecteur audio
         if hasattr(self, 'audio_player'):

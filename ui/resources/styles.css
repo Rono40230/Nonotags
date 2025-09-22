@@ -142,3 +142,51 @@
 .modern-button:active {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+/* Bouton Éditer - Bleu pastel */
+.edit-button-blue {
+    background-image: linear-gradient(to bottom, #B3D9FF, #87CEEB);
+    color: #003366;
+    border: 1px solid #7BB3E0;
+}
+
+.edit-button-blue:hover {
+    background-image: linear-gradient(to bottom, #A3C9EF, #77BEDB);
+    border-color: #6BA3D0;
+}
+
+.edit-button-blue:active {
+    background-image: linear-gradient(to bottom, #77BEDB, #B3D9FF);
+}
+
+/* Bouton Playlist - Vert pastel */
+.playlist-button-green {
+    background-image: linear-gradient(to bottom, #B3FFB3, #87E087);
+    color: #003300;
+    border: 1px solid #7BD67B;
+}
+
+.playlist-button-green:hover {
+    background-image: linear-gradient(to bottom, #A3EFA3, #77D077);
+    border-color: #6BC66B;
+}
+
+.playlist-button-green:active {
+    background-image: linear-gradient(to bottom, #77D077, #B3FFB3);
+}
+
+/* Bouton Retirer - Orange pastel */
+.remove-button-orange {
+    background-image: linear-gradient(to bottom, #FFD4B3, #FFAB7A);
+    color: #663300;
+    border: 1px solid #FF9F5A;
+}
+
+.remove-button-orange:hover {
+    background-image: linear-gradient(to bottom, #FFC4A3, #FF9B6A);
+    border-color: #FF8F4A;
+}
+
+.remove-button-orange:active {
+    background-image: linear-gradient(to bottom, #FF9B6A, #FFD4B3);
+}

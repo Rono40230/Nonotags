@@ -13,6 +13,7 @@ from ui.startup_window import StartupWindow
 from ui.components.album_card import AlbumCard
 from ui.processing_orchestrator import ProcessingOrchestrator, ProcessingState, ProcessingStep
 from ui.views.exceptions_window import ExceptionsWindow
+from core.refresh_manager import refresh_manager
 
 class NonotagsApp:
     """Application Nonotags avec séquence de démarrage"""
@@ -233,6 +234,10 @@ class NonotagsApp:
         
         GLib.idle_add(self.update_cards_per_line)
         
+        # Enregistrer auprès du RefreshManager pour les notifications de rafraîchissement
+        refresh_manager.register_display_component(self)
+        print("📝 NonotagsApp enregistrée auprès du RefreshManager")
+        
         # Fermer la fenêtre de démarrage
         if self.startup_window:
             self.startup_window.destroy()
@@ -240,6 +245,10 @@ class NonotagsApp:
     
     def on_main_window_close(self, window, event):
         """Gestionnaire de fermeture de la fenêtre principale"""
+        # Désenregistrer du RefreshManager
+        refresh_manager.unregister_display_component(self)
+        print("📝 NonotagsApp désenregistrée du RefreshManager")
+        
         Gtk.main_quit()
         return False
     
@@ -583,7 +592,7 @@ class NonotagsApp:
             self.progress_bar.set_fraction(0.0)
             self.progress_bar.set_text("Prêt")
     
-    def _refresh_albums_display(self):
+    def _refresh_albums_display(self, force_reload_metadata=True):
         """Rafraîchit l'affichage des albums en rescannant le dossier actuel"""
         try:
             # Récupère le dossier actuellement affiché
@@ -591,6 +600,11 @@ class NonotagsApp:
                 # Rescanne le dossier pour récupérer les noms mis à jour
                 from services.music_scanner import MusicScanner
                 scanner = MusicScanner()
+                
+                # Forcer le rechargement des métadonnées si demandé
+                if force_reload_metadata:
+                    print("🔄 Rechargement forcé des métadonnées depuis les fichiers")
+                
                 updated_albums = scanner.scan_directory(self.current_folder)
                 
                 # Met à jour l'affichage avec les nouvelles données
