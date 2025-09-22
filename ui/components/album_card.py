@@ -197,13 +197,11 @@ class AlbumCard(Gtk.Frame):
             
             if playlist_path:
                 album_title = self.album_data.get('title') or self.album_data.get('album', 'Album')
-                print(f"✅ Playlist créée: {playlist_path}")
                 self._show_success(f"Playlist créée pour '{album_title}'")
             else:
                 self._show_error("Impossible de créer la playlist")
                 
         except Exception as e:
-            print(f"❌ Erreur création playlist: {e}")
             self._show_error(f"Erreur: {str(e)}")
     
     def on_remove_clicked(self, button):
@@ -221,8 +219,7 @@ class AlbumCard(Gtk.Frame):
                 self._show_success(f"Album '{album_title}' retiré de la liste")
                     
         except Exception as e:
-            print(f"❌ Erreur suppression album: {e}")
-            self._show_error(f"Erreur: {str(e)}")
+            self._show_error(f"Erreur suppression album: {e}")
     
     def _create_playlist_m3u(self, folder_path):
         """Crée une playlist M3U avec les fichiers MP3 du dossier"""
@@ -271,13 +268,12 @@ class AlbumCard(Gtk.Frame):
             return playlist_path
             
         except Exception as e:
-            print(f"❌ Erreur création playlist M3U: {e}")
             return None
     
     def _show_success(self, message):
         """Affiche un message de succès"""
-        print(f"✅ {message}")
         # TODO: Implémenter notification toast si disponible
+        pass
     
     def _show_error(self, message):
         """Affiche un message d'erreur"""
@@ -303,14 +299,10 @@ class AlbumCard(Gtk.Frame):
                     self.album_data = fresh_metadata.copy()  # Nouvelles métadonnées complètes
                     self.album_data['folder_path'] = self.original_album_path  # Utiliser le chemin ORIGINAL
                     self.album_data['path'] = self.original_album_path  # Utiliser le chemin ORIGINAL
-                    
-                    print(f"🔄 Métadonnées rechargées depuis: {audio_files[0]} pour {os.path.basename(folder_path)}")
-                    print(f"   📀 Nouveau titre: {fresh_metadata.get('album', 'Inconnu')}")
-                    print(f"   🎤 Nouvel artiste: {fresh_metadata.get('artist', 'Inconnu')}")
                 else:
-                    print(f"⚠️ Aucun fichier audio trouvé dans: {folder_path}")
+                    pass  # Fichiers audio non trouvés
             else:
-                print(f"⚠️ Dossier introuvable: {folder_path}")
+                pass  # Dossier introuvable
         
             # Parcourir la hiérarchie pour trouver les labels
             for child in self.get_children():
@@ -323,7 +315,6 @@ class AlbumCard(Gtk.Frame):
                                 artist_label = labels[0]
                                 new_artist = self.album_data.get("artist", "Artiste Inconnu")
                                 artist_label.set_markup(f'<b>{new_artist}</b>')
-                                print(f"✅ Artiste mis à jour: {new_artist}")
                                 
                                 # Label 1 : Titre (métadonnées album plutôt que nom du dossier)
                                 title_label = labels[1]
@@ -344,17 +335,14 @@ class AlbumCard(Gtk.Frame):
                                     new_title_with_year = new_title
                                 
                                 title_label.set_text(new_title_with_year)
-                                print(f"✅ Titre mis à jour: {new_title_with_year}")
                                 
                                 # Label 2 : Genre
                                 genre_label = labels[2]
                                 new_genre = self.album_data.get("genre", "Genre inconnu")
                                 genre_label.set_text(new_genre)
-                                print(f"✅ Genre mis à jour: {new_genre}")
                                 
                                 return
         except Exception as e:
-            print(f"❌ Erreur mise à jour affichage: {e}")
             import traceback
             traceback.print_exc()
     
@@ -365,8 +353,6 @@ class AlbumCard(Gtk.Frame):
             from mutagen.mp3 import MP3
             from mutagen.mp4 import MP4
             from mutagen.flac import FLAC
-            
-            print(f"🔍 DEBUG: Lecture métadonnées depuis: {file_path}")
             
             metadata = {}
             
@@ -382,8 +368,6 @@ class AlbumCard(Gtk.Frame):
                     metadata['album'] = album
                     metadata['genre'] = genre
                     metadata['year'] = year
-                    
-                    print(f"🔍 DEBUG: Métadonnées lues - Artist: '{artist}', Album: '{album}', Genre: '{genre}', Year: '{year}'")
                     
             elif file_path.lower().endswith('.flac'):
                 audio = FLAC(file_path)
@@ -404,21 +388,15 @@ class AlbumCard(Gtk.Frame):
             return metadata
             
         except Exception as e:
-            print(f"❌ Erreur chargement métadonnées: {e}")
             return {}
     
     def update_folder_path(self, new_folder_path: str):
         """Met à jour le chemin du dossier après renommage et rafraîchit l'affichage"""
-        old_path = self.album_data.get('folder_path', '')
-        print(f"🔄 Mise à jour chemin dossier: {old_path} → {new_folder_path}")
-        
         # Mettre à jour les données de l'album
         self.album_data['folder_path'] = new_folder_path
         
         # Rafraîchir l'affichage pour montrer le nouveau nom
         self._update_display()
-        
-        print(f"✅ Carte mise à jour avec nouveau chemin: {new_folder_path}")
     
     def refresh_cover(self):
         """Met à jour la pochette de la carte après téléchargement"""

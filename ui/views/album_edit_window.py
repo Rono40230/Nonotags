@@ -885,15 +885,10 @@ class AlbumEditWindow(Gtk.Window):
                     def update_card_cover():
                         try:
                             self.parent_card.refresh_cover()
-                            print(f"🔄 Carte rafraîchie avec nouvelle pochette")
                         except Exception as e:
                             print(f"❌ Erreur rafraîchissement carte: {e}")
                     
                     GLib.idle_add(update_card_cover)
-                
-                print(f"✅ Pochette sauvée: {cover_path}")
-                print(f"✅ Pochette appliquée aux tags de {len(self.tracks)} morceaux")
-                print(f"✅ Carte parent mise à jour")
             else:
                 print("⚠️ Aucun morceau chargé pour appliquer la pochette")
                 
@@ -915,7 +910,6 @@ class AlbumEditWindow(Gtk.Window):
         for track in self.tracks:
             try:
                 file_path = track['file_path']
-                print(f"🔄 Traitement: {os.path.basename(file_path)}")
                 
                 if not os.path.exists(file_path):
                     print(f"❌ Fichier morceau introuvable: {file_path}")
@@ -926,21 +920,16 @@ class AlbumEditWindow(Gtk.Window):
                 with open(cover_path, 'rb') as img_file:
                     cover_data = img_file.read()
                 
-                print(f"📸 Image lue: {len(cover_data)} bytes")
-                
                 # Appliquer selon le format de fichier
                 if file_path.lower().endswith('.mp3'):
-                    print(f"🎵 Application MP3: {file_path}")
                     self._embed_cover_mp3(file_path, cover_data)
                     # Vérifier que la pochette a été appliquée
                     self._verify_cover_embedded(file_path, 'mp3')
                 elif file_path.lower().endswith('.flac'):
-                    print(f"🎵 Application FLAC: {file_path}")
                     self._embed_cover_flac(file_path, cover_data)
                     # Vérifier que la pochette a été appliquée
                     self._verify_cover_embedded(file_path, 'flac')
                 elif file_path.lower().endswith(('.m4a', '.mp4')):
-                    print(f"🎵 Application MP4: {file_path}")
                     self._embed_cover_mp4(file_path, cover_data)
                     # Vérifier que la pochette a été appliquée
                     self._verify_cover_embedded(file_path, 'mp4')
@@ -950,7 +939,6 @@ class AlbumEditWindow(Gtk.Window):
                     continue
                 
                 success_count += 1
-                print(f"✅ Pochette appliquée: {os.path.basename(file_path)}")
                 
             except Exception as e:
                 print(f"❌ Erreur application pochette sur {track['file_path']}: {e}")
@@ -958,7 +946,6 @@ class AlbumEditWindow(Gtk.Window):
                 traceback.print_exc()
                 error_count += 1
         
-        print(f"🎵 Pochette appliquée avec succès sur {success_count}/{len(self.tracks)} morceaux")
         if error_count > 0:
             print(f"⚠️ {error_count} erreurs lors de l'application")
     
@@ -967,16 +954,13 @@ class AlbumEditWindow(Gtk.Window):
         from mutagen.id3 import ID3, APIC, ID3NoHeaderError
         
         try:
-            print(f"🔄 Chargement MP3: {file_path}")
             audio = ID3(file_path)
         except ID3NoHeaderError:
-            print(f"🔄 Création nouveau header ID3: {file_path}")
             audio = ID3()
         
         # SUPPRIMER TOUTES LES ANCIENNES POCHETTES D'ABORD
         apic_keys = [key for key in audio.keys() if key.startswith('APIC')]
         for key in apic_keys:
-            print(f"🗑️ Suppression ancienne pochette: {key}")
             del audio[key]
         
         # Ajouter la nouvelle pochette
@@ -988,19 +972,15 @@ class AlbumEditWindow(Gtk.Window):
             data=cover_data
         )
         
-        print(f"💾 Sauvegarde tags MP3: {file_path}")
         audio.save(file_path)
     
     def _embed_cover_flac(self, file_path, cover_data):
         """Intègre la pochette dans un fichier FLAC"""
         from mutagen.flac import FLAC, Picture
         
-        print(f"🔄 Chargement FLAC: {file_path}")
         audio = FLAC(file_path)
         
         # SUPPRIMER TOUTES LES ANCIENNES POCHETTES D'ABORD
-        existing_pictures = len(audio.pictures)
-        print(f"🗑️ Suppression de {existing_pictures} anciennes pochettes FLAC")
         audio.clear_pictures()
         
         # Créer l'objet Picture
@@ -1020,19 +1000,15 @@ class AlbumEditWindow(Gtk.Window):
         """Intègre la pochette dans un fichier MP4/M4A"""
         from mutagen.mp4 import MP4, MP4Cover
         
-        print(f"🔄 Chargement MP4: {file_path}")
         audio = MP4(file_path)
         
         # SUPPRIMER TOUTES LES ANCIENNES POCHETTES D'ABORD
         if 'covr' in audio:
-            existing_covers = len(audio['covr'])
-            print(f"🗑️ Suppression de {existing_covers} anciennes pochettes MP4")
             del audio['covr']
         
         # Ajouter la nouvelle pochette
         audio['covr'] = [MP4Cover(cover_data, MP4Cover.FORMAT_JPEG)]
         
-        print(f"💾 Sauvegarde tags MP4: {file_path}")
         audio.save()
     
     def _verify_cover_embedded(self, file_path, format_type):
@@ -1042,28 +1018,19 @@ class AlbumEditWindow(Gtk.Window):
                 from mutagen.id3 import ID3
                 audio = ID3(file_path)
                 apic_keys = [key for key in audio.keys() if key.startswith('APIC')]
-                if apic_keys:
-                    cover_size = len(audio[apic_keys[0]].data)
-                    print(f"✅ Vérification MP3: pochette de {cover_size} bytes trouvée")
-                else:
+                if not apic_keys:
                     print(f"❌ Vérification MP3: AUCUNE pochette trouvée!")
                     
             elif format_type == 'flac':
                 from mutagen.flac import FLAC
                 audio = FLAC(file_path)
-                if audio.pictures:
-                    cover_size = len(audio.pictures[0].data)
-                    print(f"✅ Vérification FLAC: pochette de {cover_size} bytes trouvée")
-                else:
+                if not audio.pictures:
                     print(f"❌ Vérification FLAC: AUCUNE pochette trouvée!")
                     
             elif format_type == 'mp4':
                 from mutagen.mp4 import MP4
                 audio = MP4(file_path)
-                if 'covr' in audio and audio['covr']:
-                    cover_size = len(audio['covr'][0])
-                    print(f"✅ Vérification MP4: pochette de {cover_size} bytes trouvée")
-                else:
+                if 'covr' not in audio or not audio['covr']:
                     print(f"❌ Vérification MP4: AUCUNE pochette trouvée!")
                     
         except Exception as e:
@@ -1090,16 +1057,12 @@ class AlbumEditWindow(Gtk.Window):
             is_multi_album = len(self.selected_albums) > 1
             
             if is_multi_album:
-                print(f"💾 Sauvegarde multi-albums: Préservation des titres individuels")
                 # MODE MULTI-ALBUMS: Préserver les titres d'albums individuels
                 self._save_metadata_multi_album(new_artist, new_year, new_genre)
             else:
-                print(f"💾 Sauvegarde album unique: Application du titre saisi")
                 # MODE ALBUM UNIQUE: Utiliser le titre saisi
                 new_album = self.album_entry.get_text().strip()
                 self._save_metadata_single_album(new_album, new_artist, new_year, new_genre)
-            
-            print(f"✅ Métadonnées sauvées automatiquement")
             
         except Exception as e:
             print(f"❌ Erreur sauvegarde métadonnées: {e}")
@@ -1234,9 +1197,7 @@ class AlbumEditWindow(Gtk.Window):
                 # Renommer seulement si le nom change
                 if new_file_path != file_path:
                     os.rename(file_path, new_file_path)
-                    print(f"📁 Fichier renommé: {os.path.basename(file_path)} → {os.path.basename(new_file_path)}")
             
-            print(f"✅ Titre sauvegardé: {os.path.basename(new_file_path)} → '{title}'")
             return new_file_path
             
         except Exception as e:
@@ -1530,9 +1491,6 @@ class AlbumEditWindow(Gtk.Window):
         # Notifier le RefreshManager des changements
         if modified_albums:
             refresh_manager.notify_metadata_changed(modified_albums, immediate=True)
-            print(f"🔄 RefreshManager notifié: {len(modified_albums)} albums modifiés")
-        else:
-            print("🔄 Aucun album à rafraîchir")
         
         # Nettoyer le lecteur audio
         if hasattr(self, 'audio_player'):
@@ -1576,8 +1534,6 @@ class AlbumEditWindow(Gtk.Window):
                     if card_path in modified_paths:
                         GLib.idle_add(card._update_display)
                         refreshed_count += 1
-            
-            print(f"🔄 {refreshed_count} cartes rafraîchies après édition multi-albums")
             
         except Exception as e:
             print(f"❌ Erreur lors du rafraîchissement multi-cartes: {e}")

@@ -42,8 +42,6 @@ class RefreshManager:
         # Timer pour regrouper les notifications
         self._refresh_timer = None
         self._refresh_delay_ms = 100  # 100ms de délai pour regrouper les notifications
-        
-        print("🔄 RefreshManager initialisé")
     
     @classmethod
     def get_instance(cls):
@@ -61,8 +59,6 @@ class RefreshManager:
             return
             
         self._display_components.add(component)
-        component_type = type(component).__name__
-        print(f"📝 Composant d'affichage enregistré: {component_type}")
     
     def unregister_display_component(self, component):
         """
@@ -73,8 +69,6 @@ class RefreshManager:
         """
         if component in self._display_components:
             self._display_components.discard(component)
-            component_type = type(component).__name__
-            print(f"📝 Composant d'affichage désenregistré: {component_type}")
     
     def notify_metadata_changed(self, album_paths: List[str] = None, immediate: bool = False):
         """
@@ -96,11 +90,9 @@ class RefreshManager:
                 normalized_paths.append(album_path)
             
             self._pending_refreshes.update(normalized_paths)
-            print(f"🔄 Métadonnées modifiées: {len(normalized_paths)} albums en attente")
         else:
             # Rafraîchissement global
             self._pending_refreshes.clear()
-            print(f"🔄 Rafraîchissement global demandé")
         
         if immediate:
             self._execute_refresh()
@@ -121,18 +113,13 @@ class RefreshManager:
                 print("⚠️ Aucun composant d'affichage enregistré")
                 return False
             
-            pending_count = len(self._pending_refreshes)
             albums_to_refresh = list(self._pending_refreshes) if self._pending_refreshes else None
-            
-            print(f"🔄 Rafraîchissement en cours: {pending_count} albums spécifiques" if albums_to_refresh else "🔄 Rafraîchissement global")
             
             # Parcourir tous les composants enregistrés
             refreshed_count = 0
             for component in list(self._display_components):  # Copie pour éviter les modifications concurrentes
                 if self._refresh_component(component, albums_to_refresh):
                     refreshed_count += 1
-            
-            print(f"✅ Rafraîchissement terminé: {refreshed_count} composants mis à jour")
             
             # Nettoyer les rafraîchissements en attente
             self._pending_refreshes.clear()
@@ -164,28 +151,21 @@ class RefreshManager:
             
             # Fallback vers les méthodes existantes pour autres composants
             refresh_method = None
-            method_name = "inconnu"
             
             if hasattr(component, '_refresh_albums_display'):
                 refresh_method = component._refresh_albums_display
-                method_name = "_refresh_albums_display"
             elif hasattr(component, '_update_display'):
                 refresh_method = component._update_display
-                method_name = "_update_display"
             elif hasattr(component, 'refresh'):
                 refresh_method = component.refresh
-                method_name = "refresh"
             elif hasattr(component, 'update'):
                 refresh_method = component.update
-                method_name = "update"
             
             if refresh_method:
                 # Programmer le rafraîchissement dans le thread principal GTK
                 GLib.idle_add(refresh_method)
-                print(f"  📱 {component_type}.{method_name}() programmé")
                 return True
             else:
-                print(f"  ⚠️ {component_type}: aucune méthode de rafraîchissement trouvée")
                 return False
                 
         except Exception as e:
@@ -205,7 +185,6 @@ class RefreshManager:
         """
         try:
             if not hasattr(app, 'albums_grid'):
-                print("  ⚠️ NonotagsApp: albums_grid non trouvé")
                 return False
             
             # Fonction à exécuter dans le thread principal GTK
@@ -215,22 +194,15 @@ class RefreshManager:
                     
                     # Parcourir toutes les cartes dans albums_grid
                     children = app.albums_grid.get_children()
-                    print(f"  🔍 Parcours de {len(children)} éléments dans albums_grid")
                     
-                    for i, child in enumerate(children):
+                    for child in children:
                         child_type = type(child).__name__
-                        has_update = hasattr(child, '_update_display')
-                        print(f"    🎯 Enfant {i}: {child_type}, _update_display: {has_update}")
                         
                         # Si c'est un FlowBoxChild, récupérer la vraie carte à l'intérieur
                         actual_card = child
                         if child_type == "FlowBoxChild":
                             # FlowBoxChild contient la vraie carte d'album
                             actual_card = child.get_child()
-                            if actual_card:
-                                actual_card_type = type(actual_card).__name__
-                                has_update = hasattr(actual_card, '_update_display')
-                                print(f"      🎯 Carte réelle: {actual_card_type}, _update_display: {has_update}")
                         
                         if hasattr(actual_card, '_update_display'):
                             # Si albums_to_refresh est spécifié, vérifier si cette carte correspond
@@ -242,9 +214,7 @@ class RefreshManager:
                             # Mettre à jour la carte
                             actual_card._update_display()
                             updated_count += 1
-                            print(f"      ✅ Carte mise à jour!")
                     
-                    print(f"  📱 {updated_count} cartes mises à jour directement")
                     return False  # Ne pas répéter le timer
                     
                 except Exception as e:
@@ -261,7 +231,6 @@ class RefreshManager:
     
     def force_refresh_all(self):
         """Force un rafraîchissement immédiat de tous les composants"""
-        print("🔄 Rafraîchissement forcé de tous les composants")
         self._pending_refreshes.clear()
         self._execute_refresh()
     

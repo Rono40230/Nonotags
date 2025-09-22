@@ -199,11 +199,11 @@ window {
 /* === ALBUM CARDS === */
 .album-card {
   background: white;
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: none;
   transition: var(--transition);
-  border: 1px solid var(--gray-200);
+  border: none;
   cursor: pointer;
   position: relative;
   width: 320px !important;
@@ -251,15 +251,15 @@ window {
 }
 
 .album-card:hover {
-  box-shadow: var(--shadow-xl);
-  transform: translateY(-4px);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
   border-color: var(--gray-300);
 }
 
 .album-card.selected {
-  border-color: var(--primary-500);
-  box-shadow: 0 0 0 3px var(--primary-100);
-  transform: translateY(-2px);
+  border: 2px solid var(--primary-500);
+  box-shadow: 0 0 0 2px var(--primary-100);
+  transform: translateY(-1px);
 }
 
 .album-card.selected::before {
@@ -800,4 +800,17 @@ scrollbar slider:hover {
 
 .fade-in {
   animation: fade-in 0.3s ease-out;
+}
+
+/* === LAYOUT RESPONSIVE POUR ALBUMS GRID === */
+flowbox {
+  padding: 0;
+  margin: 0;
+}
+
+/* Optimisation de l'espacement pour éviter la troncature */
+.albums-container {
+  padding: 20px;
+  margin: 0;
+  box-sizing: border-box;
 }

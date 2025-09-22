@@ -63,6 +63,9 @@ class NonotagsApp:
             scanner = MusicScanner()
 
             albums = scanner.scan_directory(folder_path)
+            
+            # ✅ TRI PAR ANNÉE CROISSANTE : Trier les albums avant affichage
+            albums = self._sort_albums_by_year(albums)
 
             # MODIFICATION: Ne plus effacer les albums existants
             # Initialiser les listes si elles n'existent pas
@@ -118,6 +121,43 @@ class NonotagsApp:
         except Exception as e:
             print(f"❌ Erreur lors du scan: {e}")
             # En cas d'erreur, garder les albums de démo
+
+    def _sort_albums_by_year(self, albums: List[Dict]) -> List[Dict]:
+        """Trie les albums par ordre croissant des années"""
+        def get_year_for_sorting(album):
+            """Extrait l'année pour le tri, avec gestion des cas spéciaux"""
+            year = album.get('year', album.get('date', ''))
+            
+            if not year:
+                return 9999  # Albums sans année en fin
+                
+            year_str = str(year)
+            
+            # Gestion des compilations avec plusieurs années (ex: "1990, 1993, 1995")
+            if ',' in year_str:
+                # Prendre la première année pour le tri
+                years = [y.strip() for y in year_str.split(',')]
+                try:
+                    return int(years[0])
+                except (ValueError, IndexError):
+                    return 9999
+            
+            # Extraire les 4 premiers caractères pour l'année (gestion des dates complètes)
+            try:
+                year_int = int(year_str[:4])
+                # Vérifier que c'est une année valide
+                if 1900 <= year_int <= 2100:
+                    return year_int
+                else:
+                    return 9999
+            except (ValueError, TypeError):
+                return 9999
+        
+        try:
+            sorted_albums = sorted(albums, key=get_year_for_sorting)
+            return sorted_albums
+        except Exception as e:
+            return albums  # Retourner la liste originale en cas d'erreur
         
         return False  # Pour GLib.idle_add
     
@@ -145,8 +185,6 @@ class NonotagsApp:
                     if (album.get('folder_path') or album.get('path', '')) != album_path
                 ]
                 self.orchestrator.total_albums = len(self.orchestrator.albums_queue)
-                
-            print(f"✅ Album supprimé des structures de données: {album_data.get('title', 'Album')}")
             
         except Exception as e:
             print(f"❌ Erreur lors de la suppression de l'album: {e}")
@@ -219,7 +257,7 @@ class NonotagsApp:
         
         self.main_window.set_position(Gtk.WindowPosition.CENTER)
         self.main_window.connect("delete-event", self.on_main_window_close)
-        self.main_window.connect("check-resize", self.on_window_resize)
+        self.main_window.connect("size-allocate", self.on_window_resize)
         
         # Container principal avec scroll
         scrolled = Gtk.ScrolledWindow()
@@ -255,7 +293,6 @@ class NonotagsApp:
         
         # Enregistrer auprès du RefreshManager pour les notifications de rafraîchissement
         refresh_manager.register_display_component(self)
-        print("📝 NonotagsApp enregistrée auprès du RefreshManager")
         
         # Fermer la fenêtre de démarrage
         if self.startup_window:
@@ -266,7 +303,6 @@ class NonotagsApp:
         """Gestionnaire de fermeture de la fenêtre principale"""
         # Désenregistrer du RefreshManager
         refresh_manager.unregister_display_component(self)
-        print("📝 NonotagsApp désenregistrée du RefreshManager")
         
         Gtk.main_quit()
         return False
@@ -297,6 +333,9 @@ class NonotagsApp:
     
     def _update_albums_display(self, albums: List[Dict]):
         """Met à jour l'affichage des albums en conservant les cards existantes"""
+        
+        # ✅ TRI PAR ANNÉE CROISSANTE : Maintenir le tri lors des mises à jour
+        albums = self._sort_albums_by_year(albums)
         
         # Au lieu de vider et recréer, mettre à jour les cards existantes
         existing_cards = self.albums_grid.get_children()
@@ -413,11 +452,21 @@ class NonotagsApp:
         
         CARD_WIDTH = 320
         CARD_SPACING = 20
-        WINDOW_MARGINS = 40
+        WINDOW_MARGINS = 60  # Marges augmentées pour éviter la troncature
+        SCROLLBAR_WIDTH = 20  # Espace pour la scrollbar
         
-        available_width = window_width - WINDOW_MARGINS
-        cards_per_line = max(1, available_width // (CARD_WIDTH + CARD_SPACING))
-        cards_per_line = min(8, cards_per_line)
+        available_width = window_width - WINDOW_MARGINS - SCROLLBAR_WIDTH
+        
+        # Calcul plus précis pour éviter la troncature
+        total_width_per_card = CARD_WIDTH + CARD_SPACING
+        cards_per_line = max(1, available_width // total_width_per_card)
+        
+        # Vérifier qu'on ne dépasse pas la largeur disponible
+        required_width = (cards_per_line * CARD_WIDTH) + ((cards_per_line - 1) * CARD_SPACING)
+        if required_width > available_width:
+            cards_per_line = max(1, cards_per_line - 1)
+        
+        cards_per_line = min(8, cards_per_line)  # Maximum 8 cartes par ligne
         
         return int(cards_per_line)
     
@@ -434,12 +483,12 @@ class NonotagsApp:
         if hasattr(self, 'main_window') and self.main_window:
             width = self.main_window.get_allocated_width()
     
-    def on_window_resize(self, window):
+    def on_window_resize(self, window, allocation=None):
         """Gestionnaire de redimensionnement de fenêtre avec debouncing"""
         if self._resize_timeout_id:
             GLib.source_remove(self._resize_timeout_id)
         
-        self._resize_timeout_id = GLib.timeout_add(100, self._delayed_resize_update)
+        self._resize_timeout_id = GLib.timeout_add(150, self._delayed_resize_update)
     
     def _delayed_resize_update(self):
         """Met à jour le layout avec un délai pour éviter les calculs excessifs"""
@@ -501,7 +550,6 @@ class NonotagsApp:
         try:
             original_folder_path = album.get('folder_path', '')
             if not original_folder_path:
-                print("⚠️ Pas de folder_path dans les données album")
                 return
             
             # Trouver la carte correspondante dans la grille
@@ -512,8 +560,6 @@ class NonotagsApp:
                         card_folder_path = card.album_data.get('folder_path', '')
                         
                         if card_folder_path == original_folder_path:
-                            print(f"📝 Carte trouvée pour {original_folder_path}")
-                            
                             # ✅ FIX: Mettre à jour directement avec les nouvelles données de l'album
                             # L'orchestrateur a déjà mis à jour album['folder_path']
                             card.album_data.update(album)
@@ -621,34 +667,40 @@ class NonotagsApp:
                 scanner = MusicScanner()
                 
                 # Forcer le rechargement des métadonnées si demandé
-                if force_reload_metadata:
-                    print("🔄 Rechargement forcé des métadonnées depuis les fichiers")
-                
                 updated_albums = scanner.scan_directory(self.current_folder)
                 
                 # Met à jour l'affichage avec les nouvelles données
                 self._update_albums_display(updated_albums)
-                print(f"🔄 Affichage rafraîchi: {len(updated_albums)} albums")
             else:
-                print("❌ Pas de dossier actuel pour rafraîchissement")
+                pass  # Pas de dossier actuel pour rafraîchissement
         except Exception as e:
             print(f"❌ Erreur lors du rafraîchissement: {e}")
     
     def _load_css(self):
-        """Charge le fichier CSS pour les styles des boutons"""
+        """Charge les fichiers CSS pour les styles"""
         try:
+            screen = Gdk.Screen.get_default()
+            style_context = Gtk.StyleContext()
+            
+            # Charger le CSS principal des boutons
             css_provider = Gtk.CssProvider()
             css_file = os.path.join(os.path.dirname(__file__), "resources", "styles.css")
             
             if os.path.exists(css_file):
                 css_provider.load_from_path(css_file)
-                screen = Gdk.Screen.get_default()
-                style_context = Gtk.StyleContext()
                 style_context.add_provider_for_screen(
                     screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
                 )
-                print(f"✅ CSS chargé depuis: {css_file}")
-            else:
-                print(f"⚠️ Fichier CSS introuvable: {css_file}")
+            
+            # Charger le thème moderne pour les cartes
+            modern_css_provider = Gtk.CssProvider()
+            modern_css_file = os.path.join(os.path.dirname(__file__), "resources", "css", "modern_theme.css")
+            
+            if os.path.exists(modern_css_file):
+                modern_css_provider.load_from_path(modern_css_file)
+                style_context.add_provider_for_screen(
+                    screen, modern_css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 1
+                )
+            
         except Exception as e:
             print(f"❌ Erreur lors du chargement du CSS: {e}")
