@@ -1,5 +1,35 @@
 /* Styles pour les boutons Nonotags avec dégradé de bleu - Compatible GTK+ 3.0 */
 
+/* Style pour le HeaderBar - Fond blanc */
+.titlebar {
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Style pour la fenêtre principale - Fond blanc */
+.main-window {
+    background: white;
+}
+
+/* Styles pour les boutons du header - Ultra compacts avec police plus grande */
+.header-button {
+    border-radius: 4px;
+    padding: 1px 6px;    /* Padding encore plus réduit */
+    font-weight: bold;
+    font-size: 13px;      /* Police augmentée */
+    min-width: 80px;
+    min-height: 18px;     /* Hauteur encore plus réduite */
+    margin: 1px;
+}
+
+.header-button:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.header-button:active {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
 /* Bouton "Importer des albums" - Bleu le plus foncé */
 .button-import {
     background-image: linear-gradient(to bottom, #0066CC, #004499);
@@ -40,6 +70,27 @@
 
 .button-exceptions:active {
     background-image: linear-gradient(to bottom, #2266BB, #3388DD);
+}
+
+/* Bouton "Éditer la sélection" - Bleu moyen-foncé-émeraude */
+.button-edit-selection {
+    background-image: linear-gradient(to bottom, #2288CC, #1166AA);
+    color: white;
+    border: 1px solid #005599;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    min-width: 200px;
+    min-height: 40px;
+}
+
+.button-edit-selection:hover {
+    background-image: linear-gradient(to bottom, #3399DD, #2277BB);
+    border-color: #1166AA;
+}
+
+.button-edit-selection:active {
+    background-image: linear-gradient(to bottom, #1166AA, #2288CC);
 }
 
 /* Bouton "Gestionnaire de Playlists" - Bleu moyen-clair */

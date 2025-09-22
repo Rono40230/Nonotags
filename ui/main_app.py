@@ -154,10 +154,64 @@ class NonotagsApp:
     def create_main_window(self):
         """Crée la fenêtre principale après le démarrage"""
         self.main_window = Gtk.Window()
-        self.main_window.set_title("🎵 Nonotags - Gestionnaire de Tags MP3")
+        self.main_window.get_style_context().add_class("main-window")  # Appliquer le style fond blanc
         
         # Charger le CSS pour les styles
         self._load_css()
+        
+        # Créer le HeaderBar moderne avec boutons intégrés
+        headerbar = Gtk.HeaderBar()
+        headerbar.set_show_close_button(True)
+        headerbar.get_style_context().add_class("titlebar")  # Appliquer le style fond blanc
+        # headerbar.set_title("🎵 Nonotags - Gestionnaire de Tags MP3")  # Titre supprimé
+        
+        # Boutons de gauche du header
+        left_buttons_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        
+        import_btn = Gtk.Button.new_with_label("Importer des albums")
+        import_btn.get_style_context().add_class("header-button")
+        import_btn.get_style_context().add_class("button-import")
+        import_btn.set_size_request(-1, 22)
+        import_btn.connect("clicked", self.on_import_clicked)
+        left_buttons_box.pack_start(import_btn, False, False, 0)
+        
+        edit_selection_btn = Gtk.Button.new_with_label("Éditer les albums sélectionnés")
+        edit_selection_btn.get_style_context().add_class("header-button")
+        edit_selection_btn.get_style_context().add_class("button-edit-selection")
+        edit_selection_btn.set_size_request(-1, 22)
+        edit_selection_btn.connect("clicked", self.on_edit_selection_clicked)
+        left_buttons_box.pack_start(edit_selection_btn, False, False, 0)
+        
+        exceptions_btn = Gtk.Button.new_with_label("Ajouter des exceptions de casse")
+        exceptions_btn.get_style_context().add_class("header-button")
+        exceptions_btn.get_style_context().add_class("button-exceptions")
+        exceptions_btn.set_size_request(-1, 22)
+        exceptions_btn.connect("clicked", self.on_exceptions_clicked)
+        left_buttons_box.pack_start(exceptions_btn, False, False, 0)
+        
+        # Boutons de droite du header
+        right_buttons_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        
+        playlists_btn = Gtk.Button.new_with_label("Gestionnaire de playlists")
+        playlists_btn.get_style_context().add_class("header-button")
+        playlists_btn.get_style_context().add_class("button-playlists")
+        playlists_btn.set_size_request(-1, 22)
+        playlists_btn.connect("clicked", self.on_playlists_clicked)
+        right_buttons_box.pack_start(playlists_btn, False, False, 0)
+        
+        converter_btn = Gtk.Button.new_with_label("Convertir les formats musicaux")
+        converter_btn.get_style_context().add_class("header-button")
+        converter_btn.get_style_context().add_class("button-converter")
+        converter_btn.set_size_request(-1, 22)
+        converter_btn.connect("clicked", self.on_converter_clicked)
+        right_buttons_box.pack_start(converter_btn, False, False, 0)
+        
+        # Ajouter les boutons à gauche et à droite du header
+        headerbar.pack_start(left_buttons_box)
+        headerbar.pack_end(right_buttons_box)
+        
+        # Définir le HeaderBar comme barre de titre
+        self.main_window.set_titlebar(headerbar)
         
         # Force l'affichage en plein écran
         self.main_window.maximize()  # Maximise la fenêtre (recommandé)
@@ -177,42 +231,7 @@ class NonotagsApp:
         main_box.set_margin_top(20)
         main_box.set_margin_bottom(20)
         
-        # Boutons d'action principaux
-        action_box = Gtk.Box(spacing=10)
-        action_box.set_halign(Gtk.Align.CENTER)
-        action_box.set_margin_top(10)
-        
-        import_btn = Gtk.Button.new_with_label("📂 Importer des fichiers")
-        import_btn.get_style_context().add_class("button-import")
-        import_btn.connect("clicked", self.on_import_clicked)
-        action_box.pack_start(import_btn, False, False, 0)
-        
-        edit_selection_btn = Gtk.Button.new_with_label("✏️ Editer la sélection d'albums")
-        edit_selection_btn.get_style_context().add_class("button-edit-selection")
-        edit_selection_btn.connect("clicked", self.on_edit_selection_clicked)
-        action_box.pack_start(edit_selection_btn, False, False, 0)
-        
-        # Bouton pour gérer les exceptions de casse
-        exceptions_btn = Gtk.Button.new_with_label("📝 Exceptions de casse")
-        exceptions_btn.get_style_context().add_class("button-exceptions")
-        exceptions_btn.connect("clicked", self.on_exceptions_clicked)
-        action_box.pack_start(exceptions_btn, False, False, 0)
-        
-        # Bouton gestionnaire de playlists
-        playlists_btn = Gtk.Button.new_with_label("🎵 Gestionnaire de Playlists")
-        playlists_btn.get_style_context().add_class("button-playlists")
-        playlists_btn.connect("clicked", self.on_playlists_clicked)
-        action_box.pack_start(playlists_btn, False, False, 0)
-        
-        # Bouton convertisseur audio
-        converter_btn = Gtk.Button.new_with_label("� Convertisseur Audio")
-        converter_btn.get_style_context().add_class("button-converter")
-        converter_btn.connect("clicked", self.on_converter_clicked)
-        action_box.pack_start(converter_btn, False, False, 0)
-        
-        main_box.pack_start(action_box, False, False, 0)
-        
-        # Grille d'albums avec calcul dynamique
+        # Grille d'albums avec calcul dynamique (plus d'espace maintenant !)
         self.albums_grid = Gtk.FlowBox()
         self.albums_grid.set_valign(Gtk.Align.START)
         self.albums_grid.set_selection_mode(Gtk.SelectionMode.NONE)
