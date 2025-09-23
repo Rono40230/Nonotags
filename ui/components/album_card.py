@@ -102,11 +102,12 @@ class AlbumCard(Gtk.Frame):
             album_title = os.path.basename(folder_path) if folder_path else 'Album Inconnu'
         
         # Ajouter l'année au format (Année) Titre
-        year = album_data.get('year', album_data.get('date', ''))
-        if year:
-            # Extraire seulement l'année si c'est une date complète
-            year_str = str(year)[:4] if str(year) else ''
-            year_title_text = f"({year_str}) {album_title}" if year_str else album_title
+        # Calculer la plage d'années en scannant TOUS les fichiers
+        folder_path = album_data.get('folder_path') or album_data.get('path')
+        year_range = self._calculate_compilation_year_range(folder_path)
+        
+        if year_range:
+            year_title_text = f"({year_range}) {album_title}"
         else:
             year_title_text = album_title
         year_title_label = Gtk.Label()
@@ -294,6 +295,77 @@ class AlbumCard(Gtk.Frame):
         print(f"❌ {message}")
         # TODO: Implémenter notification toast si disponible
     
+    def _calculate_compilation_year_range(self, folder_path):
+        """
+        Calcule la plage d'années en scannant TOUS les fichiers audio d'un dossier.
+        Retourne une chaîne formatée pour les compilations ou l'année unique.
+        """
+        import re
+        from mutagen.id3 import ID3
+        from mutagen.mp3 import MP3
+        from mutagen.mp4 import MP4
+        from mutagen.flac import FLAC
+        
+        if not folder_path or not os.path.exists(folder_path):
+            return ""
+        
+        all_years = set()
+        
+        # Scanner TOUS les fichiers audio du dossier
+        audio_files = [f for f in os.listdir(folder_path) 
+                      if f.lower().endswith(('.mp3', '.flac', '.m4a', '.mp4'))]
+        
+        for audio_file in audio_files:
+            file_path = os.path.join(folder_path, audio_file)
+            try:
+                year = ""
+                
+                if file_path.lower().endswith('.mp3'):
+                    audio = MP3(file_path)
+                    if audio.tags:
+                        year = audio.get('TYER', [''])[0] if audio.get('TYER') else ''
+                        if not year:
+                            year = audio.get('TDRC', [''])[0] if audio.get('TDRC') else ''
+                        
+                elif file_path.lower().endswith('.flac'):
+                    audio = FLAC(file_path)
+                    if audio.tags:
+                        year = audio.get('DATE', [''])[0] if audio.get('DATE') else ''
+                        
+                elif file_path.lower().endswith(('.m4a', '.mp4')):
+                    audio = MP4(file_path)
+                    if audio.tags:
+                        year = str(audio.get('©day', [''])[0]) if audio.get('©day') else ''
+                
+                # Extraire l'année de la chaîne (peut contenir date complète)
+                if year:
+                    years_found = re.findall(r'\b\d{4}\b', str(year))
+                    for y in years_found:
+                        if 1900 <= int(y) <= 2100:
+                            all_years.add(y)
+                            
+            except Exception as e:
+                # Ignorer les erreurs de fichiers individuels
+                continue
+        
+        if not all_years:
+            return ""
+        
+        # Si une seule année, la retourner
+        if len(all_years) == 1:
+            return list(all_years)[0]
+        
+        # Si plusieurs années, créer la plage
+        sorted_years = sorted([int(y) for y in all_years])
+        min_year = sorted_years[0]
+        max_year = sorted_years[-1]
+        
+        if min_year == max_year:
+            return str(min_year)
+        else:
+            # Format compilation : YYYY-YY
+            return f"{min_year}-{str(max_year)[-2:]}"
+    
     def _update_display(self):
         """Met à jour l'affichage de la carte après édition"""
         try:
@@ -340,11 +412,12 @@ class AlbumCard(Gtk.Frame):
                                     new_title = os.path.basename(folder_path) if folder_path else 'Album Inconnu'
                                 
                                 # Ajouter l'année au format (Année) Titre
-                                year = self.album_data.get('year', self.album_data.get('date', ''))
-                                if year:
-                                    # Extraire seulement l'année si c'est une date complète
-                                    year_str = str(year)[:4] if str(year) else ''
-                                    new_title_with_year = f"({year_str}) {new_title}" if year_str else new_title
+                                # Calculer la plage d'années en scannant TOUS les fichiers
+                                folder_path = self.album_data.get('folder_path') or self.album_data.get('path') or self.original_album_path
+                                year_range = self._calculate_compilation_year_range(folder_path)
+                                
+                                if year_range:
+                                    new_title_with_year = f"({year_range}) {new_title}"
                                 else:
                                     new_title_with_year = new_title
                                 
