@@ -147,8 +147,8 @@ class AudioPlayer:
             self.current_file = file_path
             self.logger.info(f"Fichier chargé: {os.path.basename(file_path)}")
             
-            # Obtenir la durée
-            self._query_duration()
+            # Ne pas interroger la durée immédiatement, attendre la lecture
+            # self._query_duration()
             
             return True
             
@@ -165,6 +165,11 @@ class AudioPlayer:
         try:
             self.pipeline.set_state(Gst.State.PLAYING)
             self.logger.debug("Lecture lancée")
+            
+            # Obtenir la durée après démarrage (avec délai)
+            from gi.repository import GLib
+            GLib.timeout_add(1000, self._delayed_query_duration)  # 1 seconde après démarrage
+            
             return True
         except Exception as e:
             self.logger.error(f"Erreur lors de la lecture: {e}")
@@ -232,15 +237,22 @@ class AudioPlayer:
     
     def get_position(self):
         """Obtient la position actuelle en secondes"""
+        # Retourner 0 si pas de fichier chargé ou pipeline non prêt
+        if not self.current_file or self.state == PlayerState.STOPPED:
+            return 0
+            
         try:
             success, position = self.pipeline.query_position(Gst.Format.TIME)
-            if success:
+            if success and position != Gst.CLOCK_TIME_NONE:
                 self.position = position / Gst.SECOND
                 return self.position
+            else:
+                # Si la requête échoue, retourner la dernière position connue
+                return self.position
         except Exception as e:
-            self.logger.error(f"Erreur lors de la requête de position: {e}")
-        
-        return 0
+            self.logger.debug(f"Position query failed: {e}")
+            # Retourner la dernière position connue au lieu de 0
+            return self.position
     
     def get_duration(self):
         """Obtient la durée totale en secondes"""
@@ -249,25 +261,48 @@ class AudioPlayer:
     def _query_duration(self):
         """Requête la durée du fichier"""
         try:
+            # Sauvegarder l'état actuel
+            current_state = self.pipeline.get_state(0)[1]
+            
             # Mettre en pause pour obtenir la durée
             self.pipeline.set_state(Gst.State.PAUSED)
             
-            # Attendre que l'état soit stable
-            self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
+            # Attendre que l'état soit stable avec timeout
+            ret, state, pending = self.pipeline.get_state(5 * Gst.SECOND)  # 5 sec timeout
             
-            success, duration = self.pipeline.query_duration(Gst.Format.TIME)
-            if success:
-                self.duration = duration / Gst.SECOND
-                if self.on_duration_changed:
-                    self.on_duration_changed(self.duration)
-                self.logger.debug(f"Durée: {self.duration}s")
+            if ret == Gst.StateChangeReturn.SUCCESS:
+                success, duration = self.pipeline.query_duration(Gst.Format.TIME)
+                if success and duration != Gst.CLOCK_TIME_NONE:
+                    self.duration = duration / Gst.SECOND
+                    if self.on_duration_changed:
+                        self.on_duration_changed(self.duration)
+                    self.logger.debug(f"Durée: {self.duration}s")
             
-            # Revenir à l'état NULL
-            self.pipeline.set_state(Gst.State.NULL)
+            # Restaurer l'état précédent au lieu de forcer NULL
+            if current_state != Gst.State.NULL:
+                self.pipeline.set_state(current_state)
+            else:
+                self.pipeline.set_state(Gst.State.NULL)
             
         except Exception as e:
             self.logger.error(f"Erreur lors de la requête de durée: {e}")
             self.duration = 0
+    
+    def _delayed_query_duration(self):
+        """Interroge la durée avec délai après démarrage de la lecture"""
+        if self.current_file and self.state == PlayerState.PLAYING:
+            try:
+                success, duration = self.pipeline.query_duration(Gst.Format.TIME)
+                if success and duration != Gst.CLOCK_TIME_NONE:
+                    self.duration = duration / Gst.SECOND
+                    if self.on_duration_changed:
+                        self.on_duration_changed(self.duration)
+                    self.logger.info(f"Durée obtenue: {self.duration}s")
+                else:
+                    self.logger.warning("Impossible d'obtenir la durée")
+            except Exception as e:
+                self.logger.error(f"Erreur requête durée delayed: {e}")
+        return False  # Ne pas répéter le timeout
     
     def get_state(self):
         """Retourne l'état actuel du lecteur"""

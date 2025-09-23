@@ -402,6 +402,55 @@ class DatabaseManager:
             self.logger.error(f"Failed to get import history: {e}")
             return []
     
+    def save_import_history(self, album_path: str, operation_type: str, files_processed: int = 0, 
+                           changes_made: int = 0, details: Optional[Dict[str, Any]] = None, 
+                           status: str = "success", error_message: Optional[str] = None) -> bool:
+        """
+        Sauvegarde un enregistrement d'historique d'import.
+        
+        Args:
+            album_path: Chemin de l'album traité
+            operation_type: Type d'opération (case_correction, metadata_formatting, etc.)
+            files_processed: Nombre de fichiers traités
+            changes_made: Nombre de modifications apportées
+            details: Détails supplémentaires (sera sérialisé en JSON)
+            status: Statut de l'opération (success, warning, error)
+            error_message: Message d'erreur si applicable
+            
+        Returns:
+            True si sauvegardé avec succès
+        """
+        try:
+            # Préparer les détails avec les informations d'opération
+            operation_details = {
+                "operation_type": operation_type,
+                "changes_made": changes_made
+            }
+            if details:
+                operation_details.update(details)
+            
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO import_history 
+                    (album_path, status, error_message, files_processed, rules_applied)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (
+                    album_path,
+                    status,
+                    error_message,
+                    files_processed,
+                    json.dumps(operation_details)
+                ))
+                conn.commit()
+                
+            self.logger.debug(f"Import history saved: {operation_type} for {album_path}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to save import history: {e}")
+            return False
+    
     def get_import_statistics(self) -> Dict[str, Any]:
         """
         Récupère des statistiques sur les imports.

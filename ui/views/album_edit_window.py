@@ -680,15 +680,31 @@ class AlbumEditWindow(Gtk.Window):
     
     def _update_position(self):
         """Met à jour la position du lecteur"""
-        if not self.audio_player.is_playing():
+        # Vérifier que le lecteur et les widgets existent encore
+        if not hasattr(self, 'audio_player') or not hasattr(self, 'progress_scale'):
             return False  # Arrêter le timer
-        
+            
+        # Continuer le timer même si pas en lecture pour éviter les arrêts intempestifs
+        # Le timer sera arrêté explicitement dans on_audio_state_changed
         position = self.audio_player.get_position()
         duration = self.audio_player.get_duration()
         
-        if duration > 0:
-            progress = (position / duration) * 100
-            self.progress_scale.set_value(progress)
+        # Debug: afficher les valeurs obtenues
+        if hasattr(self, '_debug_counter'):
+            self._debug_counter += 1
+        else:
+            self._debug_counter = 1
+            
+        if self._debug_counter % 20 == 0:  # Afficher toutes les 10 secondes
+            print(f"🎵 DEBUG: position={position:.1f}s, duration={duration:.1f}s")
+        
+        if duration > 0 and position >= 0:
+            progress = min(100, max(0, (position / duration) * 100))
+            
+            # Éviter les mises à jour trop fréquentes qui peuvent causer des saccades
+            current_value = self.progress_scale.get_value()
+            if abs(progress - current_value) > 0.5:  # Seuil de 0.5%
+                self.progress_scale.set_value(progress)
             
             # Mettre à jour les labels de temps
             pos_str = self._format_time(position)
@@ -708,14 +724,24 @@ class AlbumEditWindow(Gtk.Window):
         """Callback changement d'état audio"""
         if state == PlayerState.PLAYING:
             self.play_btn.set_label("⏸️")
+            # Démarrer le timer seulement si pas déjà actif
             if not hasattr(self, 'position_timer') or not self.position_timer:
                 self._start_position_timer()
-        else:
+        elif state == PlayerState.STOPPED:
             self.play_btn.set_label("▶️")
+            # Arrêter le timer seulement lors d'un arrêt complet
             if hasattr(self, 'position_timer') and self.position_timer:
                 from gi.repository import GLib
                 GLib.source_remove(self.position_timer)
                 self.position_timer = None
+            # Remettre la barre de progression à zéro
+            if hasattr(self, 'progress_scale'):
+                self.progress_scale.set_value(0)
+            if hasattr(self, 'time_start_label'):
+                self.time_start_label.set_text("00:00")
+        else:  # PAUSED ou autres états
+            self.play_btn.set_label("▶️")
+            # Ne PAS arrêter le timer pour les pauses, permet de reprendre fluidement
     
     def on_audio_position_changed(self, position):
         """Callback changement de position"""

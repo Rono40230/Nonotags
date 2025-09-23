@@ -16,7 +16,7 @@ from datetime import datetime
 from support.logger import AppLogger
 from support.config_manager import ConfigManager
 from support.state_manager import StateManager
-from support.validator import MetadataValidator, ValidationResult
+from support.validator import MetadataValidator, FileValidator, ValidationResult
 
 # Import du gestionnaire de base de données
 from database.db_manager import DatabaseManager
@@ -75,6 +75,7 @@ class MetadataFormatter:
         self.config_manager = ConfigManager()
         self.state_manager = StateManager()
         self.validator = MetadataValidator()
+        self.file_validator = FileValidator()  # ✅ Pour validate_directory
         self.db_manager = DatabaseManager()
         
         # Configuration du module
@@ -109,7 +110,7 @@ class MetadataFormatter:
         
         try:
             # Validation du répertoire
-            validation_result = self.validator.validate_directory(album_path)
+            validation_result = self.file_validator.validate_directory(album_path)
             if not validation_result.is_valid:
                 self.logger.error(f"Répertoire invalide : {validation_result.errors}")
                 return self._create_error_result(album_path, validation_result.errors)

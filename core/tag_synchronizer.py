@@ -22,7 +22,7 @@ try:
     from support.honest_logger import HonestLogger
     from support.config_manager import ConfigManager
     from support.state_manager import StateManager
-    from support.validator import MetadataValidator, ValidationResult
+    from support.validator import MetadataValidator, FileValidator, ValidationResult
     from database.db_manager import DatabaseManager
 except ImportError as e:
     print(f"Erreur d'import des modules de support : {e}")
@@ -94,6 +94,7 @@ class TagSynchronizer:
             self.config_manager = ConfigManager()
             self.state_manager = StateManager()
             self.validator = MetadataValidator()
+            self.file_validator = FileValidator()  # ✅ Pour validate_directory
             self.db_manager = DatabaseManager()
             
             # Configuration du module
@@ -463,7 +464,7 @@ class TagSynchronizer:
             self.state_manager.set_app_state(ApplicationState.PROCESSING)
             
             # Validation du dossier
-            validation_result = self.validator.validate_directory(album_path)
+            validation_result = self.file_validator.validate_directory(album_path)
             if not validation_result.is_valid:
                 return AlbumSynchronizationResult(
                     album_path=album_path,

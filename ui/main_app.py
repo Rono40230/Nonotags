@@ -14,6 +14,8 @@ from ui.components.album_card import AlbumCard
 from ui.processing_orchestrator import ProcessingOrchestrator, ProcessingState, ProcessingStep
 from ui.views.exceptions_window import ExceptionsWindow
 from core.refresh_manager import refresh_manager
+from ui.transitions.header_migration import HeaderMigration
+from support.config_manager import ConfigManager
 
 class NonotagsApp:
     """Application Nonotags avec séquence de démarrage"""
@@ -23,6 +25,10 @@ class NonotagsApp:
         self.main_window = None
         self.albums_grid = None
         self._resize_timeout_id = None
+        
+        # Configuration et migration HeaderBar
+        self.config_manager = ConfigManager()
+        self.header_migration = HeaderMigration(self)
         
         # Orchestrateur de traitement
         self.orchestrator = ProcessingOrchestrator()
@@ -107,7 +113,7 @@ class NonotagsApp:
                 self.orchestrator.add_albums(new_albums_added)
 
             self.albums_grid.show_all()
-            self.update_cards_per_line()
+            # Plus besoin de update_cards_per_line() - FlowBox s'adapte automatiquement
 
             # ✅ TRAITEMENT AUTOMATIQUE : Démarrer immédiatement le traitement
             if self.orchestrator.start_processing():
@@ -197,59 +203,9 @@ class NonotagsApp:
         # Charger le CSS pour les styles
         self._load_css()
         
-        # Créer le HeaderBar moderne avec boutons intégrés
-        headerbar = Gtk.HeaderBar()
-        headerbar.set_show_close_button(True)
-        headerbar.get_style_context().add_class("titlebar")  # Appliquer le style fond blanc
-        # headerbar.set_title("🎵 Nonotags - Gestionnaire de Tags MP3")  # Titre supprimé
-        
-        # Boutons de gauche du header
-        left_buttons_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        
-        import_btn = Gtk.Button.new_with_label("Importer des albums")
-        import_btn.get_style_context().add_class("header-button")
-        import_btn.get_style_context().add_class("button-import")
-        import_btn.set_size_request(-1, 22)
-        import_btn.connect("clicked", self.on_import_clicked)
-        left_buttons_box.pack_start(import_btn, False, False, 0)
-        
-        edit_selection_btn = Gtk.Button.new_with_label("Éditer les albums sélectionnés")
-        edit_selection_btn.get_style_context().add_class("header-button")
-        edit_selection_btn.get_style_context().add_class("button-edit-selection")
-        edit_selection_btn.set_size_request(-1, 22)
-        edit_selection_btn.connect("clicked", self.on_edit_selection_clicked)
-        left_buttons_box.pack_start(edit_selection_btn, False, False, 0)
-        
-        exceptions_btn = Gtk.Button.new_with_label("Ajouter des exceptions de casse")
-        exceptions_btn.get_style_context().add_class("header-button")
-        exceptions_btn.get_style_context().add_class("button-exceptions")
-        exceptions_btn.set_size_request(-1, 22)
-        exceptions_btn.connect("clicked", self.on_exceptions_clicked)
-        left_buttons_box.pack_start(exceptions_btn, False, False, 0)
-        
-        # Boutons de droite du header
-        right_buttons_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        
-        playlists_btn = Gtk.Button.new_with_label("Gestionnaire de playlists")
-        playlists_btn.get_style_context().add_class("header-button")
-        playlists_btn.get_style_context().add_class("button-playlists")
-        playlists_btn.set_size_request(-1, 22)
-        playlists_btn.connect("clicked", self.on_playlists_clicked)
-        right_buttons_box.pack_start(playlists_btn, False, False, 0)
-        
-        converter_btn = Gtk.Button.new_with_label("Convertir les formats musicaux")
-        converter_btn.get_style_context().add_class("header-button")
-        converter_btn.get_style_context().add_class("button-converter")
-        converter_btn.set_size_request(-1, 22)
-        converter_btn.connect("clicked", self.on_converter_clicked)
-        right_buttons_box.pack_start(converter_btn, False, False, 0)
-        
-        # Ajouter les boutons à gauche et à droite du header
-        headerbar.pack_start(left_buttons_box)
-        headerbar.pack_end(right_buttons_box)
-        
-        # Définir le HeaderBar comme barre de titre
-        self.main_window.set_titlebar(headerbar)
+        # Utiliser le système de migration pour configurer l'interface
+        use_headerbar = self.config_manager.ui.use_headerbar
+        self.header_migration.setup_window_with_mode(use_headerbar)
         
         # Force l'affichage en plein écran
         self.main_window.maximize()  # Maximise la fenêtre (recommandé)
@@ -269,17 +225,17 @@ class NonotagsApp:
         main_box.set_margin_top(20)
         main_box.set_margin_bottom(20)
         
-        # Grille d'albums avec calcul dynamique (plus d'espace maintenant !)
+        # Grille d'albums avec affichage responsive et adaptatif
         self.albums_grid = Gtk.FlowBox()
         self.albums_grid.set_valign(Gtk.Align.START)
         self.albums_grid.set_selection_mode(Gtk.SelectionMode.NONE)
         
-        # Forcer le FlowBox à respecter les tailles des enfants
+        # Configuration FlowBox pour affichage responsive sans troncature
         self.albums_grid.set_homogeneous(False)
         self.albums_grid.set_column_spacing(20)
         self.albums_grid.set_row_spacing(20)
         self.albums_grid.set_min_children_per_line(1)
-        self.albums_grid.set_max_children_per_line(10)
+        self.albums_grid.set_max_children_per_line(100)  # Pas de limite artificielle
         
         main_box.pack_start(self.albums_grid, True, True, 0)
         
@@ -289,7 +245,7 @@ class NonotagsApp:
         # Affichage de la fenêtre principale
         self.main_window.show_all()
         
-        GLib.idle_add(self.update_cards_per_line)
+        # Plus besoin de calcul initial - FlowBox s'adapte automatiquement
         
         # Enregistrer auprès du RefreshManager pour les notifications de rafraîchissement
         refresh_manager.register_display_component(self)
@@ -432,6 +388,8 @@ class NonotagsApp:
             playlist_window.show_all()
         except Exception as e:
             print(f"❌ Erreur lors de l'ouverture du gestionnaire de playlists: {e}")
+            import traceback
+            traceback.print_exc()
     
     def on_converter_clicked(self, button):
         """Ouvre le convertisseur audio"""
@@ -442,47 +400,6 @@ class NonotagsApp:
         except Exception as e:
             print(f"❌ Erreur lors de l'ouverture du convertisseur audio: {e}")
     
-    def calculate_cards_per_line(self, window_width=None):
-        """Calcule le nombre optimal de cartes par ligne selon la largeur disponible"""
-        if window_width is None:
-            if hasattr(self, 'main_window') and self.main_window:
-                window_width = self.main_window.get_allocated_width()
-            else:
-                window_width = 1200
-        
-        CARD_WIDTH = 320
-        CARD_SPACING = 20
-        WINDOW_MARGINS = 60  # Marges augmentées pour éviter la troncature
-        SCROLLBAR_WIDTH = 20  # Espace pour la scrollbar
-        
-        available_width = window_width - WINDOW_MARGINS - SCROLLBAR_WIDTH
-        
-        # Calcul plus précis pour éviter la troncature
-        total_width_per_card = CARD_WIDTH + CARD_SPACING
-        cards_per_line = max(1, available_width // total_width_per_card)
-        
-        # Vérifier qu'on ne dépasse pas la largeur disponible
-        required_width = (cards_per_line * CARD_WIDTH) + ((cards_per_line - 1) * CARD_SPACING)
-        if required_width > available_width:
-            cards_per_line = max(1, cards_per_line - 1)
-        
-        cards_per_line = min(8, cards_per_line)  # Maximum 8 cartes par ligne
-        
-        return int(cards_per_line)
-    
-    def update_cards_per_line(self):
-        """Met à jour le nombre de cartes par ligne selon la taille de fenêtre actuelle"""
-        if not hasattr(self, 'albums_grid') or not self.albums_grid:
-            return
-            
-        cards_per_line = self.calculate_cards_per_line()
-        
-        self.albums_grid.set_min_children_per_line(cards_per_line)
-        self.albums_grid.set_max_children_per_line(cards_per_line)
-        
-        if hasattr(self, 'main_window') and self.main_window:
-            width = self.main_window.get_allocated_width()
-    
     def on_window_resize(self, window, allocation=None):
         """Gestionnaire de redimensionnement de fenêtre avec debouncing"""
         if self._resize_timeout_id:
@@ -492,7 +409,7 @@ class NonotagsApp:
     
     def _delayed_resize_update(self):
         """Met à jour le layout avec un délai pour éviter les calculs excessifs"""
-        self.update_cards_per_line()
+        # Plus besoin de calcul manuel - FlowBox s'adapte automatiquement
         self._resize_timeout_id = None
         return False
     

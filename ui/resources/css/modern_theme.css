@@ -806,6 +806,16 @@ scrollbar slider:hover {
 flowbox {
   padding: 0;
   margin: 0;
+  /* Forcer le FlowBox à être entièrement responsive */
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+flowbox > flowboxchild {
+  /* Assurer que les enfants du FlowBox ne débordent pas */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* Optimisation de l'espacement pour éviter la troncature */
@@ -813,4 +823,5 @@ flowbox {
   padding: 20px;
   margin: 0;
   box-sizing: border-box;
+  overflow-x: hidden; /* Éviter le débordement horizontal */
 }

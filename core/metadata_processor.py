@@ -208,7 +208,7 @@ class MetadataCleaner:
                         # Sauvegarde en base de données
                         self._save_changes_to_db(file_result)
                     else:
-                        honest_logger.info(f"ℹ️ Aucune correction nécessaire: {file_name}")
+                        honest_logger.debug(f"ℹ️ Aucune correction nécessaire: {file_name}")
                 else:
                     error_msg = '; '.join(file_result.errors) if file_result.errors else "Erreur inconnue"
                     honest_logger.error(f"❌ Échec traitement: {file_name} - {error_msg}")
@@ -302,7 +302,7 @@ class MetadataCleaner:
                     honest_logger.success(f"✅ RÈGLE 4 - Commentaire supprimé: {comment_tag}")
                 changes_made = True
             else:
-                honest_logger.info(f"ℹ️ RÈGLE 4 - Aucun commentaire trouvé")
+                honest_logger.debug(f"ℹ️ RÈGLE 4 - Aucun commentaire trouvé")
             
             # Nettoyage des champs texte (règles 5-8)
             for field_name in self._metadata_fields:
@@ -335,7 +335,7 @@ class MetadataCleaner:
                             f"✅ Métadonnée modifiée: {field_name}: '{original_value}' → '{cleaned_value}'"
                         )
                     else:
-                        honest_logger.info(f"ℹ️ Champ {field_name} déjà propre: '{original_value}'")
+                        honest_logger.debug(f"ℹ️ Champ {field_name} déjà propre: '{original_value}'")
             
             # Sauvegarde des modifications
             if changes_made:
@@ -382,7 +382,7 @@ class MetadataCleaner:
         if cleaned != step_cleaned:
             honest_logger.info(f"✅ RÈGLE 5 - Parenthèses supprimées: '{step_cleaned}' → '{cleaned}'")
         else:
-            honest_logger.info(f"ℹ️ RÈGLE 5 - Aucune parenthèse trouvée dans: '{step_cleaned}'")
+            honest_logger.debug(f"ℹ️ RÈGLE 5 - Aucune parenthèse trouvée dans: '{step_cleaned}'")
         
         # RÈGLE 6 : Nettoyage des espaces en trop
         step_cleaned = cleaned
@@ -392,7 +392,7 @@ class MetadataCleaner:
         if cleaned != step_cleaned:
             honest_logger.info(f"✅ RÈGLE 6 - Espaces nettoyés: '{step_cleaned}' → '{cleaned}'")
         else:
-            honest_logger.info(f"ℹ️ RÈGLE 6 - Espaces déjà propres: '{step_cleaned}'")
+            honest_logger.debug(f"ℹ️ RÈGLE 6 - Espaces déjà propres: '{step_cleaned}'")
         
         # RÈGLE 7 : Suppression des caractères spéciaux
         step_cleaned = cleaned
@@ -401,7 +401,7 @@ class MetadataCleaner:
         if cleaned != step_cleaned:
             honest_logger.info(f"✅ RÈGLE 7 - Caractères spéciaux supprimés: '{step_cleaned}' → '{cleaned}'")
         else:
-            honest_logger.info(f"ℹ️ RÈGLE 7 - Aucun caractère spécial trouvé: '{step_cleaned}'")
+            honest_logger.debug(f"ℹ️ RÈGLE 7 - Aucun caractère spécial trouvé: '{step_cleaned}'")
         
         # RÈGLE 8 : Normalisation des conjonctions
         step_cleaned = cleaned
@@ -411,7 +411,7 @@ class MetadataCleaner:
         if cleaned != step_cleaned:
             honest_logger.info(f"✅ RÈGLE 8 - Conjonctions normalisées: '{step_cleaned}' → '{cleaned}'")
         else:
-            honest_logger.info(f"ℹ️ RÈGLE 8 - Aucune conjonction à normaliser: '{step_cleaned}'")
+            honest_logger.debug(f"ℹ️ RÈGLE 8 - Aucune conjonction à normaliser: '{step_cleaned}'")
         
         # Nettoyage final des espaces
         final_cleaned = re.sub(r'\s+', ' ', cleaned).strip()

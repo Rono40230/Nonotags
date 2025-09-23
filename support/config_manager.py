@@ -19,6 +19,8 @@ class UIConfig:
     show_tooltips: bool = True
     theme: str = "default"
     language: str = "fr"
+    # Configuration de transition HeaderBar
+    use_headerbar: bool = True  # True = HeaderBar classique, False = Interface contextuelle
 
 @dataclass
 class ProcessingConfig:

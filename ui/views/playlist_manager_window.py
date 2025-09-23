@@ -32,9 +32,6 @@ class PlaylistManagerWindow(Gtk.Window):
             self.set_transient_for(parent)
             self.set_modal(True)
         
-        # Handler pour fermeture propre de la fenêtre modale
-        self.connect("delete-event", self._on_window_close)
-        
         # Callbacks du gestionnaire
         self.playlist_manager.on_scan_progress = self._on_scan_progress
         self.playlist_manager.on_scan_complete = self._on_scan_complete
@@ -70,6 +67,9 @@ class PlaylistManagerWindow(Gtk.Window):
         self._update_stats_display()
         
         self.show_all()
+        
+        # Handler pour fermeture propre de la fenêtre modale (après initialisation complète)
+        self.connect("delete-event", self._on_window_close)
     
     def _create_playlists_section(self, parent_box):
         """Section playlists trouvées avec stats intégrées (partie haute du paned)"""
