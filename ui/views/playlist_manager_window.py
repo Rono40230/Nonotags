@@ -71,6 +71,11 @@ class PlaylistManagerWindow(Gtk.Window):
         # Handler pour fermeture propre de la fenêtre modale (après initialisation complète)
         self.connect("delete-event", self._on_window_close)
     
+    def _on_window_close(self, widget, event):
+        """Fermeture propre de la fenêtre modale"""
+        self.destroy()  # Force la destruction au lieu du cache
+        return False    # Permet la fermeture
+    
     def _create_playlists_section(self, parent_box):
         """Section playlists trouvées avec stats intégrées (partie haute du paned)"""
         frame = Gtk.Frame(label="🎵 Playlists trouvées")
@@ -1120,8 +1125,3 @@ class PlaylistCreationDialog(Gtk.Dialog):
     def get_recursive(self):
         """Retourne si le scan doit être récursif"""
         return self.recursive_check.get_active()
-    
-    def _on_window_close(self, widget, event):
-        """Fermeture propre de la fenêtre modale"""
-        self.destroy()  # Force la destruction au lieu du cache
-        return False    # Permet la fermeture

@@ -179,9 +179,23 @@ class AlbumCard(Gtk.Frame):
     def on_edit_clicked(self, button):
         """Ouvre la fenêtre d'édition"""
         # Import local pour éviter les dépendances circulaires
-        from ui.views.album_edit_window import AlbumEditWindow
-        edit_window = AlbumEditWindow(self.album_data, self)
-        edit_window.show_all()
+        from ui.managers.persistent_window_manager import persistent_window_manager, WindowType
+        
+        # Créer identifiant unique basé sur le chemin de l'album
+        folder_path = self.album_data.get('folder_path', '') or self.album_data.get('path', '')
+        identifier = f"edit_single_{hash(folder_path)}" if folder_path else None
+        
+        # Utiliser le gestionnaire persistant - nouvelle fenêtre pour chaque album
+        edit_window = persistent_window_manager.create_or_focus_window(
+            window_type=WindowType.ALBUM_EDIT,
+            identifier=identifier,
+            focus_existing=False,  # Toujours nouvelle fenêtre pour édition individuelle
+            album_data=self.album_data,
+            parent_card=self
+        )
+        
+        if edit_window:
+            edit_window.show_all()
     
     def on_playlist_clicked(self, button):
         """Crée une playlist avec cet album"""

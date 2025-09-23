@@ -16,6 +16,7 @@ from ui.views.exceptions_window import ExceptionsWindow
 from core.refresh_manager import refresh_manager
 from ui.transitions.header_migration import HeaderMigration
 from support.config_manager import ConfigManager
+from ui.managers.persistent_window_manager import persistent_window_manager, WindowType
 
 class NonotagsApp:
     """Application Nonotags avec séquence de démarrage"""
@@ -33,6 +34,9 @@ class NonotagsApp:
         # Orchestrateur de traitement
         self.orchestrator = ProcessingOrchestrator()
         self._setup_orchestrator_callbacks()
+        
+        # Initialiser les factories pour les fenêtres persistantes
+        self._setup_persistent_window_factories()
         
         # Interface de progression (pour affichage pendant traitement automatique)
         self.progress_bar = None
@@ -345,15 +349,25 @@ class NonotagsApp:
             dialog.destroy()
             return
         
-        # Edition groupée demandée - Passer TOUS les albums sélectionnés
+        # Edition groupée demandée - Utiliser le gestionnaire persistant
         try:
-            from ui.views.album_edit_window import AlbumEditWindow
-            
             print(f"🎯 Ouverture de la fenêtre d'édition pour {len(selected_albums)} albums sélectionnés")
             
-            # Créer la fenêtre d'édition avec tous les albums sélectionnés
-            edit_window = AlbumEditWindow(selected_albums, None)
-            edit_window.show_all()
+            # Créer identifiant unique pour cette sélection
+            album_paths = [a.get('folder_path', '') for a in selected_albums]
+            identifier = f"edit_group_{hash(tuple(sorted(album_paths)))}"
+            
+            # Créer fenêtre persistante (nouvelle à chaque fois pour édition groupée)
+            edit_window = persistent_window_manager.create_or_focus_window(
+                window_type=WindowType.ALBUM_EDIT,
+                identifier=identifier,
+                focus_existing=False,  # Toujours nouvelle fenêtre pour édition groupée
+                album_data=selected_albums,
+                parent_card=None
+            )
+            
+            if edit_window:
+                edit_window.show_all()
                 
         except Exception as e:
             print(f"❌ Erreur lors de l'ouverture de la fenêtre d'édition: {e}")
@@ -375,17 +389,33 @@ class NonotagsApp:
     def on_exceptions_clicked(self, button):
         """Ouvre la fenêtre de gestion des exceptions de casse"""
         try:
-            exceptions_window = ExceptionsWindow(parent=self.main_window)
-            exceptions_window.show_all()
+            # Utiliser le gestionnaire persistant - une seule instance
+            exceptions_window = persistent_window_manager.create_or_focus_window(
+                window_type=WindowType.CASE_EXCEPTIONS,
+                identifier="case_exceptions_main",
+                focus_existing=True  # Focus sur existante si déjà ouverte
+            )
+            
+            if exceptions_window:
+                exceptions_window.show_all()
+                
         except Exception as e:
             print(f"❌ Erreur lors de l'ouverture de la fenêtre des exceptions: {e}")
     
     def on_playlists_clicked(self, button):
         """Ouvre le gestionnaire de playlists"""
         try:
-            from ui.views.playlist_manager_window import PlaylistManagerWindow
-            playlist_window = PlaylistManagerWindow(parent=self.main_window)
-            playlist_window.show_all()
+            # Utiliser le gestionnaire persistant - une seule instance
+            playlist_window = persistent_window_manager.create_or_focus_window(
+                window_type=WindowType.PLAYLIST_MANAGER,
+                identifier="playlist_manager_main",
+                focus_existing=True,  # Focus sur existante si déjà ouverte
+                parent=self.main_window
+            )
+            
+            if playlist_window:
+                playlist_window.show_all()
+                
         except Exception as e:
             print(f"❌ Erreur lors de l'ouverture du gestionnaire de playlists: {e}")
             import traceback
@@ -394,9 +424,16 @@ class NonotagsApp:
     def on_converter_clicked(self, button):
         """Ouvre le convertisseur audio"""
         try:
-            from ui.views.audio_converter_window import AudioConverterWindow
-            converter_window = AudioConverterWindow()
-            converter_window.show_all()
+            # Utiliser le gestionnaire persistant - une seule instance
+            converter_window = persistent_window_manager.create_or_focus_window(
+                window_type=WindowType.AUDIO_CONVERTER,
+                identifier="audio_converter_main", 
+                focus_existing=True  # Focus sur existante si déjà ouverte
+            )
+            
+            if converter_window:
+                converter_window.show_all()
+                
         except Exception as e:
             print(f"❌ Erreur lors de l'ouverture du convertisseur audio: {e}")
     
@@ -421,6 +458,39 @@ class NonotagsApp:
         self.orchestrator.on_album_processed = self.on_album_processed
         self.orchestrator.on_error_occurred = self.on_processing_error
         self.orchestrator.on_processing_completed = self.on_processing_completed
+    
+    def _setup_persistent_window_factories(self):
+        """Configure les factories pour les fenêtres persistantes"""
+        # Factory pour fenêtre d'édition d'albums
+        def album_edit_factory(*args, **kwargs):
+            from ui.views.album_edit_window import AlbumEditWindow
+            album_data = args[0] if args else kwargs.get('album_data', [])
+            parent_card = args[1] if len(args) > 1 else kwargs.get('parent_card')
+            return AlbumEditWindow(album_data, parent_card)
+        
+        # Factory pour gestionnaire de playlists  
+        def playlist_manager_factory(*args, **kwargs):
+            from ui.views.playlist_manager_window import PlaylistManagerWindow
+            parent = kwargs.get('parent', self.main_window)
+            return PlaylistManagerWindow(parent=parent)
+            
+        # Factory pour fenêtre des exceptions de casse
+        def case_exceptions_factory(*args, **kwargs):
+            from ui.views.exceptions_window import ExceptionsWindow
+            return ExceptionsWindow()
+            
+        # Factory pour convertisseur audio
+        def audio_converter_factory(*args, **kwargs):
+            from ui.views.audio_converter_window import AudioConverterWindow
+            return AudioConverterWindow()
+        
+        # Enregistrer les factories
+        persistent_window_manager.register_window_factory(WindowType.ALBUM_EDIT, album_edit_factory)
+        persistent_window_manager.register_window_factory(WindowType.PLAYLIST_MANAGER, playlist_manager_factory)
+        persistent_window_manager.register_window_factory(WindowType.CASE_EXCEPTIONS, case_exceptions_factory)
+        persistent_window_manager.register_window_factory(WindowType.AUDIO_CONVERTER, audio_converter_factory)
+        
+        print("✅ Factories des fenêtres persistantes configurées")
     
     # === CALLBACKS DE L'ORCHESTRATEUR ===
     
