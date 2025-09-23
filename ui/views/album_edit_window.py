@@ -208,6 +208,12 @@ class AlbumEditWindow(Gtk.Window):
             if col_id == 2:  # Titre éditable
                 renderer.set_property("editable", True)
                 renderer.connect("edited", self.on_title_edited)
+            elif col_id == 6:  # Année éditable
+                renderer.set_property("editable", True)
+                renderer.connect("edited", self.on_year_edited)
+            elif col_id == 7:  # N° piste éditable
+                renderer.set_property("editable", True)
+                renderer.connect("edited", self.on_track_number_edited)
             
             column = Gtk.TreeViewColumn(title, renderer, text=col_id)
             column.set_min_width(width)
@@ -570,6 +576,69 @@ class AlbumEditWindow(Gtk.Window):
                     if track.get('file_path') == file_path:
                         track['file_path'] = new_file_path
                         track['title'] = new_text
+                        track['display_filename'] = new_filename
+                        break
+    
+    def on_year_edited(self, renderer, path, new_text):
+        """Édition de l'année d'une piste"""
+        # Validation : doit être un nombre de 4 chiffres
+        try:
+            year = int(new_text.strip())
+            if year < 1900 or year > 2100:
+                print(f"❌ Année invalide: {year} (doit être entre 1900 et 2100)")
+                return
+            year_str = str(year)
+        except ValueError:
+            print(f"❌ Année invalide: '{new_text}' (doit être un nombre)")
+            return
+        
+        iter = self.metadata_store.get_iter(path)
+        self.metadata_store.set_value(iter, 6, year_str)  # Colonne Année
+        
+        # Sauvegarder l'année dans les métadonnées physiques
+        file_path = self.metadata_store.get_value(iter, 9)  # Path caché
+        if file_path and os.path.exists(file_path):
+            self._save_year_to_file(file_path, year_str)
+            
+            # Mettre à jour self.tracks pour cohérence
+            for track in self.tracks:
+                if track.get('file_path') == file_path:
+                    track['year'] = year_str
+                    break
+    
+    def on_track_number_edited(self, renderer, path, new_text):
+        """Édition du numéro de piste"""
+        # Validation : doit être un nombre entier positif
+        try:
+            track_num = int(new_text.strip())
+            if track_num < 1 or track_num > 999:
+                print(f"❌ Numéro de piste invalide: {track_num} (doit être entre 1 et 999)")
+                return
+            track_num_str = str(track_num)
+        except ValueError:
+            print(f"❌ Numéro de piste invalide: '{new_text}' (doit être un nombre)")
+            return
+        
+        iter = self.metadata_store.get_iter(path)
+        old_track_num = self.metadata_store.get_value(iter, 7)  # Ancien numéro
+        self.metadata_store.set_value(iter, 7, track_num_str)  # Colonne N°
+        
+        # Sauvegarder le numéro de piste dans les métadonnées physiques
+        file_path = self.metadata_store.get_value(iter, 9)  # Path caché
+        title = self.metadata_store.get_value(iter, 2)  # Titre pour renommage
+        if file_path and os.path.exists(file_path):
+            new_file_path = self._save_track_number_to_file(file_path, track_num_str, title)
+            if new_file_path and new_file_path != file_path:
+                # Mettre à jour le tableau avec le nouveau nom de fichier
+                new_filename = os.path.splitext(os.path.basename(new_file_path))[0]
+                self.metadata_store.set_value(iter, 1, new_filename)  # Colonne Nom fichier
+                self.metadata_store.set_value(iter, 9, new_file_path)  # Path caché
+                
+                # Mettre à jour self.tracks pour le lecteur audio
+                for track in self.tracks:
+                    if track.get('file_path') == file_path:
+                        track['file_path'] = new_file_path
+                        track['track_number'] = track_num_str
                         track['display_filename'] = new_filename
                         break
     
@@ -1228,6 +1297,82 @@ class AlbumEditWindow(Gtk.Window):
             
         except Exception as e:
             print(f"❌ Erreur sauvegarde titre {file_path}: {e}")
+            return file_path
+    
+    def _save_year_to_file(self, file_path, year):
+        """Sauvegarde l'année dans les métadonnées physiques"""
+        try:
+            if file_path.lower().endswith('.mp3'):
+                from mutagen.id3 import ID3, TDRC, ID3NoHeaderError
+                try:
+                    audio = ID3(file_path)
+                except ID3NoHeaderError:
+                    audio = ID3()
+                audio['TDRC'] = TDRC(encoding=3, text=year)
+                audio.save(file_path)
+                
+            elif file_path.lower().endswith('.flac'):
+                from mutagen.flac import FLAC
+                audio = FLAC(file_path)
+                audio['DATE'] = year
+                audio.save()
+                
+            elif file_path.lower().endswith(('.m4a', '.mp4')):
+                from mutagen.mp4 import MP4
+                audio = MP4(file_path)
+                audio['\xa9day'] = year
+                audio.save()
+            
+            print(f"✅ Année {year} sauvegardée dans {os.path.basename(file_path)}")
+            
+        except Exception as e:
+            print(f"❌ Erreur sauvegarde année {file_path}: {e}")
+    
+    def _save_track_number_to_file(self, file_path, track_number, title=None):
+        """Sauvegarde le numéro de piste dans les métadonnées physiques et renomme le fichier"""
+        try:
+            # 1. Sauvegarder les métadonnées
+            if file_path.lower().endswith('.mp3'):
+                from mutagen.id3 import ID3, TRCK, ID3NoHeaderError
+                try:
+                    audio = ID3(file_path)
+                except ID3NoHeaderError:
+                    audio = ID3()
+                audio['TRCK'] = TRCK(encoding=3, text=track_number)
+                audio.save(file_path)
+                
+            elif file_path.lower().endswith('.flac'):
+                from mutagen.flac import FLAC
+                audio = FLAC(file_path)
+                audio['TRACKNUMBER'] = track_number
+                audio.save()
+                
+            elif file_path.lower().endswith(('.m4a', '.mp4')):
+                from mutagen.mp4 import MP4
+                audio = MP4(file_path)
+                audio['trkn'] = [(int(track_number), 0)]
+                audio.save()
+            
+            # 2. Renommer le fichier selon la règle "N° - Titre"
+            new_file_path = file_path
+            if track_number and title:
+                directory = os.path.dirname(file_path)
+                extension = os.path.splitext(file_path)[1]
+                
+                # Nettoyer le titre pour le nom de fichier
+                clean_title = "".join(c for c in title if c.isalnum() or c in (' ', '-', '_')).strip()
+                new_filename = f"{track_number} - {clean_title}{extension}"
+                new_file_path = os.path.join(directory, new_filename)
+                
+                # Renommer seulement si le nom change
+                if new_file_path != file_path:
+                    os.rename(file_path, new_file_path)
+            
+            print(f"✅ Numéro de piste {track_number} sauvegardé dans {os.path.basename(new_file_path or file_path)}")
+            return new_file_path
+            
+        except Exception as e:
+            print(f"❌ Erreur sauvegarde numéro de piste {file_path}: {e}")
             return file_path
     
     def _save_metadata_mp3(self, file_path, album, artist, year, genre):
