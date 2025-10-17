@@ -65,15 +65,6 @@ class ContextMenuManager:
         separator3 = Gtk.SeparatorMenuItem()
         self.main_menu.append(separator3)
         
-        # Section Application
-        rescan_item = Gtk.MenuItem.new_with_label("🔄 Rescanner le dossier")
-        rescan_item.connect("activate", self._on_rescan_clicked)
-        self.main_menu.append(rescan_item)
-        
-        # Séparateur
-        separator4 = Gtk.SeparatorMenuItem()
-        self.main_menu.append(separator4)
-        
         # Quitter
         quit_item = Gtk.MenuItem.new_with_label("❌ Quitter")
         quit_item.connect("activate", self._on_quit_clicked)
@@ -112,14 +103,6 @@ class ContextMenuManager:
         """Affiche le menu contextuel"""
         if self.main_menu:
             self.main_menu.popup_at_pointer(event)
-            
-    def _on_rescan_clicked(self, menuitem):
-        """Rescanne le dossier actuel"""
-        if hasattr(self.app, 'current_folder') and self.app.current_folder:
-            self.app._scan_folder(self.app.current_folder)
-        else:
-            # Si pas de dossier actuel, proposer d'en choisir un
-            self.app.on_import_clicked(None)
             
     def _on_toggle_mode_clicked(self, menuitem):
         """Bascule vers le mode HeaderBar"""

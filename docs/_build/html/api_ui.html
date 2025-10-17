@@ -1,0 +1,835 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API UI &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=e6b791cb"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="API Support" href="api_support.html" />
+    <link rel="prev" title="API Services" href="api_services.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_services.html">API Services</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API UI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-ui.views.main_window">Main Window</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ui.views.main_window.NonotagsApp"><code class="docutils literal notranslate"><span class="pre">NonotagsApp</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.create_main_window"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.create_main_window()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.create_main_window_with_scan"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.create_main_window_with_scan()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_album_processed"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_album_processed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_converter_clicked"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_converter_clicked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_edit_selection_clicked"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_edit_selection_clicked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_exceptions_clicked"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_exceptions_clicked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_import_clicked"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_import_clicked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_main_window_close"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_main_window_close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_playlists_clicked"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_playlists_clicked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_processing_completed"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_processing_completed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_processing_error"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_processing_error()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_processing_progress_updated"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_processing_progress_updated()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_processing_state_changed"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_processing_state_changed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_processing_step_changed"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_processing_step_changed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.on_window_resize"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.on_window_resize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.remove_album_from_list"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.remove_album_from_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.views.main_window.NonotagsApp.run"><code class="docutils literal notranslate"><span class="pre">NonotagsApp.run()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ui.processing_orchestrator">Processing Orchestrator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingOrchestrator"><code class="docutils literal notranslate"><span class="pre">ProcessingOrchestrator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingOrchestrator.add_albums"><code class="docutils literal notranslate"><span class="pre">ProcessingOrchestrator.add_albums()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingOrchestrator.clear_queue"><code class="docutils literal notranslate"><span class="pre">ProcessingOrchestrator.clear_queue()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingOrchestrator.get_processing_steps"><code class="docutils literal notranslate"><span class="pre">ProcessingOrchestrator.get_processing_steps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingOrchestrator.get_status"><code class="docutils literal notranslate"><span class="pre">ProcessingOrchestrator.get_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingOrchestrator.get_step_description"><code class="docutils literal notranslate"><span class="pre">ProcessingOrchestrator.get_step_description()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingOrchestrator.pause_processing"><code class="docutils literal notranslate"><span class="pre">ProcessingOrchestrator.pause_processing()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingOrchestrator.resume_processing"><code class="docutils literal notranslate"><span class="pre">ProcessingOrchestrator.resume_processing()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingOrchestrator.start_processing"><code class="docutils literal notranslate"><span class="pre">ProcessingOrchestrator.start_processing()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingOrchestrator.stop_processing"><code class="docutils literal notranslate"><span class="pre">ProcessingOrchestrator.stop_processing()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingState"><code class="docutils literal notranslate"><span class="pre">ProcessingState</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingState.CANCELLED"><code class="docutils literal notranslate"><span class="pre">ProcessingState.CANCELLED</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingState.COMPLETED"><code class="docutils literal notranslate"><span class="pre">ProcessingState.COMPLETED</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingState.ERROR"><code class="docutils literal notranslate"><span class="pre">ProcessingState.ERROR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingState.IDLE"><code class="docutils literal notranslate"><span class="pre">ProcessingState.IDLE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingState.PAUSED"><code class="docutils literal notranslate"><span class="pre">ProcessingState.PAUSED</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingState.RUNNING"><code class="docutils literal notranslate"><span class="pre">ProcessingState.RUNNING</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingStep"><code class="docutils literal notranslate"><span class="pre">ProcessingStep</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingStep.CASE_CORRECTION"><code class="docutils literal notranslate"><span class="pre">ProcessingStep.CASE_CORRECTION</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingStep.FILE_CLEANING"><code class="docutils literal notranslate"><span class="pre">ProcessingStep.FILE_CLEANING</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingStep.FORMATTING"><code class="docutils literal notranslate"><span class="pre">ProcessingStep.FORMATTING</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingStep.METADATA_CLEANING"><code class="docutils literal notranslate"><span class="pre">ProcessingStep.METADATA_CLEANING</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingStep.RENAMING"><code class="docutils literal notranslate"><span class="pre">ProcessingStep.RENAMING</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingStep.SYNCHRONIZATION"><code class="docutils literal notranslate"><span class="pre">ProcessingStep.SYNCHRONIZATION</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ui.startup_window">Startup Window</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ui.startup_window.StartupWindow"><code class="docutils literal notranslate"><span class="pre">StartupWindow</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ui.startup_window.StartupWindow.on_converter_clicked"><code class="docutils literal notranslate"><span class="pre">StartupWindow.on_converter_clicked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.startup_window.StartupWindow.on_exceptions_clicked"><code class="docutils literal notranslate"><span class="pre">StartupWindow.on_exceptions_clicked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.startup_window.StartupWindow.on_import_clicked"><code class="docutils literal notranslate"><span class="pre">StartupWindow.on_import_clicked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.startup_window.StartupWindow.on_open_app_clicked"><code class="docutils literal notranslate"><span class="pre">StartupWindow.on_open_app_clicked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.startup_window.StartupWindow.on_playlists_clicked"><code class="docutils literal notranslate"><span class="pre">StartupWindow.on_playlists_clicked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.startup_window.StartupWindow.on_startup_window_close"><code class="docutils literal notranslate"><span class="pre">StartupWindow.on_startup_window_close()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#components">Components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-ui.components.album_card">Album Card</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ui.components.album_card.AlbumCard"><code class="docutils literal notranslate"><span class="pre">AlbumCard</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ui.models.album_model">Models</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ui.models.album_model.AlbumModel"><code class="docutils literal notranslate"><span class="pre">AlbumModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.models.album_model.AlbumStatus"><code class="docutils literal notranslate"><span class="pre">AlbumStatus</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ui.models.album_model.TrackModel"><code class="docutils literal notranslate"><span class="pre">TrackModel</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API UI</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api_ui.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-ui">
+<h1>API UI<a class="headerlink" href="#api-ui" title="Lien vers cette rubrique"></a></h1>
+<p>Le module <code class="docutils literal notranslate"><span class="pre">ui</span></code> contient l’interface utilisateur GTK3.</p>
+<section id="module-ui.views.main_window">
+<span id="main-window"></span><h2>Main Window<a class="headerlink" href="#module-ui.views.main_window" title="Lien vers cette rubrique"></a></h2>
+<p>Application principale Nonotags
+Gestionnaire de l’application avec fenêtre principale et navigation</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ui.views.main_window.</span></span><span class="sig-name descname"><span class="pre">NonotagsApp</span></span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Application Nonotags avec séquence de démarrage</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.create_main_window">
+<span class="sig-name descname"><span class="pre">create_main_window</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.create_main_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.create_main_window" title="Lien vers cette définition"></a></dt>
+<dd><p>Crée la fenêtre principale après le démarrage</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.create_main_window_with_scan">
+<span class="sig-name descname"><span class="pre">create_main_window_with_scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.create_main_window_with_scan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.create_main_window_with_scan" title="Lien vers cette définition"></a></dt>
+<dd><p>Crée la fenêtre principale et lance le scan du dossier</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_album_processed">
+<span class="sig-name descname"><span class="pre">on_album_processed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">album</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">success</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_album_processed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_album_processed" title="Lien vers cette définition"></a></dt>
+<dd><p>Callback album traité</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_converter_clicked">
+<span class="sig-name descname"><span class="pre">on_converter_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_converter_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_converter_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Ouvre le convertisseur audio</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_edit_selection_clicked">
+<span class="sig-name descname"><span class="pre">on_edit_selection_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_edit_selection_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_edit_selection_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Ouvre l’édition groupée pour les albums sélectionnés</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_exceptions_clicked">
+<span class="sig-name descname"><span class="pre">on_exceptions_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_exceptions_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_exceptions_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Ouvre la fenêtre de gestion des exceptions de casse</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_import_clicked">
+<span class="sig-name descname"><span class="pre">on_import_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_import_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_import_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Import de fichiers/albums individuels</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_main_window_close">
+<span class="sig-name descname"><span class="pre">on_main_window_close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_main_window_close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_main_window_close" title="Lien vers cette définition"></a></dt>
+<dd><p>Gestionnaire de fermeture de la fenêtre principale</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_playlists_clicked">
+<span class="sig-name descname"><span class="pre">on_playlists_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_playlists_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_playlists_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Ouvre le gestionnaire de playlists</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_processing_completed">
+<span class="sig-name descname"><span class="pre">on_processing_completed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">success</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_processing_completed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_processing_completed" title="Lien vers cette définition"></a></dt>
+<dd><p>Callback traitement terminé</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_processing_error">
+<span class="sig-name descname"><span class="pre">on_processing_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_processing_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_processing_error" title="Lien vers cette définition"></a></dt>
+<dd><p>Callback erreur de traitement</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_processing_progress_updated">
+<span class="sig-name descname"><span class="pre">on_processing_progress_updated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">progress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_processing_progress_updated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_processing_progress_updated" title="Lien vers cette définition"></a></dt>
+<dd><p>Callback mise à jour du progrès</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_processing_state_changed">
+<span class="sig-name descname"><span class="pre">on_processing_state_changed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_processing_state_changed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_processing_state_changed" title="Lien vers cette définition"></a></dt>
+<dd><p>Callback changement d’état du traitement</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_processing_step_changed">
+<span class="sig-name descname"><span class="pre">on_processing_step_changed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">album_number</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_processing_step_changed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_processing_step_changed" title="Lien vers cette définition"></a></dt>
+<dd><p>Callback changement d’étape</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.on_window_resize">
+<span class="sig-name descname"><span class="pre">on_window_resize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allocation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.on_window_resize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.on_window_resize" title="Lien vers cette définition"></a></dt>
+<dd><p>Gestionnaire de redimensionnement de fenêtre avec debouncing</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.remove_album_from_list">
+<span class="sig-name descname"><span class="pre">remove_album_from_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">album_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.remove_album_from_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.remove_album_from_list" title="Lien vers cette définition"></a></dt>
+<dd><p>Supprime un album de toutes les structures de données</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>album_data: Les données de l’album à supprimer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.views.main_window.NonotagsApp.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/views/main_window.html#NonotagsApp.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.views.main_window.NonotagsApp.run" title="Lien vers cette définition"></a></dt>
+<dd><p>Lance l’application avec la fenêtre de démarrage</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ui.processing_orchestrator">
+<span id="processing-orchestrator"></span><h2>Processing Orchestrator<a class="headerlink" href="#module-ui.processing_orchestrator" title="Lien vers cette rubrique"></a></h2>
+<p>Gestionnaire d’orchestration UI pour le pipeline de traitement
+Connecte l’interface utilisateur aux 6 modules core de traitement</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingOrchestrator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ui.processing_orchestrator.</span></span><span class="sig-name descname"><span class="pre">ProcessingOrchestrator</span></span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingOrchestrator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingOrchestrator" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Orchestrateur du pipeline de traitement pour l’interface utilisateur</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingOrchestrator.add_albums">
+<span class="sig-name descname"><span class="pre">add_albums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">albums</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(disponible dans Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingOrchestrator.add_albums"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingOrchestrator.add_albums" title="Lien vers cette définition"></a></dt>
+<dd><p>Ajoute des albums à la queue de traitement</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>albums: Liste des albums avec métadonnées</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingOrchestrator.clear_queue">
+<span class="sig-name descname"><span class="pre">clear_queue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingOrchestrator.clear_queue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingOrchestrator.clear_queue" title="Lien vers cette définition"></a></dt>
+<dd><p>Vide la queue de traitement</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingOrchestrator.get_processing_steps">
+<span class="sig-name descname"><span class="pre">get_processing_steps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(disponible dans Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ui.processing_orchestrator.ProcessingStep" title="ui.processing_orchestrator.ProcessingStep"><span class="pre">ProcessingStep</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingOrchestrator.get_processing_steps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingOrchestrator.get_processing_steps" title="Lien vers cette définition"></a></dt>
+<dd><p>Retourne la liste des étapes de traitement</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingOrchestrator.get_status">
+<span class="sig-name descname"><span class="pre">get_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a></span></span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingOrchestrator.get_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingOrchestrator.get_status" title="Lien vers cette définition"></a></dt>
+<dd><p>Retourne l’état actuel du traitement</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingOrchestrator.get_step_description">
+<span class="sig-name descname"><span class="pre">get_step_description</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ui.processing_orchestrator.ProcessingStep" title="ui.processing_orchestrator.ProcessingStep"><span class="pre">ProcessingStep</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingOrchestrator.get_step_description"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingOrchestrator.get_step_description" title="Lien vers cette définition"></a></dt>
+<dd><p>Retourne la description d’une étape</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingOrchestrator.pause_processing">
+<span class="sig-name descname"><span class="pre">pause_processing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingOrchestrator.pause_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingOrchestrator.pause_processing" title="Lien vers cette définition"></a></dt>
+<dd><p>Met en pause le traitement</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingOrchestrator.resume_processing">
+<span class="sig-name descname"><span class="pre">resume_processing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingOrchestrator.resume_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingOrchestrator.resume_processing" title="Lien vers cette définition"></a></dt>
+<dd><p>Reprend le traitement</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingOrchestrator.start_processing">
+<span class="sig-name descname"><span class="pre">start_processing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingOrchestrator.start_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingOrchestrator.start_processing" title="Lien vers cette définition"></a></dt>
+<dd><p>Démarre le traitement des albums en arrière-plan</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingOrchestrator.stop_processing">
+<span class="sig-name descname"><span class="pre">stop_processing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingOrchestrator.stop_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingOrchestrator.stop_processing" title="Lien vers cette définition"></a></dt>
+<dd><p>Arrête le traitement</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingState">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ui.processing_orchestrator.</span></span><span class="sig-name descname"><span class="pre">ProcessingState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingState" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>États du traitement</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingState.CANCELLED">
+<span class="sig-name descname"><span class="pre">CANCELLED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cancelled'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingState.CANCELLED" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingState.COMPLETED">
+<span class="sig-name descname"><span class="pre">COMPLETED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'completed'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingState.COMPLETED" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingState.ERROR">
+<span class="sig-name descname"><span class="pre">ERROR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'error'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingState.ERROR" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingState.IDLE">
+<span class="sig-name descname"><span class="pre">IDLE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'idle'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingState.IDLE" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingState.PAUSED">
+<span class="sig-name descname"><span class="pre">PAUSED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'paused'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingState.PAUSED" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingState.RUNNING">
+<span class="sig-name descname"><span class="pre">RUNNING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'running'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingState.RUNNING" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingStep">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ui.processing_orchestrator.</span></span><span class="sig-name descname"><span class="pre">ProcessingStep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/processing_orchestrator.html#ProcessingStep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.processing_orchestrator.ProcessingStep" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Étapes du pipeline de traitement</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingStep.CASE_CORRECTION">
+<span class="sig-name descname"><span class="pre">CASE_CORRECTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'case_correction'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingStep.CASE_CORRECTION" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingStep.FILE_CLEANING">
+<span class="sig-name descname"><span class="pre">FILE_CLEANING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'file_cleaning'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingStep.FILE_CLEANING" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingStep.FORMATTING">
+<span class="sig-name descname"><span class="pre">FORMATTING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'formatting'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingStep.FORMATTING" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingStep.METADATA_CLEANING">
+<span class="sig-name descname"><span class="pre">METADATA_CLEANING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'metadata_cleaning'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingStep.METADATA_CLEANING" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingStep.RENAMING">
+<span class="sig-name descname"><span class="pre">RENAMING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'renaming'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingStep.RENAMING" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.processing_orchestrator.ProcessingStep.SYNCHRONIZATION">
+<span class="sig-name descname"><span class="pre">SYNCHRONIZATION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'synchronization'</span></em><a class="headerlink" href="#ui.processing_orchestrator.ProcessingStep.SYNCHRONIZATION" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ui.startup_window">
+<span id="startup-window"></span><h2>Startup Window<a class="headerlink" href="#module-ui.startup_window" title="Lien vers cette rubrique"></a></h2>
+<p>Fenêtre de démarrage Nonotags
+Module dédié pour la fenêtre de démarrage avec navigation et sélection de dossiers</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.startup_window.StartupWindow">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ui.startup_window.</span></span><span class="sig-name descname"><span class="pre">StartupWindow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/startup_window.html#StartupWindow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.startup_window.StartupWindow" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">Window</span></code></p>
+<p>Fenêtre de démarrage conforme au cahier des charges</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.startup_window.StartupWindow.on_converter_clicked">
+<span class="sig-name descname"><span class="pre">on_converter_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/startup_window.html#StartupWindow.on_converter_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.startup_window.StartupWindow.on_converter_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Ouvre le convertisseur audio</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.startup_window.StartupWindow.on_exceptions_clicked">
+<span class="sig-name descname"><span class="pre">on_exceptions_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/startup_window.html#StartupWindow.on_exceptions_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.startup_window.StartupWindow.on_exceptions_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Ouvre la fenêtre des exceptions</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.startup_window.StartupWindow.on_import_clicked">
+<span class="sig-name descname"><span class="pre">on_import_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/startup_window.html#StartupWindow.on_import_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.startup_window.StartupWindow.on_import_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Importer des albums et ouvrir l’application avec les résultats</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.startup_window.StartupWindow.on_open_app_clicked">
+<span class="sig-name descname"><span class="pre">on_open_app_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/startup_window.html#StartupWindow.on_open_app_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.startup_window.StartupWindow.on_open_app_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Ouvre la fenêtre principale et ferme la fenêtre de démarrage</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.startup_window.StartupWindow.on_playlists_clicked">
+<span class="sig-name descname"><span class="pre">on_playlists_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/startup_window.html#StartupWindow.on_playlists_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.startup_window.StartupWindow.on_playlists_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Ouvre le gestionnaire de playlists</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.startup_window.StartupWindow.on_startup_window_close">
+<span class="sig-name descname"><span class="pre">on_startup_window_close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/startup_window.html#StartupWindow.on_startup_window_close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.startup_window.StartupWindow.on_startup_window_close" title="Lien vers cette définition"></a></dt>
+<dd><p>Gestionnaire de fermeture de la fenêtre de démarrage</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="components">
+<h2>Components<a class="headerlink" href="#components" title="Lien vers cette rubrique"></a></h2>
+<section id="module-ui.components.album_card">
+<span id="album-card"></span><h3>Album Card<a class="headerlink" href="#module-ui.components.album_card" title="Lien vers cette rubrique"></a></h3>
+<p>Composant AlbumCard
+Widget représentant une carte d’album dans l’interface</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.components.album_card.AlbumCard">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ui.components.album_card.</span></span><span class="sig-name descname"><span class="pre">AlbumCard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">album_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_app</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/components/album_card.html#AlbumCard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.components.album_card.AlbumCard" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code></p>
+<p>Widget représentant une carte d’album</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.components.album_card.AlbumCard.on_edit_clicked">
+<span class="sig-name descname"><span class="pre">on_edit_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/components/album_card.html#AlbumCard.on_edit_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.components.album_card.AlbumCard.on_edit_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Ouvre la fenêtre d’édition</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.components.album_card.AlbumCard.on_playlist_clicked">
+<span class="sig-name descname"><span class="pre">on_playlist_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/components/album_card.html#AlbumCard.on_playlist_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.components.album_card.AlbumCard.on_playlist_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Crée une playlist avec cet album</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.components.album_card.AlbumCard.on_remove_clicked">
+<span class="sig-name descname"><span class="pre">on_remove_clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/components/album_card.html#AlbumCard.on_remove_clicked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.components.album_card.AlbumCard.on_remove_clicked" title="Lien vers cette définition"></a></dt>
+<dd><p>Retire cet album de la liste</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.components.album_card.AlbumCard.on_selection_toggled">
+<span class="sig-name descname"><span class="pre">on_selection_toggled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkbox</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/components/album_card.html#AlbumCard.on_selection_toggled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.components.album_card.AlbumCard.on_selection_toggled" title="Lien vers cette définition"></a></dt>
+<dd><p>Gère la sélection/déselection de l’album</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.components.album_card.AlbumCard.refresh_cover">
+<span class="sig-name descname"><span class="pre">refresh_cover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/components/album_card.html#AlbumCard.refresh_cover"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.components.album_card.AlbumCard.refresh_cover" title="Lien vers cette définition"></a></dt>
+<dd><p>Met à jour la pochette de la carte après téléchargement</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.components.album_card.AlbumCard.update_cover">
+<span class="sig-name descname"><span class="pre">update_cover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/components/album_card.html#AlbumCard.update_cover"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.components.album_card.AlbumCard.update_cover" title="Lien vers cette définition"></a></dt>
+<dd><p>Met à jour la pochette de la carte après téléchargement d’une nouvelle pochette</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.components.album_card.AlbumCard.update_folder_path">
+<span class="sig-name descname"><span class="pre">update_folder_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/components/album_card.html#AlbumCard.update_folder_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.components.album_card.AlbumCard.update_folder_path" title="Lien vers cette définition"></a></dt>
+<dd><p>Met à jour le chemin du dossier après renommage et rafraîchit l’affichage</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ui.models.album_model">
+<span id="models"></span><h3>Models<a class="headerlink" href="#module-ui.models.album_model" title="Lien vers cette rubrique"></a></h3>
+<p>Modèle de données pour les albums
+Représentation moderne des métadonnées d’albums</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ui.models.album_model.</span></span><span class="sig-name descname"><span class="pre">AlbumModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">artist:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genre:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_count:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_path:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cover_path:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">album_artist:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compilation:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disc_number:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_discs:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status:</span> <span class="pre">~ui.models.album_model.AlbumStatus</span> <span class="pre">=</span> <span class="pre">AlbumStatus.PENDING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_selected:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_progress:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tracks:</span> <span class="pre">~typing.List[~ui.models.album_model.TrackModel]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_modified:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">import_date:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issues:</span> <span class="pre">~typing.List[str]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/models/album_model.html#AlbumModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.models.album_model.AlbumModel" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Modèle moderne pour un album avec toutes ses métadonnées</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.add_issue">
+<span class="sig-name descname"><span class="pre">add_issue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/models/album_model.html#AlbumModel.add_issue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.models.album_model.AlbumModel.add_issue" title="Lien vers cette définition"></a></dt>
+<dd><p>Ajoute un problème à l’album</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.album_artist">
+<span class="sig-name descname"><span class="pre">album_artist</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.album_artist" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.artist">
+<span class="sig-name descname"><span class="pre">artist</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.artist" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.clear_issues">
+<span class="sig-name descname"><span class="pre">clear_issues</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/models/album_model.html#AlbumModel.clear_issues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.models.album_model.AlbumModel.clear_issues" title="Lien vers cette définition"></a></dt>
+<dd><p>Efface tous les problèmes</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.compilation">
+<span class="sig-name descname"><span class="pre">compilation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.compilation" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.cover_path">
+<span class="sig-name descname"><span class="pre">cover_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(disponible dans Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.cover_path" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.create_playlist">
+<span class="sig-name descname"><span class="pre">create_playlist</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/ui/models/album_model.html#AlbumModel.create_playlist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.models.album_model.AlbumModel.create_playlist" title="Lien vers cette définition"></a></dt>
+<dd><p>Crée une playlist M3U avec chemins relatifs dans le dossier de l’album</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.disc_number">
+<span class="sig-name descname"><span class="pre">disc_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.disc_number" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.display_artist">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display_artist</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.display_artist" title="Lien vers cette définition"></a></dt>
+<dd><p>Artiste d’affichage formaté</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.display_title">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display_title</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.display_title" title="Lien vers cette définition"></a></dt>
+<dd><p>Titre d’affichage formaté</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.folder_path">
+<span class="sig-name descname"><span class="pre">folder_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.folder_path" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.from_dict">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(disponible dans Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ui.models.album_model.AlbumModel" title="ui.models.album_model.AlbumModel"><span class="pre">AlbumModel</span></a></span></span><a class="reference internal" href="_modules/ui/models/album_model.html#AlbumModel.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.models.album_model.AlbumModel.from_dict" title="Lien vers cette définition"></a></dt>
+<dd><p>Crée une instance depuis un dictionnaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.genre">
+<span class="sig-name descname"><span class="pre">genre</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.genre" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.has_cover">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_cover</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.has_cover" title="Lien vers cette définition"></a></dt>
+<dd><p>Vérifie si l’album a une pochette</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.has_issues">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_issues</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.has_issues" title="Lien vers cette définition"></a></dt>
+<dd><p>Vérifie si l’album a des problèmes</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.import_date">
+<span class="sig-name descname"><span class="pre">import_date</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(disponible dans Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.import_date" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.is_selected">
+<span class="sig-name descname"><span class="pre">is_selected</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.is_selected" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.issues">
+<span class="sig-name descname"><span class="pre">issues</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(disponible dans Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.issues" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.last_modified">
+<span class="sig-name descname"><span class="pre">last_modified</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(disponible dans Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.last_modified" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.processing_progress">
+<span class="sig-name descname"><span class="pre">processing_progress</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(disponible dans Python v3.14)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.processing_progress" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.status">
+<span class="sig-name descname"><span class="pre">status</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ui.models.album_model.AlbumStatus" title="ui.models.album_model.AlbumStatus"><span class="pre">AlbumStatus</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pending'</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.status" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.status_css_class">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">status_css_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.status_css_class" title="Lien vers cette définition"></a></dt>
+<dd><p>Classe CSS pour le statut</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.status_emoji">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">status_emoji</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.status_emoji" title="Lien vers cette définition"></a></dt>
+<dd><p>Emoji correspondant au statut</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.status_text">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">status_text</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.status_text" title="Lien vers cette définition"></a></dt>
+<dd><p>Texte du statut</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.title">
+<span class="sig-name descname"><span class="pre">title</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.title" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(disponible dans Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/ui/models/album_model.html#AlbumModel.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.models.album_model.AlbumModel.to_dict" title="Lien vers cette définition"></a></dt>
+<dd><p>Convertit en dictionnaire pour serialisation</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.total_discs">
+<span class="sig-name descname"><span class="pre">total_discs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.total_discs" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.total_duration">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_duration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.total_duration" title="Lien vers cette définition"></a></dt>
+<dd><p>Durée totale en secondes</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.track_count">
+<span class="sig-name descname"><span class="pre">track_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.track_count" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.tracks">
+<span class="sig-name descname"><span class="pre">tracks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(disponible dans Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ui.models.album_model.TrackModel" title="ui.models.album_model.TrackModel"><span class="pre">TrackModel</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.tracks" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.update_status">
+<span class="sig-name descname"><span class="pre">update_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ui.models.album_model.AlbumStatus" title="ui.models.album_model.AlbumStatus"><span class="pre">AlbumStatus</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(disponible dans Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/models/album_model.html#AlbumModel.update_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.models.album_model.AlbumModel.update_status" title="Lien vers cette définition"></a></dt>
+<dd><p>Met à jour le statut de l’album</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumModel.year">
+<span class="sig-name descname"><span class="pre">year</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#ui.models.album_model.AlbumModel.year" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumStatus">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ui.models.album_model.</span></span><span class="sig-name descname"><span class="pre">AlbumStatus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/models/album_model.html#AlbumStatus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.models.album_model.AlbumStatus" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>États possibles d’un album</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumStatus.ERROR">
+<span class="sig-name descname"><span class="pre">ERROR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'error'</span></em><a class="headerlink" href="#ui.models.album_model.AlbumStatus.ERROR" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumStatus.PENDING">
+<span class="sig-name descname"><span class="pre">PENDING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pending'</span></em><a class="headerlink" href="#ui.models.album_model.AlbumStatus.PENDING" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumStatus.PROCESSING">
+<span class="sig-name descname"><span class="pre">PROCESSING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'processing'</span></em><a class="headerlink" href="#ui.models.album_model.AlbumStatus.PROCESSING" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumStatus.SUCCESS">
+<span class="sig-name descname"><span class="pre">SUCCESS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'success'</span></em><a class="headerlink" href="#ui.models.album_model.AlbumStatus.SUCCESS" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.AlbumStatus.WARNING">
+<span class="sig-name descname"><span class="pre">WARNING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'warning'</span></em><a class="headerlink" href="#ui.models.album_model.AlbumStatus.WARNING" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.models.album_model.TrackModel">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ui.models.album_model.</span></span><span class="sig-name descname"><span class="pre">TrackModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">artist:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_path:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_issues:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issues:</span> <span class="pre">~typing.List[str]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/models/album_model.html#TrackModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.models.album_model.TrackModel" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Modèle pour une piste audio</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.TrackModel.artist">
+<span class="sig-name descname"><span class="pre">artist</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#ui.models.album_model.TrackModel.artist" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.TrackModel.duration">
+<span class="sig-name descname"><span class="pre">duration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(disponible dans Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ui.models.album_model.TrackModel.duration" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.TrackModel.file_path">
+<span class="sig-name descname"><span class="pre">file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#ui.models.album_model.TrackModel.file_path" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.TrackModel.has_issues">
+<span class="sig-name descname"><span class="pre">has_issues</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#ui.models.album_model.TrackModel.has_issues" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.TrackModel.issues">
+<span class="sig-name descname"><span class="pre">issues</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(disponible dans Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ui.models.album_model.TrackModel.issues" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.TrackModel.number">
+<span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#ui.models.album_model.TrackModel.number" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ui.models.album_model.TrackModel.title">
+<span class="sig-name descname"><span class="pre">title</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#ui.models.album_model.TrackModel.title" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="api_services.html" class="btn btn-neutral float-left" title="API Services" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="api_support.html" class="btn btn-neutral float-right" title="API Support" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

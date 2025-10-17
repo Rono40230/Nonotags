@@ -1,0 +1,1118 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core.file_renamer &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/translations.js?v=e6b791cb"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_services.html">API Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Code du module</a></li>
+      <li class="breadcrumb-item active">core.file_renamer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Code source de core.file_renamer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module 5 - File Renamer (GROUPE 5)</span>
+<span class="sd">Renommage standardisé des fichiers et dossiers MP3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Set</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="c1"># Import Mutagen pour les métadonnées</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.mp3</span><span class="w"> </span><span class="kn">import</span> <span class="n">MP3</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.id3</span><span class="w"> </span><span class="kn">import</span> <span class="n">ID3NoHeaderError</span>
+    <span class="n">MUTAGEN_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">MUTAGEN_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">support.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">AppLogger</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">support.honest_logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">HonestLogger</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">support.config_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigManager</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">support.state_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateManager</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">support.validator</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetadataValidator</span><span class="p">,</span> <span class="n">ValidationResult</span><span class="p">,</span> <span class="n">FileValidator</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">database.db_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatabaseManager</span>
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur d&#39;import des modules de support : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RenamingRule">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.RenamingRule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RenamingRule</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Énumération des règles de renommage appliquées.&quot;&quot;&quot;</span>
+    <span class="n">FORMAT_TRACK_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;format_track_filename&quot;</span>
+    <span class="n">FORMAT_ALBUM_FOLDER</span> <span class="o">=</span> <span class="s2">&quot;format_album_folder&quot;</span>
+    <span class="n">HANDLE_MULTI_YEAR</span> <span class="o">=</span> <span class="s2">&quot;handle_multi_year&quot;</span>
+    <span class="n">SANITIZE_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;sanitize_filename&quot;</span>
+    <span class="n">HANDLE_DUPLICATE_NAME</span> <span class="o">=</span> <span class="s2">&quot;handle_duplicate_name&quot;</span>
+    <span class="n">PRESERVE_EXTENSION</span> <span class="o">=</span> <span class="s2">&quot;preserve_extension&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="RenamingResult">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.RenamingResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RenamingResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Résultat du renommage d&#39;un fichier ou dossier.&quot;&quot;&quot;</span>
+    <span class="n">original_path</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">new_path</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">renamed</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">rules_applied</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RenamingRule</span><span class="p">]</span>
+    <span class="n">warnings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="AlbumRenamingResult">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.AlbumRenamingResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AlbumRenamingResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Résultat du renommage complet d&#39;un album.&quot;&quot;&quot;</span>
+    <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">files_renamed</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">folder_renamed</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">total_files</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">file_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RenamingResult</span><span class="p">]</span>
+    <span class="n">folder_result</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RenamingResult</span><span class="p">]</span>
+    <span class="n">processing_time</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">errors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">warnings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="FileRenamer">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FileRenamer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Module de renommage des fichiers et dossiers MP3.</span>
+<span class="sd">    </span>
+<span class="sd">    Fonctionnalités :</span>
+<span class="sd">    - Renommage fichiers : &quot;(N° piste) - Titre.mp3&quot;</span>
+<span class="sd">    - Renommage dossiers : &quot;(Année) Album&quot;</span>
+<span class="sd">    - Gestion multi-années : &quot;(année1-année2) Album&quot;</span>
+<span class="sd">    - Nettoyage des noms de fichiers</span>
+<span class="sd">    - Gestion des doublons</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise le module de renommage.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Initialisation des modules de support</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">support.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">main_logger</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span> <span class="o">=</span> <span class="n">HonestLogger</span><span class="p">(</span><span class="s2">&quot;FileRenamer&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_manager</span> <span class="o">=</span> <span class="n">ConfigManager</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span> <span class="o">=</span> <span class="n">StateManager</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_validator</span> <span class="o">=</span> <span class="n">FileValidator</span><span class="p">()</span>  <span class="c1"># Pour validate_directory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadata_validator</span> <span class="o">=</span> <span class="n">MetadataValidator</span><span class="p">()</span>  <span class="c1"># Pour les métadonnées</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_manager</span> <span class="o">=</span> <span class="n">DatabaseManager</span><span class="p">()</span>
+            
+            <span class="c1"># Configuration du module</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_manager</span><span class="o">.</span><span class="n">processing</span>
+            
+            <span class="c1"># Caractères interdits dans les noms de fichiers</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">invalid_chars</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;[&lt;&gt;:&quot;/</span><span class="se">\\</span><span class="s1">|?*]&#39;</span>
+            
+            <span class="c1"># Extensions de fichiers supportées</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">supported_extensions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;.mp3&#39;</span><span class="p">,</span> <span class="s1">&#39;.flac&#39;</span><span class="p">,</span> <span class="s1">&#39;.m4a&#39;</span><span class="p">,</span> <span class="s1">&#39;.ogg&#39;</span><span class="p">,</span> <span class="s1">&#39;.wav&#39;</span><span class="p">}</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;FileRenamer initialisé avec succès&quot;</span><span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur lors de l&#39;initialisation de FileRenamer : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span>
+    
+<div class="viewcode-block" id="FileRenamer.sanitize_filename">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer.sanitize_filename">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sanitize_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">RenamingRule</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Nettoie un nom de fichier en supprimant les caractères interdits.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            filename: Nom de fichier à nettoyer</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[str, List[RenamingRule]]: Nom nettoyé et règles appliquées</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="n">rules_applied</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Remplacement des caractères interdits par des alternatives</span>
+        <span class="n">replacements</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;&lt;&#39;</span><span class="p">:</span> <span class="s1">&#39;(&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;&gt;&#39;</span><span class="p">:</span> <span class="s1">&#39;)&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;:&#39;</span><span class="p">:</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;&quot;&#39;</span><span class="p">:</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;/&#39;</span><span class="p">:</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;|&#39;</span><span class="p">:</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;?&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;*&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
+        <span class="p">}</span>
+        
+        <span class="k">for</span> <span class="n">char</span><span class="p">,</span> <span class="n">replacement</span> <span class="ow">in</span> <span class="n">replacements</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">:</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="n">replacement</span><span class="p">)</span>
+        
+        <span class="c1"># Nettoyage des espaces multiples</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        
+        <span class="c1"># Suppression des espaces en début/fin</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        
+        <span class="c1"># Limitation de la longueur (255 caractères max pour la plupart des systèmes)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">:</span>  <span class="c1"># Garde de la marge pour l&#39;extension</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">[:</span><span class="mi">200</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">original</span> <span class="o">!=</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RenamingRule</span><span class="o">.</span><span class="n">SANITIZE_FILENAME</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">rules_applied</span></div>
+
+    
+<div class="viewcode-block" id="FileRenamer.format_track_filename">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer.format_track_filename">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_track_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">track_number</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;.mp3&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">RenamingRule</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Formate le nom d&#39;un fichier de piste selon le pattern &quot;(N° piste) - Titre.ext&quot;.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            track_number: Numéro de piste (déjà formaté avec zéro initial)</span>
+<span class="sd">            title: Titre de la piste</span>
+<span class="sd">            extension: Extension du fichier</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[str, List[RenamingRule]]: Nom formaté et règles appliquées</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rules_applied</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Nettoyage du numéro de piste (garder seulement la partie avant le &quot;/&quot;)</span>
+        <span class="k">if</span> <span class="s1">&#39;/&#39;</span> <span class="ow">in</span> <span class="n">track_number</span><span class="p">:</span>
+            <span class="n">track_number</span> <span class="o">=</span> <span class="n">track_number</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="c1"># Formatage avec zéro initial si nécessaire</span>
+        <span class="k">if</span> <span class="n">track_number</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">track_number</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">track_number</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;0</span><span class="si">{</span><span class="n">track_number</span><span class="si">}</span><span class="s2">&quot;</span>
+        
+        <span class="c1"># Nettoyage du titre</span>
+        <span class="n">clean_title</span><span class="p">,</span> <span class="n">title_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitize_filename</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">rules_applied</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">title_rules</span><span class="p">)</span>
+        
+        <span class="c1"># Construction du nom de fichier AVEC extension (nécessaire pour les vrais fichiers)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">track_number</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">clean_title</span><span class="si">}{</span><span class="n">extension</span><span class="si">}</span><span class="s2">&quot;</span>
+        
+        <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RenamingRule</span><span class="o">.</span><span class="n">FORMAT_TRACK_FILENAME</span><span class="p">)</span>
+        <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RenamingRule</span><span class="o">.</span><span class="n">PRESERVE_EXTENSION</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">rules_applied</span></div>
+
+    
+<div class="viewcode-block" id="FileRenamer.format_album_folder">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer.format_album_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_album_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">year</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">album</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">RenamingRule</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Formate le nom d&#39;un dossier d&#39;album selon le pattern &quot;(Année) Album&quot;.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            year: Année de l&#39;album</span>
+<span class="sd">            album: Nom de l&#39;album</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[str, List[RenamingRule]]: Nom formaté et règles appliquées</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rules_applied</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Gestion des années multiples (compilations)</span>
+        <span class="n">formatted_year</span><span class="p">,</span> <span class="n">year_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_multi_year_folder</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+        <span class="n">rules_applied</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">year_rules</span><span class="p">)</span>
+        
+        <span class="c1"># Nettoyage du nom d&#39;album</span>
+        <span class="n">clean_album</span><span class="p">,</span> <span class="n">album_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitize_filename</span><span class="p">(</span><span class="n">album</span><span class="p">)</span>
+        <span class="n">rules_applied</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">album_rules</span><span class="p">)</span>
+        
+        <span class="c1"># Construction du nom de dossier</span>
+        <span class="k">if</span> <span class="n">formatted_year</span><span class="p">:</span>
+            <span class="n">folder_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">formatted_year</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">clean_album</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">folder_name</span> <span class="o">=</span> <span class="n">clean_album</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pas d&#39;année disponible pour l&#39;album : </span><span class="si">{</span><span class="n">album</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RenamingRule</span><span class="o">.</span><span class="n">FORMAT_ALBUM_FOLDER</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">folder_name</span><span class="p">,</span> <span class="n">rules_applied</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_multi_year_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">year</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">RenamingRule</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gère les années multiples pour les dossiers de compilation.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            year: Année ou plage d&#39;années</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[str, List[RenamingRule]]: Année formatée et règles appliquées</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rules_applied</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">year</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">year</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 17] Année vide ou None - Pas de traitement&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="p">[]</span>
+        
+        <span class="n">year</span> <span class="o">=</span> <span class="n">year</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        
+        <span class="c1"># Si c&#39;est déjà une plage formatée (ex: &quot;1995-2000&quot;)</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^\d</span><span class="si">{4}</span><span class="s1">-\d</span><span class="si">{4}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="n">year</span><span class="p">):</span>
+            <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RenamingRule</span><span class="o">.</span><span class="n">HANDLE_MULTI_YEAR</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">year</span><span class="p">,</span> <span class="n">rules_applied</span>
+        
+        <span class="c1"># Extraction des années individuelles</span>
+        <span class="n">years</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\b\d</span><span class="si">{4}</span><span class="s1">\b&#39;</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">years</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 17] Aucune année valide détectée dans: &#39;</span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">year</span><span class="p">,</span> <span class="p">[]</span>  <span class="c1"># Retourne tel quel si pas d&#39;années détectées</span>
+        
+        <span class="c1"># Conversion en entiers et tri</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">year_ints</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">years</span> <span class="k">if</span> <span class="mi">1900</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2100</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 [RÈGLE 17] Années triées: </span><span class="si">{</span><span class="n">year_ints</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">year_ints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ℹ️ [RÈGLE 17] Année unique: </span><span class="si">{</span><span class="n">year_ints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> - Pas de modification&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">year_ints</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[]</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">year_ints</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># Utilise la première et dernière année pour la plage</span>
+                <span class="n">min_year</span> <span class="o">=</span> <span class="n">year_ints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">max_year</span> <span class="o">=</span> <span class="n">year_ints</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                
+                <span class="k">if</span> <span class="n">min_year</span> <span class="o">!=</span> <span class="n">max_year</span><span class="p">:</span>
+                    <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RenamingRule</span><span class="o">.</span><span class="n">HANDLE_MULTI_YEAR</span><span class="p">)</span>
+                    <span class="c1"># Format compilation : (Année la plus ancienne-2 derniers chiffres de l&#39;année la plus récente)</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">min_year</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">max_year</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">rules_applied</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_year</span><span class="p">),</span> <span class="p">[]</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 17] Erreur conversion années: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">pass</span>
+        
+        <span class="k">return</span> <span class="n">year</span><span class="p">,</span> <span class="p">[]</span>
+    
+<div class="viewcode-block" id="FileRenamer.preview_file_renaming">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer.preview_file_renaming">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preview_file_renaming</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">RenamingResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prévisualise le renommage d&#39;un fichier sans l&#39;effectuer.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            file_path: Chemin du fichier</span>
+<span class="sd">            metadata: Métadonnées du fichier</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            RenamingResult: Résultat de la prévisualisation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">path_obj</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="n">original_name</span> <span class="o">=</span> <span class="n">path_obj</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">extension</span> <span class="o">=</span> <span class="n">path_obj</span><span class="o">.</span><span class="n">suffix</span>
+            
+            <span class="c1"># Récupération des métadonnées nécessaires</span>
+            <span class="n">track_number</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TRCK&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;track_number&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">))</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TIT2&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;Unknown Title&#39;</span><span class="p">))</span>
+            
+            <span class="c1"># 🔧 CORRECTION : Forcer le formatage du numéro de piste avec zéro initial</span>
+            <span class="k">if</span> <span class="n">track_number</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">track_number</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">track_number</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">track_number</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;0</span><span class="si">{</span><span class="n">track_number</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">elif</span> <span class="n">track_number</span> <span class="ow">and</span> <span class="s1">&#39;/&#39;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">track_number</span><span class="p">):</span>
+                <span class="c1"># Format &quot;1/12&quot; → &quot;01/12&quot;</span>
+                <span class="n">parts</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">track_number</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">track_number</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;0</span><span class="si">{</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+            
+            <span class="c1"># Formatage du nouveau nom</span>
+            <span class="n">new_name</span><span class="p">,</span> <span class="n">rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_track_filename</span><span class="p">(</span><span class="n">track_number</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">extension</span><span class="p">)</span>
+            
+            <span class="c1"># Construction du nouveau chemin</span>
+            <span class="n">new_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path_obj</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">new_name</span><span class="p">)</span>
+            
+            <span class="c1"># Vérification si renommage nécessaire</span>
+            <span class="n">renamed</span> <span class="o">=</span> <span class="p">(</span><span class="n">original_name</span> <span class="o">!=</span> <span class="n">new_name</span><span class="p">)</span>
+            
+            <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="c1"># Vérification de l&#39;existence du fichier cible</span>
+            <span class="k">if</span> <span class="n">renamed</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Le fichier cible existe déjà : </span><span class="si">{</span><span class="n">new_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">RenamingResult</span><span class="p">(</span>
+                <span class="n">original_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+                <span class="n">new_path</span><span class="o">=</span><span class="n">new_path</span><span class="p">,</span>
+                <span class="n">renamed</span><span class="o">=</span><span class="n">renamed</span><span class="p">,</span>
+                <span class="n">rules_applied</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span>
+            <span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur lors de la prévisualisation de </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">RenamingResult</span><span class="p">(</span>
+                <span class="n">original_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+                <span class="n">new_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+                <span class="n">renamed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">rules_applied</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="FileRenamer.preview_folder_renaming">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer.preview_folder_renaming">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preview_folder_renaming</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">album_metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">RenamingResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prévisualise le renommage d&#39;un dossier d&#39;album sans l&#39;effectuer.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            folder_path: Chemin du dossier</span>
+<span class="sd">            album_metadata: Métadonnées de l&#39;album</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            RenamingResult: Résultat de la prévisualisation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">path_obj</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span>
+            <span class="n">original_name</span> <span class="o">=</span> <span class="n">path_obj</span><span class="o">.</span><span class="n">name</span>
+            
+            <span class="c1"># Récupération des métadonnées nécessaires</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="n">album_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TYER&#39;</span><span class="p">,</span> <span class="n">album_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+            <span class="n">album</span> <span class="o">=</span> <span class="n">album_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TALB&#39;</span><span class="p">,</span> <span class="n">album_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;album&#39;</span><span class="p">,</span> <span class="s1">&#39;Unknown Album&#39;</span><span class="p">))</span>
+            
+            <span class="c1"># Formatage du nouveau nom</span>
+            <span class="n">new_name</span><span class="p">,</span> <span class="n">rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_album_folder</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">album</span><span class="p">)</span>
+            
+            <span class="c1"># Construction du nouveau chemin</span>
+            <span class="n">new_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path_obj</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">new_name</span><span class="p">)</span>
+            
+            <span class="c1"># Vérification si renommage nécessaire</span>
+            <span class="n">renamed</span> <span class="o">=</span> <span class="p">(</span><span class="n">original_name</span> <span class="o">!=</span> <span class="n">new_name</span><span class="p">)</span>
+            
+            <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="c1"># Vérification de l&#39;existence du dossier cible</span>
+            <span class="k">if</span> <span class="n">renamed</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Le dossier cible existe déjà : </span><span class="si">{</span><span class="n">new_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">RenamingResult</span><span class="p">(</span>
+                <span class="n">original_path</span><span class="o">=</span><span class="n">folder_path</span><span class="p">,</span>
+                <span class="n">new_path</span><span class="o">=</span><span class="n">new_path</span><span class="p">,</span>
+                <span class="n">renamed</span><span class="o">=</span><span class="n">renamed</span><span class="p">,</span>
+                <span class="n">rules_applied</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span>
+            <span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur lors de la prévisualisation de </span><span class="si">{</span><span class="n">folder_path</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">RenamingResult</span><span class="p">(</span>
+                <span class="n">original_path</span><span class="o">=</span><span class="n">folder_path</span><span class="p">,</span>
+                <span class="n">new_path</span><span class="o">=</span><span class="n">folder_path</span><span class="p">,</span>
+                <span class="n">renamed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">rules_applied</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="FileRenamer.rename_file">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer.rename_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rename_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">RenamingResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Renomme un fichier selon les règles définies.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            file_path: Chemin du fichier à renommer</span>
+<span class="sd">            metadata: Métadonnées du fichier</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            RenamingResult: Résultat du renommage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Prévisualisation pour obtenir le nouveau nom</span>
+            <span class="n">preview</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preview_file_renaming</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">preview</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 15] Erreur preview: </span><span class="si">{</span><span class="n">preview</span><span class="o">.</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">preview</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">preview</span><span class="o">.</span><span class="n">renamed</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">preview</span>
+            
+            <span class="c1"># Gestion des conflits de noms</span>
+            <span class="n">new_path</span> <span class="o">=</span> <span class="n">preview</span><span class="o">.</span><span class="n">new_path</span>
+            <span class="n">counter</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">original_new_path</span> <span class="o">=</span> <span class="n">new_path</span>
+            
+            <span class="k">while</span> <span class="n">Path</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="n">new_path</span> <span class="o">!=</span> <span class="n">file_path</span><span class="p">:</span>
+                <span class="c1"># Ajout d&#39;un suffixe numérique</span>
+                <span class="n">path_obj</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">original_new_path</span><span class="p">)</span>
+                <span class="n">stem</span> <span class="o">=</span> <span class="n">path_obj</span><span class="o">.</span><span class="n">stem</span>
+                <span class="n">suffix</span> <span class="o">=</span> <span class="n">path_obj</span><span class="o">.</span><span class="n">suffix</span>
+                <span class="n">new_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path_obj</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">counter</span><span class="si">}</span><span class="s2">)</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                
+                <span class="k">if</span> <span class="n">counter</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>  <span class="c1"># Protection contre boucle infinie</span>
+                    <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;Trop de fichiers avec le même nom&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 15] </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            
+            <span class="c1"># Effectuer le renommage</span>
+            <span class="k">if</span> <span class="n">new_path</span> <span class="o">!=</span> <span class="n">file_path</span><span class="p">:</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">new_path</span><span class="p">)</span>
+                
+                <span class="c1"># Mise à jour des règles si conflit résolu</span>
+                <span class="n">rules</span> <span class="o">=</span> <span class="n">preview</span><span class="o">.</span><span class="n">rules_applied</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">new_path</span> <span class="o">!=</span> <span class="n">original_new_path</span><span class="p">:</span>
+                    <span class="n">rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RenamingRule</span><span class="o">.</span><span class="n">HANDLE_DUPLICATE_NAME</span><span class="p">)</span>
+                
+                <span class="k">return</span> <span class="n">RenamingResult</span><span class="p">(</span>
+                    <span class="n">original_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+                    <span class="n">new_path</span><span class="o">=</span><span class="n">new_path</span><span class="p">,</span>
+                    <span class="n">renamed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">rules_applied</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span>
+                    <span class="n">warnings</span><span class="o">=</span><span class="n">preview</span><span class="o">.</span><span class="n">warnings</span>
+                <span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">preview</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Erreur lors du renommage de </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 15] </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">RenamingResult</span><span class="p">(</span>
+                <span class="n">original_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+                <span class="n">new_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+                <span class="n">renamed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">rules_applied</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">error</span><span class="o">=</span><span class="n">error_msg</span>
+            <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="FileRenamer.rename_folder">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer.rename_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rename_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">album_metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">RenamingResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Renomme un dossier d&#39;album selon les règles définies.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            folder_path: Chemin du dossier à renommer</span>
+<span class="sd">            album_metadata: Métadonnées de l&#39;album</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            RenamingResult: Résultat du renommage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Prévisualisation pour obtenir le nouveau nom</span>
+            <span class="n">preview</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preview_folder_renaming</span><span class="p">(</span><span class="n">folder_path</span><span class="p">,</span> <span class="n">album_metadata</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">preview</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 16] Erreur preview: </span><span class="si">{</span><span class="n">preview</span><span class="o">.</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">preview</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">preview</span><span class="o">.</span><span class="n">renamed</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">preview</span>
+            
+            <span class="c1"># Gestion des conflits de noms</span>
+            <span class="n">new_path</span> <span class="o">=</span> <span class="n">preview</span><span class="o">.</span><span class="n">new_path</span>
+            <span class="n">counter</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">original_new_path</span> <span class="o">=</span> <span class="n">new_path</span>
+            
+            <span class="k">while</span> <span class="n">Path</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="n">new_path</span> <span class="o">!=</span> <span class="n">folder_path</span><span class="p">:</span>
+                <span class="c1"># Ajout d&#39;un suffixe numérique</span>
+                <span class="n">path_obj</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">original_new_path</span><span class="p">)</span>
+                <span class="n">new_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path_obj</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_obj</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">counter</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                
+                <span class="k">if</span> <span class="n">counter</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>  <span class="c1"># Protection contre boucle infinie</span>
+                    <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;Trop de dossiers avec le même nom&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 16] </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            
+            <span class="c1"># Effectuer le renommage</span>
+            <span class="k">if</span> <span class="n">new_path</span> <span class="o">!=</span> <span class="n">folder_path</span><span class="p">:</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">folder_path</span><span class="p">,</span> <span class="n">new_path</span><span class="p">)</span>
+                
+                <span class="c1"># Mise à jour des règles si conflit résolu</span>
+                <span class="n">rules</span> <span class="o">=</span> <span class="n">preview</span><span class="o">.</span><span class="n">rules_applied</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">new_path</span> <span class="o">!=</span> <span class="n">original_new_path</span><span class="p">:</span>
+                    <span class="n">rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RenamingRule</span><span class="o">.</span><span class="n">HANDLE_DUPLICATE_NAME</span><span class="p">)</span>
+                
+                <span class="k">return</span> <span class="n">RenamingResult</span><span class="p">(</span>
+                    <span class="n">original_path</span><span class="o">=</span><span class="n">folder_path</span><span class="p">,</span>
+                    <span class="n">new_path</span><span class="o">=</span><span class="n">new_path</span><span class="p">,</span>
+                    <span class="n">renamed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">rules_applied</span><span class="o">=</span><span class="n">rules</span><span class="p">,</span>
+                    <span class="n">warnings</span><span class="o">=</span><span class="n">preview</span><span class="o">.</span><span class="n">warnings</span>
+                <span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">preview</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Erreur lors du renommage de </span><span class="si">{</span><span class="n">folder_path</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 16] </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">RenamingResult</span><span class="p">(</span>
+                <span class="n">original_path</span><span class="o">=</span><span class="n">folder_path</span><span class="p">,</span>
+                <span class="n">new_path</span><span class="o">=</span><span class="n">folder_path</span><span class="p">,</span>
+                <span class="n">renamed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">rules_applied</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">error</span><span class="o">=</span><span class="n">error_msg</span>
+            <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="FileRenamer.preview_album_renaming">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer.preview_album_renaming">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preview_album_renaming</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlbumRenamingResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prévisualise le renommage complet d&#39;un album sans l&#39;effectuer.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_path: Chemin du dossier d&#39;album</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            AlbumRenamingResult: Résultat de la prévisualisation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Validation du dossier</span>
+            <span class="n">validation_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_validator</span><span class="o">.</span><span class="n">validate_directory</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">validation_result</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">AlbumRenamingResult</span><span class="p">(</span>
+                    <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+                    <span class="n">files_renamed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">folder_renamed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">total_files</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">file_results</span><span class="o">=</span><span class="p">[],</span>
+                    <span class="n">folder_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">processing_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span>
+                    <span class="n">errors</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Dossier invalide : </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">validation_result</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span>
+                    <span class="n">warnings</span><span class="o">=</span><span class="n">validation_result</span><span class="o">.</span><span class="n">warnings</span>
+                <span class="p">)</span>
+            
+            <span class="c1"># Mise à jour du statut</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">update_album_processing_status</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="s2">&quot;renaming_files&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Recherche des fichiers MP3</span>
+            <span class="n">album_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="n">mp3_files</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># Recherche avec différentes casses pour l&#39;extension</span>
+            <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;*.mp3&#39;</span><span class="p">,</span> <span class="s1">&#39;*.MP3&#39;</span><span class="p">,</span> <span class="s1">&#39;*.Mp3&#39;</span><span class="p">,</span> <span class="s1">&#39;*.mP3&#39;</span><span class="p">]:</span>
+                <span class="n">mp3_files</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">album_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
+            <span class="c1"># Supprime les doublons potentiels</span>
+            <span class="n">mp3_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">))</span>
+            
+            <span class="c1"># Collecte des métadonnées pour l&#39;album (du premier fichier)</span>
+            <span class="n">album_metadata</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">mp3_files</span><span class="p">:</span>
+                <span class="n">first_file_validation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_validator</span><span class="o">.</span><span class="n">validate_mp3_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="n">first_file_validation</span><span class="o">.</span><span class="n">is_valid</span> <span class="ow">and</span> <span class="n">first_file_validation</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+                    <span class="n">album_metadata</span> <span class="o">=</span> <span class="n">first_file_validation</span><span class="o">.</span><span class="n">metadata</span>
+            
+            <span class="c1"># Prévisualisation du renommage des fichiers</span>
+            <span class="n">file_results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">files_to_rename</span> <span class="o">=</span> <span class="mi">0</span>
+            
+            <span class="k">for</span> <span class="n">mp3_file</span> <span class="ow">in</span> <span class="n">mp3_files</span><span class="p">:</span>
+                <span class="c1"># Validation basique du fichier</span>
+                <span class="n">file_validation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_validator</span><span class="o">.</span><span class="n">validate_mp3_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">file_validation</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+                    <span class="c1"># Extraction directe des métadonnées avec Mutagen</span>
+                    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">MUTAGEN_AVAILABLE</span><span class="p">:</span>
+                            <span class="n">audio_file</span> <span class="o">=</span> <span class="n">MP3</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">))</span>
+                            <span class="k">if</span> <span class="n">audio_file</span> <span class="ow">and</span> <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                                <span class="n">tags</span> <span class="o">=</span> <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span>
+                                <span class="c1"># Numéro de piste</span>
+                                <span class="k">if</span> <span class="s1">&#39;TRCK&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                                    <span class="n">track</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;TRCK&#39;</span><span class="p">])</span>
+                                    <span class="k">if</span> <span class="s1">&#39;/&#39;</span> <span class="ow">in</span> <span class="n">track</span><span class="p">:</span>
+                                        <span class="n">track</span> <span class="o">=</span> <span class="n">track</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;track_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">track</span>
+                                <span class="c1"># Titre</span>
+                                <span class="k">if</span> <span class="s1">&#39;TIT2&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;TIT2&#39;</span><span class="p">])</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur extraction métadonnées </span><span class="si">{</span><span class="n">mp3_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    
+                    <span class="c1"># Utilisation des métadonnées extraites</span>
+                    <span class="k">if</span> <span class="n">metadata</span><span class="p">:</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preview_file_renaming</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">),</span> <span class="n">metadata</span><span class="p">)</span>
+                        <span class="n">file_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">renamed</span><span class="p">:</span>
+                            <span class="n">files_to_rename</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Pas de métadonnées, utilisation de valeurs par défaut</span>
+                        <span class="n">default_metadata</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s1">&#39;track_number&#39;</span><span class="p">:</span> <span class="s1">&#39;01&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">Path</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
+                        <span class="p">}</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preview_file_renaming</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">),</span> <span class="n">default_metadata</span><span class="p">)</span>
+                        <span class="n">file_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Fichier invalide, mais on l&#39;inclut dans les résultats</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">RenamingResult</span><span class="p">(</span>
+                        <span class="n">original_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">),</span>
+                        <span class="n">new_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">),</span>
+                        <span class="n">renamed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">rules_applied</span><span class="o">=</span><span class="p">[],</span>
+                        <span class="n">warnings</span><span class="o">=</span><span class="p">[],</span>
+                        <span class="n">error</span><span class="o">=</span><span class="s2">&quot;Fichier MP3 invalide ou métadonnées manquantes&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">file_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            
+            <span class="c1"># Prévisualisation du renommage du dossier</span>
+            <span class="n">folder_result</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">folder_renamed</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">album_metadata</span><span class="p">:</span>
+                <span class="n">folder_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preview_folder_renaming</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="n">album_metadata</span><span class="p">)</span>
+                <span class="n">folder_renamed</span> <span class="o">=</span> <span class="n">folder_result</span><span class="o">.</span><span class="n">renamed</span>
+            
+            <span class="n">processing_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            
+            <span class="c1"># Collecte des erreurs et avertissements</span>
+            <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">file_results</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+                    <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">warnings</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">folder_result</span> <span class="ow">and</span> <span class="n">folder_result</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+                <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">folder_result</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">folder_result</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">folder_result</span><span class="o">.</span><span class="n">warnings</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">AlbumRenamingResult</span><span class="p">(</span>
+                <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+                <span class="n">files_renamed</span><span class="o">=</span><span class="n">files_to_rename</span><span class="p">,</span>
+                <span class="n">folder_renamed</span><span class="o">=</span><span class="n">folder_renamed</span><span class="p">,</span>
+                <span class="n">total_files</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">),</span>
+                <span class="n">file_results</span><span class="o">=</span><span class="n">file_results</span><span class="p">,</span>
+                <span class="n">folder_result</span><span class="o">=</span><span class="n">folder_result</span><span class="p">,</span>
+                <span class="n">processing_time</span><span class="o">=</span><span class="n">processing_time</span><span class="p">,</span>
+                <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span>
+            <span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Erreur lors de la prévisualisation de l&#39;album </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">AlbumRenamingResult</span><span class="p">(</span>
+                <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+                <span class="n">files_renamed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">folder_renamed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">total_files</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">file_results</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">folder_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">processing_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span>
+                <span class="n">errors</span><span class="o">=</span><span class="p">[</span><span class="n">error_msg</span><span class="p">],</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="p">[]</span>
+            <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="FileRenamer.rename_album">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer.rename_album">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rename_album</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlbumRenamingResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Renomme tous les fichiers et le dossier d&#39;un album.</span>
+<span class="sd">        Version corrigée sans dépendance aux métadonnées des validators.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Début du renommage de l&#39;album : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Mise à jour du statut</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">update_album_processing_status</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="s2">&quot;renaming_files&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Validation du dossier</span>
+            <span class="n">validation_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_validator</span><span class="o">.</span><span class="n">validate_directory</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">validation_result</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">AlbumRenamingResult</span><span class="p">(</span>
+                    <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+                    <span class="n">files_renamed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">folder_renamed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">total_files</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">file_results</span><span class="o">=</span><span class="p">[],</span>
+                    <span class="n">folder_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">processing_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span>
+                    <span class="n">errors</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Dossier invalide : </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">validation_result</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span>
+                    <span class="n">warnings</span><span class="o">=</span><span class="n">validation_result</span><span class="o">.</span><span class="n">warnings</span>
+                <span class="p">)</span>
+            
+            <span class="c1"># Recherche des fichiers MP3</span>
+            <span class="n">album_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="n">mp3_files</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;*.mp3&#39;</span><span class="p">,</span> <span class="s1">&#39;*.MP3&#39;</span><span class="p">,</span> <span class="s1">&#39;*.Mp3&#39;</span><span class="p">,</span> <span class="s1">&#39;*.mP3&#39;</span><span class="p">]:</span>
+                <span class="n">mp3_files</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">album_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
+            <span class="n">mp3_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">))</span>
+            
+            <span class="c1"># Collecte des métadonnées pour l&#39;album (analyse de tous les fichiers pour compilations)</span>
+            <span class="n">album_metadata</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">all_years</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># Pour collecter toutes les années uniques</span>
+            
+            <span class="k">if</span> <span class="n">mp3_files</span> <span class="ow">and</span> <span class="n">MUTAGEN_AVAILABLE</span><span class="p">:</span>
+                <span class="c1"># Analyse du premier fichier pour l&#39;album et l&#39;artiste</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">audio_file</span> <span class="o">=</span> <span class="n">MP3</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                    <span class="k">if</span> <span class="n">audio_file</span> <span class="ow">and</span> <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                        <span class="n">tags</span> <span class="o">=</span> <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span>
+                        <span class="k">if</span> <span class="s1">&#39;TALB&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                            <span class="n">album_metadata</span><span class="p">[</span><span class="s1">&#39;album&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;TALB&#39;</span><span class="p">])</span>
+                        <span class="k">if</span> <span class="s1">&#39;TPE1&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                            <span class="n">album_metadata</span><span class="p">[</span><span class="s1">&#39;artist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;TPE1&#39;</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur extraction métadonnées album: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="c1"># Collecte de toutes les années de tous les fichiers pour détecter les compilations</span>
+                <span class="k">for</span> <span class="n">mp3_file</span> <span class="ow">in</span> <span class="n">mp3_files</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">audio_file</span> <span class="o">=</span> <span class="n">MP3</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">))</span>
+                        <span class="k">if</span> <span class="n">audio_file</span> <span class="ow">and</span> <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                            <span class="n">tags</span> <span class="o">=</span> <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span>
+                            <span class="n">year</span> <span class="o">=</span> <span class="kc">None</span>
+                            <span class="k">if</span> <span class="s1">&#39;TYER&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                                <span class="n">year</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;TYER&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                            <span class="k">elif</span> <span class="s1">&#39;TDRC&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                                <span class="n">year</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;TDRC&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                            
+                            <span class="k">if</span> <span class="n">year</span><span class="p">:</span>
+                                <span class="c1"># Extraction des années du tag (peut contenir plusieurs années)</span>
+                                <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+                                <span class="n">years_found</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\b\d</span><span class="si">{4}</span><span class="s1">\b&#39;</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">years_found</span><span class="p">:</span>
+                                    <span class="k">if</span> <span class="mi">1900</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2100</span><span class="p">:</span>
+                                        <span class="n">all_years</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur extraction année </span><span class="si">{</span><span class="n">mp3_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="c1"># Construction de la string d&#39;années pour la compilation</span>
+                <span class="k">if</span> <span class="n">all_years</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_years</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">album_metadata</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">all_years</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Compilation détectée : assemblage de toutes les années</span>
+                        <span class="n">sorted_years</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">all_years</span><span class="p">)</span>
+                        <span class="n">year_string</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sorted_years</span><span class="p">)</span>
+                        <span class="n">album_metadata</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">year_string</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📀 Compilation détectée: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_years</span><span class="p">)</span><span class="si">}</span><span class="s2"> années différentes (</span><span class="si">{</span><span class="n">sorted_years</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">sorted_years</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Renommage des fichiers</span>
+            <span class="n">file_results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">files_renamed</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">current_album_path</span> <span class="o">=</span> <span class="n">album_path</span>
+            
+            <span class="k">for</span> <span class="n">mp3_file</span> <span class="ow">in</span> <span class="n">mp3_files</span><span class="p">:</span>
+                <span class="c1"># Validation basique</span>
+                <span class="n">file_validation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_validator</span><span class="o">.</span><span class="n">validate_mp3_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">file_validation</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+                    <span class="c1"># Extraction métadonnées directe</span>
+                    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">MUTAGEN_AVAILABLE</span><span class="p">:</span>
+                            <span class="n">audio_file</span> <span class="o">=</span> <span class="n">MP3</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">))</span>
+                            <span class="k">if</span> <span class="n">audio_file</span> <span class="ow">and</span> <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                                <span class="n">tags</span> <span class="o">=</span> <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span>
+                                <span class="c1"># Numéro de piste</span>
+                                <span class="k">if</span> <span class="s1">&#39;TRCK&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                                    <span class="n">track</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;TRCK&#39;</span><span class="p">])</span>
+                                    <span class="k">if</span> <span class="s1">&#39;/&#39;</span> <span class="ow">in</span> <span class="n">track</span><span class="p">:</span>
+                                        <span class="n">track</span> <span class="o">=</span> <span class="n">track</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;track_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">track</span>
+                                <span class="c1"># Titre</span>
+                                <span class="k">if</span> <span class="s1">&#39;TIT2&#39;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;TIT2&#39;</span><span class="p">])</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur extraction métadonnées </span><span class="si">{</span><span class="n">mp3_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    
+                    <span class="c1"># Utilisation des métadonnées ou valeurs par défaut</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">metadata</span><span class="p">:</span>
+                        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s1">&#39;track_number&#39;</span><span class="p">:</span> <span class="s1">&#39;01&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">Path</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
+                        <span class="p">}</span>
+                    
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rename_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">),</span> <span class="n">metadata</span><span class="p">)</span>
+                    <span class="n">file_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">renamed</span><span class="p">:</span>
+                        <span class="n">files_renamed</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Fichier invalide</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">RenamingResult</span><span class="p">(</span>
+                        <span class="n">original_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">),</span>
+                        <span class="n">new_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">),</span>
+                        <span class="n">renamed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">rules_applied</span><span class="o">=</span><span class="p">[],</span>
+                        <span class="n">warnings</span><span class="o">=</span><span class="p">[],</span>
+                        <span class="n">error</span><span class="o">=</span><span class="s2">&quot;Fichier MP3 invalide&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">file_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            
+            <span class="c1"># Renommage du dossier (optionnel)</span>
+            <span class="n">folder_result</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">folder_renamed</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">album_metadata</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">rename_folders</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">folder_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rename_folder</span><span class="p">(</span><span class="n">current_album_path</span><span class="p">,</span> <span class="n">album_metadata</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">folder_result</span><span class="o">.</span><span class="n">renamed</span><span class="p">:</span>
+                        <span class="n">folder_renamed</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">current_album_path</span> <span class="o">=</span> <span class="n">folder_result</span><span class="o">.</span><span class="n">new_path</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur renommage dossier: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="n">processing_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            
+            <span class="c1"># Collecte des erreurs et avertissements</span>
+            <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">file_results</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+                    <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">warnings</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">folder_result</span> <span class="ow">and</span> <span class="n">folder_result</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+                <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">folder_result</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">folder_result</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">folder_result</span><span class="o">.</span><span class="n">warnings</span><span class="p">)</span>
+            
+            <span class="c1"># Logging du résultat</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Renommage terminé pour </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">files_renamed</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> fichiers, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;dossier: </span><span class="si">{</span><span class="s1">&#39;Oui&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">folder_renamed</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;Non&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Mise à jour du statut</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">update_album_processing_status</span><span class="p">(</span><span class="n">current_album_path</span><span class="p">,</span> <span class="s2">&quot;file_renaming_completed&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Enregistrement en base</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db_manager</span><span class="o">.</span><span class="n">add_import_history</span><span class="p">(</span>
+                    <span class="n">folder_path</span><span class="o">=</span><span class="n">current_album_path</span><span class="p">,</span>
+                    <span class="n">import_type</span><span class="o">=</span><span class="s2">&quot;file_renaming&quot;</span><span class="p">,</span>
+                    <span class="n">status</span><span class="o">=</span><span class="s2">&quot;completed&quot;</span> <span class="k">if</span> <span class="n">files_renamed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;no_changes&quot;</span><span class="p">,</span>
+                    <span class="n">files_processed</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">),</span>
+                    <span class="n">processing_time</span><span class="o">=</span><span class="n">processing_time</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur enregistrement base: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">AlbumRenamingResult</span><span class="p">(</span>
+                <span class="n">album_path</span><span class="o">=</span><span class="n">current_album_path</span><span class="p">,</span>
+                <span class="n">files_renamed</span><span class="o">=</span><span class="n">files_renamed</span><span class="p">,</span>
+                <span class="n">folder_renamed</span><span class="o">=</span><span class="n">folder_renamed</span><span class="p">,</span>
+                <span class="n">total_files</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">),</span>
+                <span class="n">file_results</span><span class="o">=</span><span class="n">file_results</span><span class="p">,</span>
+                <span class="n">folder_result</span><span class="o">=</span><span class="n">folder_result</span><span class="p">,</span>
+                <span class="n">processing_time</span><span class="o">=</span><span class="n">processing_time</span><span class="p">,</span>
+                <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span>
+            <span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Erreur lors du renommage de l&#39;album </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">AlbumRenamingResult</span><span class="p">(</span>
+                <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+                <span class="n">files_renamed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">folder_renamed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">total_files</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">file_results</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">folder_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">processing_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span>
+                <span class="n">errors</span><span class="o">=</span><span class="p">[</span><span class="n">error_msg</span><span class="p">],</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="p">[]</span>
+            <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="FileRenamer.rename_album_files">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer.rename_album_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rename_album_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Méthode de compatibilité pour processing_orchestrator.py.</span>
+<span class="sd">        Renomme les fichiers d&#39;un album.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_path: Chemin vers le dossier de l&#39;album</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True si le renommage a réussi, False sinon</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rename_album</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+            
+            <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Renommage réussi pour : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreurs lors du renommage de : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">success</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur critique lors du renommage de </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+    
+<div class="viewcode-block" id="FileRenamer.get_mp3_metadata">
+<a class="viewcode-back" href="../../core.html#core.file_renamer.FileRenamer.get_mp3_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_mp3_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extrait les métadonnées d&#39;un fichier MP3.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            file_path: Chemin vers le fichier MP3</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionnaire des métadonnées</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">MUTAGEN_AVAILABLE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">metadata</span>
+            
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">audio_file</span> <span class="o">=</span> <span class="n">MP3</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">audio_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Extraction des métadonnées principales</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;TRCK&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TRCK&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;TIT2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TIT2&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;TALB&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TALB&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;TPE1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TPE1&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;TDRC&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TDRC&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+                
+                <span class="c1"># Nettoyage des valeurs vides</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">metadata</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">or</span> <span class="n">metadata</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
+                        <span class="k">del</span> <span class="n">metadata</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                        
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur extraction métadonnées </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">metadata</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

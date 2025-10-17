@@ -35,6 +35,7 @@ class ConversionJob:
     source_format: str
     target_format: str
     quality: str = "standard"  # Nouveau: qualité de conversion
+    delete_source: bool = False  # Nouveau: supprimer le fichier source après conversion
     status: ConversionStatus = ConversionStatus.PENDING
     progress: float = 0.0
     error_message: str = ""
@@ -78,7 +79,7 @@ class AudioConverter:
         _, ext = os.path.splitext(file_path)
         return ext.lower().lstrip('.')
     
-    def add_conversion_job(self, source_path: str, target_format: str, output_dir: str, quality: str = "standard") -> ConversionJob:
+    def add_conversion_job(self, source_path: str, target_format: str, output_dir: str, quality: str = "standard", delete_source: bool = False) -> ConversionJob:
         """Ajoute une tâche de conversion à la queue"""
         source_format = self.detect_format(source_path)
         filename = os.path.splitext(os.path.basename(source_path))[0]
@@ -95,7 +96,8 @@ class AudioConverter:
             target_path=target_path,
             source_format=source_format,
             target_format=target_format,
-            quality=quality
+            quality=quality,
+            delete_source=delete_source
         )
         
         self.conversion_queue.append(job)
@@ -204,6 +206,16 @@ class AudioConverter:
                 if self.on_job_progress:
                     self.on_job_progress(job, job.progress)
                 print(f"✅ Conversion réussie: {job.target_path}")
+                
+                # Supprimer le fichier source si demandé
+                if job.delete_source:
+                    try:
+                        os.remove(job.source_path)
+                        print(f"🗑️ Fichier source supprimé: {job.source_path}")
+                    except OSError as e:
+                        print(f"⚠️ Impossible de supprimer le fichier source {job.source_path}: {e}")
+                        # Note: on ne considère pas cela comme un échec de conversion
+                
                 return True
             else:
                 _, stderr = process.communicate()

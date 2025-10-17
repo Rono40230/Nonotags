@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Services &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=e6b791cb"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="API UI" href="api_ui.html" />
+    <link rel="prev" title="API Core" href="api_core.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="api_core.html">API Core</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Services</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-services.music_scanner">Music Scanner</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#services.music_scanner.MusicScanner"><code class="docutils literal notranslate"><span class="pre">MusicScanner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#services.music_scanner.MusicScanner.scan_directory"><code class="docutils literal notranslate"><span class="pre">MusicScanner.scan_directory()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-services.audio_player">Audio Player</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#services.audio_player.AudioPlayer"><code class="docutils literal notranslate"><span class="pre">AudioPlayer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.cleanup"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.cleanup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.get_current_file"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.get_current_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.get_duration"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.get_duration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.get_position"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.get_position()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.get_state"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.get_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.get_supported_formats"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.get_supported_formats()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.is_paused"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.is_paused()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.is_playing"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.is_playing()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.is_stopped"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.is_stopped()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.load_file"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.load_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.on_bus_message"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.on_bus_message()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.on_decoder_pad_added"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.on_decoder_pad_added()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.pause"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.pause()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.play"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.play()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.seek"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.seek()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.set_volume"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.set_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.AudioPlayer.stop"><code class="docutils literal notranslate"><span class="pre">AudioPlayer.stop()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#services.audio_player.PlayerState"><code class="docutils literal notranslate"><span class="pre">PlayerState</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.PlayerState.ERROR"><code class="docutils literal notranslate"><span class="pre">PlayerState.ERROR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.PlayerState.PAUSED"><code class="docutils literal notranslate"><span class="pre">PlayerState.PAUSED</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.PlayerState.PLAYING"><code class="docutils literal notranslate"><span class="pre">PlayerState.PLAYING</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.audio_player.PlayerState.STOPPED"><code class="docutils literal notranslate"><span class="pre">PlayerState.STOPPED</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-services.cover_search">Cover Search</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#services.cover_search.CoverResult"><code class="docutils literal notranslate"><span class="pre">CoverResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#services.cover_search.CoverSearchError"><code class="docutils literal notranslate"><span class="pre">CoverSearchError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#services.cover_search.CoverSearchService"><code class="docutils literal notranslate"><span class="pre">CoverSearchService</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#services.cover_search.CoverSearchService.download_cover"><code class="docutils literal notranslate"><span class="pre">CoverSearchService.download_cover()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.cover_search.CoverSearchService.get_image_info"><code class="docutils literal notranslate"><span class="pre">CoverSearchService.get_image_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.cover_search.CoverSearchService.search_covers"><code class="docutils literal notranslate"><span class="pre">CoverSearchService.search_covers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#services.cover_search.CoverSearchService.validate_cover_file"><code class="docutils literal notranslate"><span class="pre">CoverSearchService.validate_cover_file()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Services</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api_services.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-services">
+<h1>API Services<a class="headerlink" href="#api-services" title="Lien vers cette rubrique"></a></h1>
+<p>Le module <code class="docutils literal notranslate"><span class="pre">services</span></code> gère les services externes et l’intégration système.</p>
+<section id="module-services.music_scanner">
+<span id="music-scanner"></span><h2>Music Scanner<a class="headerlink" href="#module-services.music_scanner" title="Lien vers cette rubrique"></a></h2>
+<p>Service de scan des dossiers musicaux
+Détecte automatiquement les albums et extrait les métadonnées</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="services.music_scanner.MusicScanner">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">services.music_scanner.</span></span><span class="sig-name descname"><span class="pre">MusicScanner</span></span><a class="reference internal" href="_modules/services/music_scanner.html#MusicScanner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.music_scanner.MusicScanner" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Service de scan des dossiers musicaux</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="services.music_scanner.MusicScanner.scan_directory">
+<span class="sig-name descname"><span class="pre">scan_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(disponible dans Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/services/music_scanner.html#MusicScanner.scan_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.music_scanner.MusicScanner.scan_directory" title="Lien vers cette définition"></a></dt>
+<dd><p>Scanne un dossier et retourne la liste des albums détectés</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>directory_path: Chemin du dossier à scanner
+progress_callback: Fonction appelée pour indiquer le progrès</p>
+</dd>
+<dt>Returns:</dt><dd><p>Liste des albums avec leurs métadonnées</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-services.audio_player">
+<span id="audio-player"></span><h2>Audio Player<a class="headerlink" href="#module-services.audio_player" title="Lien vers cette rubrique"></a></h2>
+<p>Service de lecture audio pour l’application Nonotags
+Utilise GStreamer pour la lecture audio avec support multi-formats</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">services.audio_player.</span></span><span class="sig-name descname"><span class="pre">AudioPlayer</span></span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Service de lecture audio avec GStreamer</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.cleanup">
+<span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.cleanup" title="Lien vers cette définition"></a></dt>
+<dd><p>Nettoie les ressources</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.get_current_file">
+<span class="sig-name descname"><span class="pre">get_current_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.get_current_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.get_current_file" title="Lien vers cette définition"></a></dt>
+<dd><p>Retourne le fichier actuellement chargé</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.get_duration">
+<span class="sig-name descname"><span class="pre">get_duration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.get_duration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.get_duration" title="Lien vers cette définition"></a></dt>
+<dd><p>Obtient la durée totale en secondes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.get_position">
+<span class="sig-name descname"><span class="pre">get_position</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.get_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.get_position" title="Lien vers cette définition"></a></dt>
+<dd><p>Obtient la position actuelle en secondes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.get_state">
+<span class="sig-name descname"><span class="pre">get_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.get_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.get_state" title="Lien vers cette définition"></a></dt>
+<dd><p>Retourne l’état actuel du lecteur</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.get_supported_formats">
+<span class="sig-name descname"><span class="pre">get_supported_formats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.get_supported_formats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.get_supported_formats" title="Lien vers cette définition"></a></dt>
+<dd><p>Retourne la liste des formats supportés</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.is_paused">
+<span class="sig-name descname"><span class="pre">is_paused</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.is_paused"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.is_paused" title="Lien vers cette définition"></a></dt>
+<dd><p>Vérifie si le lecteur est en pause</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.is_playing">
+<span class="sig-name descname"><span class="pre">is_playing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.is_playing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.is_playing" title="Lien vers cette définition"></a></dt>
+<dd><p>Vérifie si le lecteur est en train de jouer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.is_stopped">
+<span class="sig-name descname"><span class="pre">is_stopped</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.is_stopped"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.is_stopped" title="Lien vers cette définition"></a></dt>
+<dd><p>Vérifie si le lecteur est arrêté</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.load_file">
+<span class="sig-name descname"><span class="pre">load_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.load_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.load_file" title="Lien vers cette définition"></a></dt>
+<dd><p>Charge un fichier audio</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.on_bus_message">
+<span class="sig-name descname"><span class="pre">on_bus_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.on_bus_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.on_bus_message" title="Lien vers cette définition"></a></dt>
+<dd><p>Traite les messages du bus GStreamer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.on_decoder_pad_added">
+<span class="sig-name descname"><span class="pre">on_decoder_pad_added</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.on_decoder_pad_added"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.on_decoder_pad_added" title="Lien vers cette définition"></a></dt>
+<dd><p>Callback pour connecter le décodeur au convertisseur</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.pause">
+<span class="sig-name descname"><span class="pre">pause</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.pause"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.pause" title="Lien vers cette définition"></a></dt>
+<dd><p>Met en pause la lecture</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.play">
+<span class="sig-name descname"><span class="pre">play</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.play"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.play" title="Lien vers cette définition"></a></dt>
+<dd><p>Lance la lecture</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.seek">
+<span class="sig-name descname"><span class="pre">seek</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_seconds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.seek"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.seek" title="Lien vers cette définition"></a></dt>
+<dd><p>Se déplace à une position donnée (en secondes)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.set_volume">
+<span class="sig-name descname"><span class="pre">set_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.set_volume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.set_volume" title="Lien vers cette définition"></a></dt>
+<dd><p>Définit le volume (0.0 - 1.0)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.audio_player.AudioPlayer.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#AudioPlayer.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.AudioPlayer.stop" title="Lien vers cette définition"></a></dt>
+<dd><p>Arrête la lecture</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="services.audio_player.PlayerState">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">services.audio_player.</span></span><span class="sig-name descname"><span class="pre">PlayerState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/audio_player.html#PlayerState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.audio_player.PlayerState" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>États du lecteur audio</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="services.audio_player.PlayerState.ERROR">
+<span class="sig-name descname"><span class="pre">ERROR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'error'</span></em><a class="headerlink" href="#services.audio_player.PlayerState.ERROR" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="services.audio_player.PlayerState.PAUSED">
+<span class="sig-name descname"><span class="pre">PAUSED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'paused'</span></em><a class="headerlink" href="#services.audio_player.PlayerState.PAUSED" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="services.audio_player.PlayerState.PLAYING">
+<span class="sig-name descname"><span class="pre">PLAYING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'playing'</span></em><a class="headerlink" href="#services.audio_player.PlayerState.PLAYING" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="services.audio_player.PlayerState.STOPPED">
+<span class="sig-name descname"><span class="pre">STOPPED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'stopped'</span></em><a class="headerlink" href="#services.audio_player.PlayerState.STOPPED" title="Lien vers cette définition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-services.cover_search">
+<span id="cover-search"></span><h2>Cover Search<a class="headerlink" href="#module-services.cover_search" title="Lien vers cette rubrique"></a></h2>
+<p>Service de recherche de pochettes d’albums sur Internet
+Utilise les APIs MusicBrainz et Discogs pour trouver des pochettes</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="services.cover_search.CoverResult">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">services.cover_search.</span></span><span class="sig-name descname"><span class="pre">CoverResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thumbnail_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/cover_search.html#CoverResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.cover_search.CoverResult" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Résultat de recherche de pochette</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="services.cover_search.CoverSearchError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">services.cover_search.</span></span><span class="sig-name descname"><span class="pre">CoverSearchError</span></span><a class="reference internal" href="_modules/services/cover_search.html#CoverSearchError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.cover_search.CoverSearchError" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
+<p>Exception pour les erreurs de recherche de pochettes</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="services.cover_search.CoverSearchService">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">services.cover_search.</span></span><span class="sig-name descname"><span class="pre">CoverSearchService</span></span><a class="reference internal" href="_modules/services/cover_search.html#CoverSearchService"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.cover_search.CoverSearchService" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Service de recherche de pochettes d’albums</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="services.cover_search.CoverSearchService.download_cover">
+<span class="sig-name descname"><span class="pre">download_cover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cover_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/cover_search.html#CoverSearchService.download_cover"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.cover_search.CoverSearchService.download_cover" title="Lien vers cette définition"></a></dt>
+<dd><p>Télécharge une pochette et la sauvegarde</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>cover_result (CoverResult): Résultat de recherche
+output_path (str): Chemin de sauvegarde</p>
+</dd>
+<dt>Returns:</dt><dd><p>bool: True si le téléchargement a réussi</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.cover_search.CoverSearchService.get_image_info">
+<span class="sig-name descname"><span class="pre">get_image_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cover_result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/cover_search.html#CoverSearchService.get_image_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.cover_search.CoverSearchService.get_image_info" title="Lien vers cette définition"></a></dt>
+<dd><p>Obtient les informations d’une image sans la télécharger</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>cover_result (CoverResult): Résultat de recherche</p>
+</dd>
+<dt>Returns:</dt><dd><p>dict: Informations sur l’image (taille, format, etc.)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.cover_search.CoverSearchService.search_covers">
+<span class="sig-name descname"><span class="pre">search_covers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">artist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">album</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/cover_search.html#CoverSearchService.search_covers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.cover_search.CoverSearchService.search_covers" title="Lien vers cette définition"></a></dt>
+<dd><p>Recherche des pochettes pour un album donné</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>artist (str): Nom de l’artiste
+album (str): Nom de l’album
+year (str, optional): Année de l’album</p>
+</dd>
+<dt>Returns:</dt><dd><p>list[CoverResult]: Liste des pochettes trouvées</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.cover_search.CoverSearchService.validate_cover_file">
+<span class="sig-name descname"><span class="pre">validate_cover_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/services/cover_search.html#CoverSearchService.validate_cover_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#services.cover_search.CoverSearchService.validate_cover_file" title="Lien vers cette définition"></a></dt>
+<dd><p>Valide un fichier de pochette existant</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>file_path (str): Chemin vers le fichier</p>
+</dd>
+<dt>Returns:</dt><dd><p>dict: Informations de validation</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="api_core.html" class="btn btn-neutral float-left" title="API Core" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="api_ui.html" class="btn btn-neutral float-right" title="API UI" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

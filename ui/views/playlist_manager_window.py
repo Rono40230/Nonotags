@@ -78,7 +78,7 @@ class PlaylistManagerWindow(Gtk.Window):
     
     def _create_playlists_section(self, parent_box):
         """Section playlists trouvées avec stats intégrées (partie haute du paned)"""
-        frame = Gtk.Frame(label="🎵 Playlists trouvées")
+        frame = Gtk.Frame(label="Playlists trouvées")
         parent_box.pack_start(frame, True, True, 0)  # Prend tout l'espace disponible
         
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -102,15 +102,15 @@ class PlaylistManagerWindow(Gtk.Window):
         
         # Colonnes du tableau avec nouvelles colonnes boutons
         columns_config = [
-            ("📝 Nom", 0, 200, True),
-            ("📁 Répertoire", 1, 180, True),
-            ("🎶 Pistes", 2, 60, True),
-            ("✅ Valides", 3, 60, True),
-            ("❌ Manquantes", 4, 80, True),
-            ("⏱️ Durée", 5, 80, True),
-            ("🔗 Type", 6, 80, True),
-            ("🔄→ Relatif", 7, 100, False),  # Nouvelle colonne bouton
-            ("🔄→ Absolu", 8, 100, False)   # Nouvelle colonne bouton
+            ("Nom", 0, 200, True),
+            ("Répertoire", 1, 180, True),
+            ("Pistes", 2, 60, True),
+            ("Valides", 3, 60, True),
+            ("Manquantes", 4, 80, True),
+            ("Durée", 5, 80, True),
+            ("Type", 6, 80, True),
+            ("Relatif", 7, 100, False),  # Nouvelle colonne bouton
+            ("Absolu", 8, 100, False)   # Nouvelle colonne bouton
         ]
         
         for title, col_id, width, sortable in columns_config:
@@ -148,7 +148,7 @@ class PlaylistManagerWindow(Gtk.Window):
         parent_box.pack_start(stats_container, False, False, 0)
         
         # === BOUTON D'IMPORT À GAUCHE ===
-        import_btn = Gtk.Button("📂 Importer des playlists")
+        import_btn = Gtk.Button("Importer des playlists")
         import_btn.connect("clicked", self._on_import_playlists)
         import_btn.set_tooltip_text("Sélectionner un dossier contenant des playlists")
         stats_container.pack_start(import_btn, False, False, 0)
@@ -192,14 +192,14 @@ class PlaylistManagerWindow(Gtk.Window):
         stats_container.pack_end(action_buttons_box, False, False, 0)
         
         # Bouton "Appliquer la conversion" (initialement désactivé)
-        self.apply_conversion_btn = Gtk.Button("✅ Appliquer")
+        self.apply_conversion_btn = Gtk.Button("Appliquer")
         self.apply_conversion_btn.connect("clicked", self._on_apply_conversion)
         self.apply_conversion_btn.set_sensitive(False)
         self.apply_conversion_btn.set_tooltip_text("Appliquer la conversion de chemins")
         action_buttons_box.pack_start(self.apply_conversion_btn, False, False, 0)
         
         # Bouton "Annuler" (initialement désactivé)
-        self.cancel_conversion_btn = Gtk.Button("❌ Annuler")
+        self.cancel_conversion_btn = Gtk.Button("Annuler")
         self.cancel_conversion_btn.connect("clicked", self._on_cancel_conversion)
         self.cancel_conversion_btn.set_sensitive(False)
         self.cancel_conversion_btn.set_tooltip_text("Annuler la conversion en cours")
@@ -269,7 +269,7 @@ class PlaylistManagerWindow(Gtk.Window):
     
     def _create_playlists_table_block(self, parent_box):
         """BLOC 3 : Tableau des playlists trouvées"""
-        frame = Gtk.Frame(label="📋 Playlists trouvées")
+        frame = Gtk.Frame(label="Playlists trouvées")
         parent_box.pack_start(frame, True, True, 0)
         
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
@@ -291,13 +291,13 @@ class PlaylistManagerWindow(Gtk.Window):
         
         # Colonnes du tableau
         columns_config = [
-            ("📝 Nom", 0, 200, True),
-            ("📁 Répertoire", 1, 250, True),
-            ("🎶 Pistes", 2, 80, True),
-            ("✅ Valides", 3, 80, True),
-            ("❌ Manquantes", 4, 80, True),
-            ("⏱️ Durée", 5, 100, False),
-            ("🔗 Type", 6, 80, True)
+            ("Nom", 0, 200, True),
+            ("Répertoire", 1, 250, True),
+            ("Pistes", 2, 80, True),
+            ("Valides", 3, 80, True),
+            ("Manquantes", 4, 80, True),
+            ("Durée", 5, 100, False),
+            ("Type", 6, 80, True)
         ]
         
         for title, col_id, width, sortable in columns_config:
@@ -322,11 +322,11 @@ class PlaylistManagerWindow(Gtk.Window):
         # Boutons actions playlist
         playlist_actions_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         
-        refresh_btn = Gtk.Button("🔄 Actualiser")
+        refresh_btn = Gtk.Button("Actualiser")
         refresh_btn.connect("clicked", self._on_refresh_playlist)
         playlist_actions_box.pack_start(refresh_btn, False, False, 0)
         
-        open_folder_btn = Gtk.Button("📂 Ouvrir le dossier")
+        open_folder_btn = Gtk.Button("Ouvrir le dossier")
         open_folder_btn.connect("clicked", self._on_open_playlist_folder)
         playlist_actions_box.pack_start(open_folder_btn, False, False, 0)
         
@@ -334,7 +334,7 @@ class PlaylistManagerWindow(Gtk.Window):
     
     def _create_playlist_details_block(self, parent_box):
         """BLOC 2 : Détails de la playlist sélectionnée (partie basse du paned)"""
-        frame = Gtk.Frame(label="🎵 Détails de la playlist")
+        frame = Gtk.Frame(label="Détails de la playlist")
         parent_box.pack_start(frame, True, True, 0)  # Prend tout l'espace disponible
         
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -355,7 +355,7 @@ class PlaylistManagerWindow(Gtk.Window):
         vbox.pack_start(comparison_box, True, True, 0)
         
         # === PARTIE 1 : AVANT CONVERSION ===
-        before_frame = Gtk.Frame(label="📋 État actuel")
+        before_frame = Gtk.Frame(label="État actuel")
         comparison_box.pack_start(before_frame, True, True, 0)
         
         before_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
@@ -378,9 +378,9 @@ class PlaylistManagerWindow(Gtk.Window):
         # Colonnes tableau AVANT (plus compactes)
         before_columns_config = [
             ("✓", 0, 30, False),
-            ("🎵 Piste", 1, 120, True),
-            ("🔗 Type", 2, 60, True),
-            ("📁 Chemin", 3, 180, True),
+            ("Piste", 1, 120, True),
+            ("Type", 2, 60, True),
+            ("Chemin", 3, 180, True),
         ]
         
         for title, col_id, width, sortable in before_columns_config:
@@ -395,7 +395,7 @@ class PlaylistManagerWindow(Gtk.Window):
         scrolled_before.add(self.tracks_before_view)
         
         # === PARTIE 2 : APRÈS CONVERSION ===
-        after_frame = Gtk.Frame(label="✨ Aperçu après conversion")
+        after_frame = Gtk.Frame(label="Aperçu après conversion")
         comparison_box.pack_start(after_frame, True, True, 0)
         
         after_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
@@ -418,9 +418,9 @@ class PlaylistManagerWindow(Gtk.Window):
         # Colonnes tableau APRÈS (identiques)
         after_columns_config = [
             ("✓", 0, 30, False),
-            ("🎵 Piste", 1, 120, True),
-            ("🔗 Type", 2, 60, True),
-            ("📁 Chemin", 3, 180, True),
+            ("Piste", 1, 120, True),
+            ("Type", 2, 60, True),
+            ("Chemin", 3, 180, True),
         ]
         
         for title, col_id, width, sortable in after_columns_config:
@@ -489,7 +489,7 @@ class PlaylistManagerWindow(Gtk.Window):
         
         # Désactiver le bouton et démarrer le scan
         self.scan_btn.set_sensitive(False)
-        self.scan_btn.set_label("🔄 Scan en cours...")
+        self.scan_btn.set_label("Scan en cours...")
         self.progress_bar.set_text("Initialisation du scan...")
         self.progress_bar.pulse()
         
@@ -953,7 +953,7 @@ class PlaylistManagerWindow(Gtk.Window):
         try:
             # Vérification de sécurité
             if not self.current_playlist or not hasattr(self.current_playlist, 'file_path') or not self.current_playlist.file_path:
-                print("❌ Erreur: Aucune playlist valide sélectionnée")
+                print("Erreur: Aucune playlist valide sélectionnée")
                 return False
                 
             playlist_path = self.current_playlist.file_path
@@ -1052,7 +1052,7 @@ class PlaylistCreationDialog(Gtk.Dialog):
         content_area.set_margin_bottom(20)
         
         # Sélection du répertoire
-        dir_label = Gtk.Label("📁 Répertoire source:")
+        dir_label = Gtk.Label("Répertoire source:")
         dir_label.set_halign(Gtk.Align.START)
         content_area.pack_start(dir_label, False, False, 0)
         
@@ -1063,14 +1063,14 @@ class PlaylistCreationDialog(Gtk.Dialog):
         self.dir_entry.set_editable(False)
         dir_box.pack_start(self.dir_entry, True, True, 0)
         
-        browse_btn = Gtk.Button("📂 Parcourir")
+        browse_btn = Gtk.Button("Parcourir")
         browse_btn.connect("clicked", self._on_browse_directory)
         dir_box.pack_start(browse_btn, False, False, 0)
         
         content_area.pack_start(dir_box, False, False, 0)
         
         # Nom de la playlist
-        name_label = Gtk.Label("📝 Nom de la playlist:")
+        name_label = Gtk.Label("Nom de la playlist :")
         name_label.set_halign(Gtk.Align.START)
         content_area.pack_start(name_label, False, False, 0)
         
@@ -1079,7 +1079,7 @@ class PlaylistCreationDialog(Gtk.Dialog):
         content_area.pack_start(self.name_entry, False, False, 0)
         
         # Option récursive
-        self.recursive_check = Gtk.CheckButton("🔄 Inclure les sous-dossiers")
+        self.recursive_check = Gtk.CheckButton("Inclure les sous-dossiers")
         self.recursive_check.set_active(True)
         content_area.pack_start(self.recursive_check, False, False, 0)
         

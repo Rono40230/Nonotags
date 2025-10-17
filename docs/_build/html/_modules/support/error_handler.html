@@ -1,0 +1,223 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>support.error_handler &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/translations.js?v=e6b791cb"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_services.html">API Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Code du module</a></li>
+      <li class="breadcrumb-item active">support.error_handler</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Code source de support.error_handler</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Gestionnaire d&#39;erreurs unifié</span>
+<span class="sd">Utilise ErrorType pour standardiser les messages d&#39;erreur dans toute l&#39;application</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">support.error_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ErrorType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">support.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">AppLogger</span>
+
+<div class="viewcode-block" id="ErrorHandler">
+<a class="viewcode-back" href="../../api_support.html#support.error_handler.ErrorHandler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ErrorHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gestionnaire centralisé des erreurs&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">AppLogger</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_error_history</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="ErrorHandler.create_error">
+<a class="viewcode-back" href="../../api_support.html#support.error_handler.ErrorHandler.create_error">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_type</span><span class="p">:</span> <span class="n">ErrorType</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">details</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crée une erreur structurée&quot;&quot;&quot;</span>
+        <span class="n">error_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">error_type</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">error_type</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span>
+            <span class="s1">&#39;severity&#39;</span><span class="p">:</span> <span class="n">error_type</span><span class="o">.</span><span class="n">get_severity</span><span class="p">(),</span>
+            <span class="s1">&#39;context&#39;</span><span class="p">:</span> <span class="n">context</span><span class="p">,</span>
+            <span class="s1">&#39;details&#39;</span><span class="p">:</span> <span class="n">details</span> <span class="ow">or</span> <span class="p">{},</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_timestamp</span><span class="p">()</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Log l&#39;erreur selon sa sévérité</span>
+        <span class="n">log_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">error_type</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">error_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">context</span><span class="p">:</span>
+            <span class="n">log_message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; - Contexte: </span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;severity&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;CRITICAL&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log_message</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;severity&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;HIGH&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">log_message</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">log_message</span><span class="p">)</span>
+
+        <span class="c1"># Garde l&#39;historique</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_error_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error_info</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">error_info</span></div>
+
+
+<div class="viewcode-block" id="ErrorHandler.get_user_message">
+<a class="viewcode-back" href="../../api_support.html#support.error_handler.ErrorHandler.get_user_message">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_user_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_info</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retourne un message d&#39;erreur adapté à l&#39;utilisateur&quot;&quot;&quot;</span>
+        <span class="n">base_message</span> <span class="o">=</span> <span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">]:</span>
+            <span class="n">base_message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; (</span><span class="si">{</span><span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+        <span class="c1"># Messages plus détaillés pour certains types</span>
+        <span class="k">if</span> <span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ErrorType</span><span class="o">.</span><span class="n">FILE_NOT_FOUND</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;file_path&#39;</span> <span class="ow">in</span> <span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;details&#39;</span><span class="p">]:</span>
+                <span class="n">base_message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Fichier: </span><span class="si">{</span><span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;details&#39;</span><span class="p">][</span><span class="s1">&#39;file_path&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">elif</span> <span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ErrorType</span><span class="o">.</span><span class="n">CONVERSION_FAILED</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;source_format&#39;</span> <span class="ow">in</span> <span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;details&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="s1">&#39;target_format&#39;</span> <span class="ow">in</span> <span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;details&#39;</span><span class="p">]:</span>
+                <span class="n">base_message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">De </span><span class="si">{</span><span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;details&#39;</span><span class="p">][</span><span class="s1">&#39;source_format&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> vers </span><span class="si">{</span><span class="n">error_info</span><span class="p">[</span><span class="s1">&#39;details&#39;</span><span class="p">][</span><span class="s1">&#39;target_format&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">base_message</span></div>
+
+
+<div class="viewcode-block" id="ErrorHandler.get_error_stats">
+<a class="viewcode-back" href="../../api_support.html#support.error_handler.ErrorHandler.get_error_stats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_error_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retourne des statistiques sur les erreurs&quot;&quot;&quot;</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_error_history</span><span class="p">:</span>
+            <span class="n">error_type</span> <span class="o">=</span> <span class="n">error</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">stats</span><span class="p">[</span><span class="n">error_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">error_type</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">stats</span></div>
+
+
+<div class="viewcode-block" id="ErrorHandler.clear_history">
+<a class="viewcode-back" href="../../api_support.html#support.error_handler.ErrorHandler.clear_history">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Efface l&#39;historique des erreurs&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_error_history</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retourne un timestamp formaté&quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span></div>
+
+
+<span class="c1"># Instance globale</span>
+<span class="n">_error_handler_instance</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="get_error_handler">
+<a class="viewcode-back" href="../../api_support.html#support.error_handler.get_error_handler">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_error_handler</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ErrorHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retourne l&#39;instance globale du gestionnaire d&#39;erreurs&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_error_handler_instance</span>
+    <span class="k">if</span> <span class="n">_error_handler_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_error_handler_instance</span> <span class="o">=</span> <span class="n">ErrorHandler</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">_error_handler_instance</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

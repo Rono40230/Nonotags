@@ -15,6 +15,7 @@ from mutagen.flac import FLAC
 from services.audio_player import AudioPlayer, PlayerState
 from services.cover_search import CoverSearchService
 from core.case_corrector import CaseCorrector
+from services.metadata_backup import metadata_backup
 # from services.metadata_event_manager import metadata_event_manager  # DÉSACTIVÉ - Remplacé par RefreshManager
 from core.refresh_manager import refresh_manager
 
@@ -22,7 +23,7 @@ class AlbumEditWindow(Gtk.Window):
     """Fenêtre d'édition conforme au cahier des charges - 4 blocs"""
     
     def __init__(self, album_data, parent_card):
-        super().__init__(title="🎵 Édition d'albums")
+        super().__init__(title="Édition d'albums")
         
         # Gérer les cas : un seul album ou liste d'albums
         if isinstance(album_data, list):
@@ -37,6 +38,9 @@ class AlbumEditWindow(Gtk.Window):
         self.parent_card = parent_card
         self.tracks = []
         
+        # Créer une HeaderBar
+        self._setup_header_bar()
+        
         # Services
         self.audio_player = AudioPlayer()
         self.cover_search = CoverSearchService()
@@ -47,6 +51,21 @@ class AlbumEditWindow(Gtk.Window):
         self.audio_player.on_state_changed = self.on_audio_state_changed
         self.audio_player.on_position_changed = self.on_audio_position_changed
         self.audio_player.on_duration_changed = self.on_audio_duration_changed
+        
+        # Configurer l'interface utilisateur
+        self._setup_ui()
+    
+    def _setup_header_bar(self):
+        """Configure la barre d'en-tête avec icônes"""
+        header = Gtk.HeaderBar()
+        header.set_show_close_button(True)
+        header.set_title("Édition d'albums")
+        header.set_subtitle("Éditer les métadonnées de vos albums musicaux")
+        
+        self.set_titlebar(header)
+    
+    def _setup_ui(self):
+        """Configure l'interface utilisateur"""
         self.audio_player.on_error_occurred = self.on_audio_error
         
         # Timer pour mise à jour position
@@ -114,7 +133,7 @@ class AlbumEditWindow(Gtk.Window):
         vbox.pack_start(self.cover_image, False, False, 0)
         
         # Bouton "Chercher une pochette"
-        search_cover_btn = Gtk.Button("🔍 Chercher une pochette")
+        search_cover_btn = Gtk.Button("Chercher une pochette")
         search_cover_btn.connect("clicked", self.on_search_cover)
         vbox.pack_start(search_cover_btn, False, False, 0)
     
@@ -167,6 +186,13 @@ class AlbumEditWindow(Gtk.Window):
             self.genre_combo.append_text(genre)
         self.genre_combo.connect("changed", self.on_genre_changed)
         grid.attach(self.genre_combo, 1, 3, 1, 1)
+        
+        # Bouton "Annuler les corrections automatiques"
+        cancel_corrections_btn = Gtk.Button("Annuler les corrections automatiques")
+        cancel_corrections_btn.set_tooltip_text("Restaurer les métadonnées originales avant correction")
+        cancel_corrections_btn.connect("clicked", self.on_cancel_corrections)
+        # Centrer le bouton sur 2 colonnes avec un peu d'espace
+        grid.attach(cancel_corrections_btn, 0, 4, 2, 1)
     
     def _create_metadata_table_block(self, parent_box):
         """BLOC 3 : Tableau des métadonnées (9 colonnes)"""
@@ -316,7 +342,7 @@ class AlbumEditWindow(Gtk.Window):
     
     def _load_all_selected_albums_tracks(self):
         """Charge les pistes de tous les albums sélectionnés dans le tableau"""
-        print(f"📋 Chargement des pistes pour {len(self.selected_albums)} albums...")
+        print(f"Chargement des pistes pour {len(self.selected_albums)} albums...")
         
         for album_data in self.selected_albums:
             folder_path = album_data.get('folder_path') or album_data.get('path', '')
@@ -326,7 +352,7 @@ class AlbumEditWindow(Gtk.Window):
     def _load_tracks_to_table(self, folder_path, album_data=None):
         """Charge les pistes dans le tableau des métadonnées"""
         if not folder_path or not os.path.exists(folder_path):
-            print(f"❌ Chemin album invalide: {folder_path}")
+            print(f"Chemin album invalide: {folder_path}")
             return
             
         # Si c'est un fichier, prendre le dossier parent
@@ -554,6 +580,110 @@ class AlbumEditWindow(Gtk.Window):
         # Programmer la sauvegarde automatique
         self._schedule_metadata_save()
     
+    def on_cancel_corrections(self, button):
+        """Annule toutes les corrections automatiques et restaure les métadonnées originales"""
+        try:
+            # Dialogue de confirmation
+            dialog = Gtk.MessageDialog(
+                transient_for=self,
+                flags=0,
+                message_type=Gtk.MessageType.QUESTION,
+                buttons=Gtk.ButtonsType.YES_NO,
+                text="Annuler les corrections automatiques ?"
+            )
+            dialog.format_secondary_text(
+                "Cette action va restaurer les métadonnées originales de tous les fichiers "
+                "de cet album et annuler toutes les corrections automatiques appliquées.\n\n"
+                "Cette opération ne peut pas être annulée. Continuer ?"
+            )
+            
+            response = dialog.run()
+            dialog.destroy()
+            
+            if response != Gtk.ResponseType.YES:
+                return
+            
+            # Récupérer le chemin de l'album
+            album_path = None
+            if self.album_data and 'path' in self.album_data:
+                album_path = self.album_data['path']
+            elif self.selected_albums and len(self.selected_albums) > 0:
+                album_path = self.selected_albums[0].get('path')
+            
+            if not album_path:
+                # Essayer de déduire le chemin depuis les fichiers
+                if self.tracks and len(self.tracks) > 0:
+                    first_file = self.tracks[0].get('file_path')
+                    if first_file:
+                        album_path = os.path.dirname(first_file)
+            
+            if not album_path:
+                self._show_error_dialog("Impossible de déterminer le chemin de l'album")
+                return
+            
+            # Vérifier qu'il y a des sauvegardes
+            has_backups = False
+            for track in self.tracks:
+                file_path = track.get('file_path')
+                if file_path and metadata_backup.has_backup(file_path):
+                    has_backups = True
+                    break
+            
+            if not has_backups:
+                self._show_info_dialog(
+                    "Aucune sauvegarde trouvée",
+                    "Aucune sauvegarde de métadonnées originales n'a été trouvée pour cet album. "
+                    "Les corrections automatiques n'ont peut-être pas été appliquées ou "
+                    "les sauvegardes ont été supprimées."
+                )
+                return
+            
+            # Restaurer les métadonnées
+            success = metadata_backup.restore_album_metadata(album_path)
+            
+            if success:
+                # Recharger les données dans la fenêtre
+                self._load_album_data()
+                self._show_info_dialog(
+                    "Corrections annulées",
+                    "Les métadonnées originales ont été restaurées avec succès. "
+                    "Toutes les corrections automatiques ont été annulées."
+                )
+            else:
+                self._show_error_dialog(
+                    "Erreur lors de la restauration. Consultez les logs pour plus de détails."
+                )
+                
+        except Exception as e:
+            print(f"Erreur annulation corrections: {e}")
+            self._show_error_dialog(f"Erreur inattendue: {str(e)}")
+    
+    def _show_error_dialog(self, message):
+        """Affiche un dialogue d'erreur"""
+        dialog = Gtk.MessageDialog(
+            transient_for=self,
+            flags=0,
+            message_type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.OK,
+            text="Erreur"
+        )
+        dialog.format_secondary_text(message)
+        dialog.run()
+        dialog.destroy()
+    
+    def _show_info_dialog(self, title, message):
+        """Affiche un dialogue d'information"""
+        dialog = Gtk.MessageDialog(
+            transient_for=self,
+            flags=0,
+            message_type=Gtk.MessageType.INFO,
+            buttons=Gtk.ButtonsType.OK,
+            text=title
+        )
+        dialog.format_secondary_text(message)
+        dialog.run()
+        dialog.destroy()
+
     # === CALLBACKS TABLEAU ===
     def on_title_edited(self, renderer, path, new_text):
         """Édition du titre d'une piste"""
@@ -585,11 +715,11 @@ class AlbumEditWindow(Gtk.Window):
         try:
             year = int(new_text.strip())
             if year < 1900 or year > 2100:
-                print(f"❌ Année invalide: {year} (doit être entre 1900 et 2100)")
+                print(f"Année invalide: {year} (doit être entre 1900 et 2100)")
                 return
             year_str = str(year)
         except ValueError:
-            print(f"❌ Année invalide: '{new_text}' (doit être un nombre)")
+            print(f"Année invalide: '{new_text}' (doit être un nombre)")
             return
         
         iter = self.metadata_store.get_iter(path)
@@ -612,11 +742,11 @@ class AlbumEditWindow(Gtk.Window):
         try:
             track_num = int(new_text.strip())
             if track_num < 1 or track_num > 999:
-                print(f"❌ Numéro de piste invalide: {track_num} (doit être entre 1 et 999)")
+                print(f"Numéro de piste invalide: {track_num} (doit être entre 1 et 999)")
                 return
             track_num_str = str(track_num)
         except ValueError:
-            print(f"❌ Numéro de piste invalide: '{new_text}' (doit être un nombre)")
+            print(f"Numéro de piste invalide: '{new_text}' (doit être un nombre)")
             return
         
         iter = self.metadata_store.get_iter(path)
@@ -661,7 +791,7 @@ class AlbumEditWindow(Gtk.Window):
                 self._start_position_timer()
                 print(f"🎵 Lecture démarrée: {os.path.basename(file_path)}")
             else:
-                print(f"❌ Erreur chargement: {file_path}")
+                print(f"Erreur chargement: {file_path}")
     
     # === CALLBACKS LECTEUR AUDIO ===
     def on_play(self, button):
@@ -679,7 +809,7 @@ class AlbumEditWindow(Gtk.Window):
                     self.current_track_index = 0
                 self._play_current_track()
             else:
-                print("❌ Aucune piste disponible")
+                print("Aucune piste disponible")
     
     def on_previous(self, button):
         """Piste précédente"""
@@ -723,7 +853,7 @@ class AlbumEditWindow(Gtk.Window):
     def _play_current_track(self):
         """Joue la piste actuelle"""
         if not self.tracks or self.current_track_index >= len(self.tracks):
-            print("❌ Aucune piste à jouer")
+            print("Aucune piste à jouer")
             return
         
         track = self.tracks[self.current_track_index]
@@ -734,9 +864,9 @@ class AlbumEditWindow(Gtk.Window):
                 self.audio_player.play()
                 print(f"🎵 Lecture: {track.get('display_filename', os.path.basename(file_path))}")
             else:
-                print(f"❌ Erreur chargement: {file_path}")
+                print(f"Erreur chargement: {file_path}")
         else:
-            print(f"❌ Fichier introuvable: {file_path}")
+            print(f"Fichier introuvable: {file_path}")
     
     def _start_position_timer(self):
         """Démarre le timer de mise à jour de la position"""
@@ -862,7 +992,7 @@ class AlbumEditWindow(Gtk.Window):
     def _open_cover_search_dialog(self, artist, album, year):
         """Ouvre le dialog de recherche de pochettes"""
         dialog = Gtk.Dialog(
-            title="🔍 Recherche de pochettes",
+            title="Recherche de pochettes",
             transient_for=self,
             flags=0
         )
@@ -981,21 +1111,21 @@ class AlbumEditWindow(Gtk.Window):
                         try:
                             self.parent_card.refresh_cover()
                         except Exception as e:
-                            print(f"❌ Erreur rafraîchissement carte: {e}")
+                            print(f"Erreur rafraîchissement carte: {e}")
                     
                     GLib.idle_add(update_card_cover)
             else:
                 print("⚠️ Aucun morceau chargé pour appliquer la pochette")
                 
         except Exception as e:
-            print(f"❌ Erreur application pochette: {e}")
+            print(f"Erreur application pochette: {e}")
             import traceback
             traceback.print_exc()
     
     def _embed_cover_to_tracks(self, cover_path):
         """Intègre la pochette dans les tags de tous les morceaux de l'album"""
         if not os.path.exists(cover_path):
-            print(f"❌ Fichier de pochette introuvable: {cover_path}")
+            print(f"Fichier de pochette introuvable: {cover_path}")
             return
         
         print(f"🎵 Début application pochette aux tags: {len(self.tracks)} morceaux")
@@ -1007,7 +1137,7 @@ class AlbumEditWindow(Gtk.Window):
                 file_path = track['file_path']
                 
                 if not os.path.exists(file_path):
-                    print(f"❌ Fichier morceau introuvable: {file_path}")
+                    print(f"Fichier morceau introuvable: {file_path}")
                     error_count += 1
                     continue
                 
@@ -1036,7 +1166,7 @@ class AlbumEditWindow(Gtk.Window):
                 success_count += 1
                 
             except Exception as e:
-                print(f"❌ Erreur application pochette sur {track['file_path']}: {e}")
+                print(f"Erreur application pochette sur {track['file_path']}: {e}")
                 import traceback
                 traceback.print_exc()
                 error_count += 1
@@ -1114,22 +1244,22 @@ class AlbumEditWindow(Gtk.Window):
                 audio = ID3(file_path)
                 apic_keys = [key for key in audio.keys() if key.startswith('APIC')]
                 if not apic_keys:
-                    print(f"❌ Vérification MP3: AUCUNE pochette trouvée!")
+                    print(f"Vérification MP3: AUCUNE pochette trouvée!")
                     
             elif format_type == 'flac':
                 from mutagen.flac import FLAC
                 audio = FLAC(file_path)
                 if not audio.pictures:
-                    print(f"❌ Vérification FLAC: AUCUNE pochette trouvée!")
+                    print(f"Vérification FLAC: AUCUNE pochette trouvée!")
                     
             elif format_type == 'mp4':
                 from mutagen.mp4 import MP4
                 audio = MP4(file_path)
                 if 'covr' not in audio or not audio['covr']:
-                    print(f"❌ Vérification MP4: AUCUNE pochette trouvée!")
+                    print(f"Vérification MP4: AUCUNE pochette trouvée!")
                     
         except Exception as e:
-            print(f"❌ Erreur vérification {format_type}: {e}")
+            print(f"Erreur vérification {format_type}: {e}")
     
     def _schedule_metadata_save(self):
         """Planifie la sauvegarde des métadonnées avec un délai (debounce)"""
@@ -1160,7 +1290,7 @@ class AlbumEditWindow(Gtk.Window):
                 self._save_metadata_single_album(new_album, new_artist, new_year, new_genre)
             
         except Exception as e:
-            print(f"❌ Erreur sauvegarde métadonnées: {e}")
+            print(f"Erreur sauvegarde métadonnées: {e}")
         
         self.metadata_save_timer = None
         return False
@@ -1251,7 +1381,7 @@ class AlbumEditWindow(Gtk.Window):
                 print(f"📡 Ancien système d'événements désactivé pour {len(album_paths)} albums")
             
         except Exception as e:
-            print(f"❌ Erreur émission événements: {e}")
+            print(f"Erreur émission événements: {e}")
     
     def _save_title_to_file(self, file_path, title, track_num=None):
         """Sauvegarde un titre individuel dans les métadonnées physiques et renomme le fichier"""
@@ -1296,7 +1426,7 @@ class AlbumEditWindow(Gtk.Window):
             return new_file_path
             
         except Exception as e:
-            print(f"❌ Erreur sauvegarde titre {file_path}: {e}")
+            print(f"Erreur sauvegarde titre {file_path}: {e}")
             return file_path
     
     def _save_year_to_file(self, file_path, year):
@@ -1323,10 +1453,10 @@ class AlbumEditWindow(Gtk.Window):
                 audio['\xa9day'] = year
                 audio.save()
             
-            print(f"✅ Année {year} sauvegardée dans {os.path.basename(file_path)}")
+            print(f"Année {year} sauvegardée dans {os.path.basename(file_path)}")
             
         except Exception as e:
-            print(f"❌ Erreur sauvegarde année {file_path}: {e}")
+            print(f"Erreur sauvegarde année {file_path}: {e}")
     
     def _save_track_number_to_file(self, file_path, track_number, title=None):
         """Sauvegarde le numéro de piste dans les métadonnées physiques et renomme le fichier"""
@@ -1368,11 +1498,11 @@ class AlbumEditWindow(Gtk.Window):
                 if new_file_path != file_path:
                     os.rename(file_path, new_file_path)
             
-            print(f"✅ Numéro de piste {track_number} sauvegardé dans {os.path.basename(new_file_path or file_path)}")
+            print(f"Numéro de piste {track_number} sauvegardé dans {os.path.basename(new_file_path or file_path)}")
             return new_file_path
             
         except Exception as e:
-            print(f"❌ Erreur sauvegarde numéro de piste {file_path}: {e}")
+            print(f"Erreur sauvegarde numéro de piste {file_path}: {e}")
             return file_path
     
     def _save_metadata_mp3(self, file_path, album, artist, year, genre):
@@ -1398,7 +1528,7 @@ class AlbumEditWindow(Gtk.Window):
             
             audio.save(file_path)
         except Exception as e:
-            print(f"❌ Erreur MP3 {file_path}: {e}")
+            print(f"Erreur MP3 {file_path}: {e}")
     
     def _save_metadata_flac(self, file_path, album, artist, year, genre):
         """Sauvegarde métadonnées FLAC"""
@@ -1417,7 +1547,7 @@ class AlbumEditWindow(Gtk.Window):
                 audio['GENRE'] = genre
             audio.save()
         except Exception as e:
-            print(f"❌ Erreur FLAC {file_path}: {e}")
+            print(f"Erreur FLAC {file_path}: {e}")
     
     def _save_metadata_mp4(self, file_path, album, artist, year, genre):
         """Sauvegarde métadonnées MP4"""
@@ -1436,7 +1566,7 @@ class AlbumEditWindow(Gtk.Window):
                 audio['\xa9gen'] = [genre]
             audio.save()
         except Exception as e:
-            print(f"❌ Erreur MP4 {file_path}: {e}")
+            print(f"Erreur MP4 {file_path}: {e}")
     
     def _display_cover_results(self, dialog, content_area, results, spinner, loading_label):
         """Affiche les résultats de recherche de pochettes"""
@@ -1638,7 +1768,7 @@ class AlbumEditWindow(Gtk.Window):
         else:
             # Aucune pochette trouvée, utiliser l'icône par défaut
             self.cover_image.set_from_icon_name("image-x-generic", Gtk.IconSize.DIALOG)
-            print(f"❌ Aucune pochette trouvée dans: {track_folder}")
+            print(f"Aucune pochette trouvée dans: {track_folder}")
     
     def on_window_closing(self, window, event):
         """Gestionnaire de fermeture de la fenêtre d'édition"""
@@ -1707,7 +1837,7 @@ class AlbumEditWindow(Gtk.Window):
                         refreshed_count += 1
             
         except Exception as e:
-            print(f"❌ Erreur lors du rafraîchissement multi-cartes: {e}")
+            print(f"Erreur lors du rafraîchissement multi-cartes: {e}")
             import traceback
             traceback.print_exc()
     

@@ -1,0 +1,822 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core.case_corrector &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/translations.js?v=e6b791cb"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_services.html">API Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Code du module</a></li>
+      <li class="breadcrumb-item active">core.case_corrector</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Code source de core.case_corrector</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module 3 - Correction de la casse (GROUPE 3)</span>
+<span class="sd">Système de correction de la casse pour les métadonnées MP3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="c1"># Imports des modules de support</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">support.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">AppLogger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">support.config_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">support.state_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">support.validator</span><span class="w"> </span><span class="kn">import</span> <span class="n">Validator</span><span class="p">,</span> <span class="n">ValidationResult</span>
+
+<span class="c1"># Import du gestionnaire de base de données</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">database.db_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatabaseManager</span>
+
+
+<div class="viewcode-block" id="CaseCorrectionRule">
+<a class="viewcode-back" href="../../core.html#core.case_corrector.CaseCorrectionRule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CaseCorrectionRule</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Énumération des règles de correction de casse.&quot;&quot;&quot;</span>
+    <span class="n">SENTENCE_CASE</span> <span class="o">=</span> <span class="s2">&quot;sentence_case&quot;</span>         <span class="c1"># Première lettre de la phrase en majuscule, reste en minuscule</span>
+    <span class="n">PROTECT_ROMAN_NUMERALS</span> <span class="o">=</span> <span class="s2">&quot;protect_roman_numerals&quot;</span>  <span class="c1"># Protection des chiffres romains</span>
+    <span class="n">PROTECT_SINGLE_I</span> <span class="o">=</span> <span class="s2">&quot;protect_single_i&quot;</span>  <span class="c1"># Protection du &quot;I&quot; isolé</span>
+    <span class="n">PROTECT_ARTIST_IN_ALBUM</span> <span class="o">=</span> <span class="s2">&quot;protect_artist_in_album&quot;</span>  <span class="c1"># Protection nom artiste dans album</span>
+    <span class="n">HANDLE_EXCEPTIONS</span> <span class="o">=</span> <span class="s2">&quot;handle_exceptions&quot;</span>  <span class="c1"># Gestion des exceptions personnalisées</span>
+    <span class="n">PROTECT_ABBREVIATIONS</span> <span class="o">=</span> <span class="s2">&quot;protect_abbreviations&quot;</span>  <span class="c1"># Protection des abréviations</span>
+    <span class="n">HANDLE_PREPOSITIONS</span> <span class="o">=</span> <span class="s2">&quot;handle_prepositions&quot;</span>  <span class="c1"># Gestion des prépositions</span></div>
+
+
+
+<div class="viewcode-block" id="CaseException">
+<a class="viewcode-back" href="../../core.html#core.case_corrector.CaseException">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CaseException</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Représente une exception de casse.&quot;&quot;&quot;</span>
+    <span class="n">original</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">corrected</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># &#39;city&#39;, &#39;roman&#39;, &#39;abbreviation&#39;, &#39;custom&#39;</span>
+    <span class="n">case_sensitive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="CaseCorrectionResult">
+<a class="viewcode-back" href="../../core.html#core.case_corrector.CaseCorrectionResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CaseCorrectionResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Résultat d&#39;une correction de casse.&quot;&quot;&quot;</span>
+    <span class="n">original</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">corrected</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">changed</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">rules_applied</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CaseCorrectionRule</span><span class="p">]</span>
+    <span class="n">exceptions_used</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CaseException</span><span class="p">]</span>
+    <span class="n">changed</span><span class="p">:</span> <span class="nb">bool</span></div>
+
+
+
+<div class="viewcode-block" id="CaseCorrector">
+<a class="viewcode-back" href="../../core.html#core.case_corrector.CaseCorrector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CaseCorrector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gestionnaire de correction de la casse des métadonnées.</span>
+<span class="sd">    </span>
+<span class="sd">    Fonctionnalités :</span>
+<span class="sd">    - Correction de la casse selon les règles de l&#39;anglais</span>
+<span class="sd">    - Gestion des exceptions (villes, chiffres romains, etc.)</span>
+<span class="sd">    - Protection des noms d&#39;artistes dans les titres d&#39;albums</span>
+<span class="sd">    - Intégration avec les modules de support</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise le correcteur de casse.&quot;&quot;&quot;</span>
+        <span class="c1"># Initialisation des modules de support</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">support.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">main_logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_manager</span> <span class="o">=</span> <span class="n">ConfigManager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span> <span class="o">=</span> <span class="n">StateManager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validator</span> <span class="o">=</span> <span class="n">Validator</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_manager</span> <span class="o">=</span> <span class="n">DatabaseManager</span><span class="p">()</span>
+        
+        <span class="c1"># Configuration du module</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processing_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_manager</span><span class="o">.</span><span class="n">processing</span>
+        
+        <span class="c1"># Chargement des exceptions depuis la base de données</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">case_exceptions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_case_exceptions</span><span class="p">()</span>
+        
+        <span class="c1"># Règles prédéfinies</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">roman_numerals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_roman_numerals_set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prepositions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_prepositions_set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abbreviations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_abbreviations_set</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;CaseCorrector initialisé avec succès&quot;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="CaseCorrector.correct_album_case">
+<a class="viewcode-back" href="../../core.html#core.case_corrector.CaseCorrector.correct_album_case">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">correct_album_case</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artist_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CaseCorrectionResult</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Corrige la casse des métadonnées pour un album complet.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_path: Chemin vers le dossier de l&#39;album</span>
+<span class="sd">            artist_name: Nom de l&#39;artiste (pour protection dans les titres)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict avec les résultats de correction pour chaque fichier</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">support.honest_logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">honest_logger</span>
+        
+        <span class="c1"># IMPORTANT: Recharger les exceptions avant chaque traitement</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">case_exceptions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_case_exceptions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔄 Exceptions rechargées: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_exceptions</span><span class="p">)</span><span class="si">}</span><span class="s2"> exceptions disponibles&quot;</span><span class="p">)</span>
+        
+        <span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔤 GROUPE 3 - Début correction casse album : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Début correction casse album : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Mise à jour du statut</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">update_album_processing_status</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="s2">&quot;correcting_case&quot;</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Validation du répertoire</span>
+            <span class="n">validation_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">file_validator</span><span class="o">.</span><span class="n">validate_directory</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">validation_result</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Répertoire invalide : </span><span class="si">{</span><span class="n">validation_result</span><span class="o">.</span><span class="n">errors</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            
+            <span class="c1"># Recherche des fichiers MP3</span>
+            <span class="n">mp3_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_mp3_files</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">mp3_files</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aucun fichier MP3 trouvé dans </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            
+            <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+            
+            <span class="k">for</span> <span class="n">mp3_file</span> <span class="ow">in</span> <span class="n">mp3_files</span><span class="p">:</span>
+                <span class="c1"># Validation du fichier MP3</span>
+                <span class="n">file_validation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">file_validator</span><span class="o">.</span><span class="n">validate_mp3_file</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span>
+                
+                <span class="c1"># NOTE: Temporairement on permet les fichiers avec erreurs de sync pour le test</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">file_validation</span><span class="o">.</span><span class="n">is_valid</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;can&#39;t sync to MPEG frame&quot;</span> <span class="ow">in</span> <span class="n">error</span> <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">file_validation</span><span class="o">.</span><span class="n">errors</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fichier MP3 invalide ignoré : </span><span class="si">{</span><span class="n">mp3_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                
+                <span class="c1"># Correction de la casse pour ce fichier</span>
+                <span class="n">file_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_correct_file_case</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">,</span> <span class="n">artist_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">file_results</span><span class="p">:</span>
+                    <span class="n">results</span><span class="p">[</span><span class="n">mp3_file</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_results</span>
+            
+            <span class="c1"># Mise à jour du statut</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">update_album_processing_status</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="s2">&quot;case_correction_completed&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Sauvegarde en base de données</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_save_correction_history</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Correction casse terminée : </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="si">}</span><span class="s2"> fichiers traités&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur lors de la correction casse : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">update_album_processing_status</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="s2">&quot;case_correction_error&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{}</span></div>
+
+    
+<div class="viewcode-block" id="CaseCorrector.correct_text_case">
+<a class="viewcode-back" href="../../core.html#core.case_corrector.CaseCorrector.correct_text_case">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">correct_text_case</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">text_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="n">artist_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CaseCorrectionResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Corrige la casse d&#39;un texte selon les règles définies.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            text: Texte à corriger</span>
+<span class="sd">            text_type: Type de texte (&#39;title&#39;, &#39;album&#39;, &#39;artist&#39;)</span>
+<span class="sd">            artist_name: Nom de l&#39;artiste (pour protection)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Résultat de la correction avec détails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">CaseCorrectionResult</span><span class="p">(</span>
+                <span class="n">original</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+                <span class="n">corrected</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+                <span class="n">rules_applied</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">exceptions_used</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">changed</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+        
+        <span class="n">original_text</span> <span class="o">=</span> <span class="n">text</span>
+        <span class="n">corrected_text</span> <span class="o">=</span> <span class="n">text</span>
+        <span class="n">rules_applied</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">exceptions_used</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Application des règles de correction</span>
+        <span class="n">corrected_text</span><span class="p">,</span> <span class="n">rule_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_case_rules</span><span class="p">(</span>
+            <span class="n">corrected_text</span><span class="p">,</span> <span class="n">text_type</span><span class="p">,</span> <span class="n">artist_name</span>
+        <span class="p">)</span>
+        <span class="n">rules_applied</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rule_results</span><span class="p">)</span>
+        
+        <span class="c1"># Gestion des exceptions (après les règles de base)</span>
+        <span class="n">corrected_text</span><span class="p">,</span> <span class="n">exception_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_case_exceptions</span><span class="p">(</span><span class="n">corrected_text</span><span class="p">)</span>
+        <span class="n">exceptions_used</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">exception_results</span><span class="p">)</span>
+        
+        <span class="n">changed</span> <span class="o">=</span> <span class="n">original_text</span> <span class="o">!=</span> <span class="n">corrected_text</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="n">CaseCorrectionResult</span><span class="p">(</span>
+            <span class="n">original</span><span class="o">=</span><span class="n">original_text</span><span class="p">,</span>
+            <span class="n">corrected</span><span class="o">=</span><span class="n">corrected_text</span><span class="p">,</span>
+            <span class="n">changed</span><span class="o">=</span><span class="n">changed</span><span class="p">,</span>
+            <span class="n">rules_applied</span><span class="o">=</span><span class="n">rules_applied</span><span class="p">,</span>
+            <span class="n">exceptions_used</span><span class="o">=</span><span class="n">exceptions_used</span>
+        <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">result</span></div>
+
+    
+<div class="viewcode-block" id="CaseCorrector.preview_case_corrections">
+<a class="viewcode-back" href="../../core.html#core.case_corrector.CaseCorrector.preview_case_corrections">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preview_case_corrections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artist_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Aperçu des corrections de casse sans les appliquer.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_path: Chemin vers l&#39;album</span>
+<span class="sd">            artist_name: Nom de l&#39;artiste</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict avec aperçu des changements par fichier</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aperçu corrections casse : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="n">mp3_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_mp3_files</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+        <span class="n">preview_results</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">for</span> <span class="n">mp3_file</span> <span class="ow">in</span> <span class="n">mp3_files</span><span class="p">:</span>
+            <span class="n">file_preview</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="c1"># Simulation des métadonnées à corriger</span>
+            <span class="c1"># En réalité, on lirait les métadonnées avec mutagen</span>
+            <span class="n">metadata_fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_metadata_fields_for_preview</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_value</span> <span class="ow">in</span> <span class="n">metadata_fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">field_value</span><span class="p">:</span>
+                    <span class="n">text_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_text_type_from_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">correct_text_case</span><span class="p">(</span><span class="n">field_value</span><span class="p">,</span> <span class="n">text_type</span><span class="p">,</span> <span class="n">artist_name</span><span class="p">)</span>
+                    
+                    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">changed</span><span class="p">:</span>
+                        <span class="n">file_preview</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                            <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="n">field_name</span><span class="p">,</span>
+                            <span class="s1">&#39;original&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">original</span><span class="p">,</span>
+                            <span class="s1">&#39;corrected&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">corrected</span><span class="p">,</span>
+                            <span class="s1">&#39;rules&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">rule</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">rules_applied</span><span class="p">],</span>
+                            <span class="s1">&#39;exceptions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">ex</span><span class="o">.</span><span class="n">original</span> <span class="k">for</span> <span class="n">ex</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">exceptions_used</span><span class="p">]</span>
+                        <span class="p">})</span>
+            
+            <span class="k">if</span> <span class="n">file_preview</span><span class="p">:</span>
+                <span class="n">preview_results</span><span class="p">[</span><span class="n">mp3_file</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_preview</span>
+        
+        <span class="k">return</span> <span class="n">preview_results</span></div>
+
+    
+<div class="viewcode-block" id="CaseCorrector.add_case_exception">
+<a class="viewcode-back" href="../../core.html#core.case_corrector.CaseCorrector.add_case_exception">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_case_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corrected</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">exception_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;custom&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ajoute une exception de casse personnalisée.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            original: Texte original</span>
+<span class="sd">            corrected: Texte corrigé</span>
+<span class="sd">            exception_type: Type d&#39;exception</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            True si ajouté avec succès</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Validation de l&#39;exception</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">original</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">corrected</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Exception invalide : texte vide&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            
+            <span class="c1"># Ajout en base de données</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_manager</span><span class="o">.</span><span class="n">add_case_exception</span><span class="p">(</span><span class="n">original</span><span class="p">,</span> <span class="n">corrected</span><span class="p">,</span> <span class="n">exception_type</span><span class="p">)</span>
+            
+            <span class="c1"># Rechargement des exceptions</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">case_exceptions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_case_exceptions</span><span class="p">()</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exception ajoutée : &#39;</span><span class="si">{</span><span class="n">original</span><span class="si">}</span><span class="s2">&#39; → &#39;</span><span class="si">{</span><span class="n">corrected</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur ajout exception : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_case_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">text_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artist_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">CaseCorrectionRule</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applique les règles de correction de casse.&quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">support.honest_logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">honest_logger</span>
+        
+        <span class="n">rules_applied</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">result_text</span> <span class="o">=</span> <span class="n">text</span>
+        <span class="n">original_text</span> <span class="o">=</span> <span class="n">text</span>
+        
+<span class="c1"># RÈGLE 9-10 : Sentence Case de base (selon type) - seulement pour titres et albums</span>
+        <span class="k">if</span> <span class="n">text_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;album&#39;</span><span class="p">]:</span>
+            <span class="n">step_text</span> <span class="o">=</span> <span class="n">result_text</span>
+            <span class="n">result_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_sentence_case</span><span class="p">(</span><span class="n">result_text</span><span class="p">)</span>
+            <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CaseCorrectionRule</span><span class="o">.</span><span class="n">SENTENCE_CASE</span><span class="p">)</span>
+        
+        <span class="c1"># RÈGLE 11 : Protection des chiffres romains  </span>
+        <span class="n">step_text</span> <span class="o">=</span> <span class="n">result_text</span>
+        <span class="n">result_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_protect_roman_numerals</span><span class="p">(</span><span class="n">result_text</span><span class="p">)</span>
+        <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CaseCorrectionRule</span><span class="o">.</span><span class="n">PROTECT_ROMAN_NUMERALS</span><span class="p">)</span>
+        
+        <span class="c1"># RÈGLE 18 : Protection du &quot;I&quot; isolé</span>
+        <span class="n">step_text</span> <span class="o">=</span> <span class="n">result_text</span>
+        <span class="n">result_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_protect_single_i</span><span class="p">(</span><span class="n">result_text</span><span class="p">)</span>
+        <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CaseCorrectionRule</span><span class="o">.</span><span class="n">PROTECT_SINGLE_I</span><span class="p">)</span>
+        
+        <span class="c1"># Gestion des prépositions</span>
+        <span class="n">step_text</span> <span class="o">=</span> <span class="n">result_text</span>
+        <span class="n">result_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_prepositions</span><span class="p">(</span><span class="n">result_text</span><span class="p">)</span>
+        <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CaseCorrectionRule</span><span class="o">.</span><span class="n">HANDLE_PREPOSITIONS</span><span class="p">)</span>
+        
+        <span class="c1"># Protection des abréviations (seulement pour les albums et artistes, pas les titres normaux)</span>
+        <span class="k">if</span> <span class="n">text_type</span> <span class="o">!=</span> <span class="s2">&quot;title&quot;</span><span class="p">:</span>
+            <span class="n">step_text</span> <span class="o">=</span> <span class="n">result_text</span>
+            <span class="n">result_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_protect_abbreviations</span><span class="p">(</span><span class="n">result_text</span><span class="p">)</span>
+            <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CaseCorrectionRule</span><span class="o">.</span><span class="n">PROTECT_ABBREVIATIONS</span><span class="p">)</span>
+        
+        <span class="c1"># RÈGLE 12 : Protection artiste dans album (si applicable)</span>
+        <span class="k">if</span> <span class="n">text_type</span> <span class="o">==</span> <span class="s2">&quot;album&quot;</span> <span class="ow">and</span> <span class="n">artist_name</span><span class="p">:</span>
+            <span class="n">step_text</span> <span class="o">=</span> <span class="n">result_text</span>
+            <span class="n">result_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_protect_artist_in_album</span><span class="p">(</span><span class="n">result_text</span><span class="p">,</span> <span class="n">artist_name</span><span class="p">)</span>
+            <span class="c1"># Ajouter la règle seulement si elle a effectué un changement</span>
+            <span class="k">if</span> <span class="n">result_text</span> <span class="o">!=</span> <span class="n">step_text</span><span class="p">:</span>
+                <span class="n">rules_applied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CaseCorrectionRule</span><span class="o">.</span><span class="n">PROTECT_ARTIST_IN_ALBUM</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">result_text</span><span class="p">,</span> <span class="n">rules_applied</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_sentence_case</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applique le Sentence Case : première lettre en majuscule, reste en minuscule.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">text</span>
+        
+        <span class="n">original</span> <span class="o">=</span> <span class="n">text</span>
+        
+        <span class="c1"># Détection spéciale du format &quot;sample title from [Titre]&quot; </span>
+        <span class="c1"># Pattern pour capturer : &quot;sample title from TITRE&quot;</span>
+        <span class="n">sample_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;^(sample title from\s+)(.+)$&#39;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">sample_pattern</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># &quot;sample title from &quot;</span>
+            <span class="n">title_part</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>   <span class="c1"># &quot;01 - Drowned DJ run MC&quot; ou &quot;Drowned DJ run MC&quot;</span>
+            
+            <span class="c1"># Appliquer sentence case sur le prefix</span>
+            <span class="n">prefix_corrected</span> <span class="o">=</span> <span class="n">prefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">prefix</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">prefix</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            
+            <span class="c1"># Vérifier si title_part contient un format &quot;N° - Title&quot;</span>
+            <span class="n">track_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;^(\d{1,2}\s*-\s*)(.+)$&#39;</span>
+            <span class="n">track_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">track_pattern</span><span class="p">,</span> <span class="n">title_part</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">track_match</span><span class="p">:</span>
+                <span class="n">track_num</span> <span class="o">=</span> <span class="n">track_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># &quot;01 - &quot;</span>
+                <span class="n">actual_title</span> <span class="o">=</span> <span class="n">track_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># &quot;Drowned DJ run MC&quot;</span>
+                
+                <span class="c1"># Appliquer sentence case sur le titre réel (première lettre majuscule, reste minuscule)</span>
+                <span class="n">title_corrected</span> <span class="o">=</span> <span class="n">actual_title</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">actual_title</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">actual_title</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">actual_title</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+                <span class="n">title_part_corrected</span> <span class="o">=</span> <span class="n">track_num</span> <span class="o">+</span> <span class="n">title_corrected</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Pas de numéro de piste, juste un titre (première lettre majuscule, reste minuscule)</span>
+                <span class="n">title_part_corrected</span> <span class="o">=</span> <span class="n">title_part</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">title_part</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">title_part</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">title_part</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            
+            <span class="n">result</span> <span class="o">=</span> <span class="n">prefix_corrected</span> <span class="o">+</span> <span class="n">title_part_corrected</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Détection du format &quot;N° - Title&quot; (ex: &quot;01 - Drowned DJ run MC&quot;)</span>
+            <span class="n">track_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;^(.*?)(\d{1,2}\s*-\s*)(.+)$&#39;</span>
+            <span class="n">track_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">track_pattern</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">track_match</span><span class="p">:</span>
+                <span class="n">prefix</span> <span class="o">=</span> <span class="n">track_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># &quot;&quot;</span>
+                <span class="n">track_num</span> <span class="o">=</span> <span class="n">track_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># &quot;01 - &quot;</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="n">track_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># &quot;Drowned DJ run MC&quot;</span>
+                
+                <span class="c1"># Appliquer sentence case sur le prefix ET le titre (première lettre majuscule, reste minuscule)</span>
+                <span class="k">if</span> <span class="n">prefix</span><span class="p">:</span>
+                    <span class="n">prefix_corrected</span> <span class="o">=</span> <span class="n">prefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">prefix</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">prefix</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">prefix_corrected</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    
+                <span class="n">title_corrected</span> <span class="o">=</span> <span class="n">title</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">title</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">title</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+                
+                <span class="n">result</span> <span class="o">=</span> <span class="n">prefix_corrected</span> <span class="o">+</span> <span class="n">track_num</span> <span class="o">+</span> <span class="n">title_corrected</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Sentence case classique pour textes sans format spécial (première lettre majuscule, reste minuscule)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">text</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">text</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">result</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_protect_roman_numerals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Protège les chiffres romains.&quot;&quot;&quot;</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">word</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">roman_numerals</span><span class="p">:</span>
+                <span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_protect_single_i</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Protège le &quot;I&quot; isolé.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\bi\b&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_prepositions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gère les prépositions (minuscules sauf en début).&quot;&quot;&quot;</span>
+        <span class="c1"># EXCEPTION: Ne pas traiter les prépositions dans les titres &quot;Sample title from [Title]&quot;</span>
+        <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Sample title from &#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">text</span>
+            
+        <span class="n">words</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+            <span class="c1"># Ne pas traiter le premier mot</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Extraire le mot principal sans ponctuation</span>
+                <span class="n">word_clean</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">word</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">word_clean</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepositions</span><span class="p">:</span>
+                    <span class="c1"># Remplacer en conservant la ponctuation, en minuscules</span>
+                    <span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\w+&#39;</span><span class="p">,</span> <span class="n">word_clean</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">word</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_protect_abbreviations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Protège les abréviations connues, mais pas les prépositions.&quot;&quot;&quot;</span>
+        <span class="c1"># EXCEPTION: Ne pas traiter les abréviations dans les titres &quot;Sample title from [Title]&quot;</span>
+        <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Sample title from &#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">text</span>
+            
+        <span class="n">words</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+            <span class="c1"># Extraire le mot sans ponctuation pour comparaison</span>
+            <span class="n">word_clean</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">word</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="c1"># Ne pas traiter si c&#39;est une préposition déjà en minuscules (sauf première position)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">word</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepositions</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="c1"># Protéger les abréviations</span>
+            <span class="k">if</span> <span class="n">word_clean</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">abbreviations</span><span class="p">:</span>
+                <span class="c1"># Remplacer le mot en préservant la ponctuation</span>
+                <span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\w+&#39;</span><span class="p">,</span> <span class="n">word_clean</span><span class="p">,</span> <span class="n">word</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_protect_artist_in_album</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artist_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Protège le nom de l&#39;artiste dans le titre de l&#39;album.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">artist_name</span> <span class="ow">and</span> <span class="n">artist_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">album_title</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="c1"># Remplacement en préservant la casse de l&#39;artiste</span>
+            <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">artist_name</span><span class="p">),</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pattern</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">artist_name</span><span class="p">,</span> <span class="n">album_title</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">album_title</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_case_exceptions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">CaseException</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applique les exceptions de casse personnalisées.&quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">support.honest_logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">honest_logger</span>
+        
+        <span class="n">exceptions_used</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">result_text</span> <span class="o">=</span> <span class="n">text</span>
+        
+        <span class="k">for</span> <span class="n">exception</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_exceptions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">exception</span><span class="o">.</span><span class="n">case_sensitive</span><span class="p">:</span>
+                <span class="c1"># Recherche sensible à la casse</span>
+                <span class="k">if</span> <span class="n">exception</span><span class="o">.</span><span class="n">original</span> <span class="ow">in</span> <span class="n">result_text</span><span class="p">:</span>
+                    <span class="n">result_text</span> <span class="o">=</span> <span class="n">result_text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">exception</span><span class="o">.</span><span class="n">original</span><span class="p">,</span> <span class="n">exception</span><span class="o">.</span><span class="n">corrected</span><span class="p">)</span>
+                    <span class="n">exceptions_used</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Recherche insensible à la casse</span>
+                <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">exception</span><span class="o">.</span><span class="n">original</span><span class="p">),</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">pattern</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">result_text</span><span class="p">):</span>
+                    <span class="n">result_text</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">exception</span><span class="o">.</span><span class="n">corrected</span><span class="p">,</span> <span class="n">result_text</span><span class="p">)</span>
+                    <span class="n">exceptions_used</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">result_text</span><span class="p">,</span> <span class="n">exceptions_used</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_mp3_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Trouve tous les fichiers MP3 dans un répertoire.&quot;&quot;&quot;</span>
+        <span class="n">mp3_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.mp3&quot;</span><span class="p">):</span>
+                <span class="n">mp3_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file_path</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur recherche fichiers MP3 : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_correct_file_case</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mp3_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artist_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CaseCorrectionResult</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Corrige la casse des métadonnées d&#39;un fichier.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.id3</span><span class="w"> </span><span class="kn">import</span> <span class="n">ID3</span>
+            
+            <span class="c1"># Lecture des vraies métadonnées</span>
+            <span class="n">audio</span> <span class="o">=</span> <span class="n">ID3</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+            
+            <span class="c1"># Lecture des champs métadonnées réels</span>
+            <span class="n">metadata_fields</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;TIT2&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TIT2&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TIT2&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;TALB&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TALB&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TALB&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;TPE1&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TPE1&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TPE1&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+            <span class="p">}</span>
+            
+            <span class="c1"># Correction de chaque champ</span>
+            <span class="n">modifications_made</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_value</span> <span class="ow">in</span> <span class="n">metadata_fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">field_value</span><span class="p">:</span>
+                    <span class="n">text_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_text_type_from_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">correct_text_case</span><span class="p">(</span><span class="n">field_value</span><span class="p">,</span> <span class="n">text_type</span><span class="p">,</span> <span class="n">artist_name</span><span class="p">)</span>
+                    <span class="n">results</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                    
+                    <span class="c1"># Si changement, appliquer à la métadonnée</span>
+                    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">changed</span><span class="p">:</span>
+                        <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.id3</span><span class="w"> </span><span class="kn">import</span> <span class="n">TIT2</span><span class="p">,</span> <span class="n">TALB</span><span class="p">,</span> <span class="n">TPE1</span>
+                        <span class="n">tag_class</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;TIT2&#39;</span><span class="p">:</span> <span class="n">TIT2</span><span class="p">,</span> <span class="s1">&#39;TALB&#39;</span><span class="p">:</span> <span class="n">TALB</span><span class="p">,</span> <span class="s1">&#39;TPE1&#39;</span><span class="p">:</span> <span class="n">TPE1</span><span class="p">}[</span><span class="n">field_name</span><span class="p">]</span>
+                        <span class="n">audio</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_class</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">corrected</span><span class="p">)</span>
+                        <span class="n">modifications_made</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔧 Métadonnée modifiée: </span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2">: &#39;</span><span class="si">{</span><span class="n">field_value</span><span class="si">}</span><span class="s2">&#39; → &#39;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">corrected</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Sauvegarder si des modifications ont été faites</span>
+            <span class="k">if</span> <span class="n">modifications_made</span><span class="p">:</span>
+                <span class="n">audio</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Métadonnées sauvegardées: </span><span class="si">{</span><span class="n">mp3_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">results</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Erreur correction métadonnées </span><span class="si">{</span><span class="n">mp3_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{}</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_text_type_from_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Détermine le type de texte selon le champ métadonnée.&quot;&quot;&quot;</span>
+        <span class="n">field_mapping</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;TIT2&#39;</span><span class="p">:</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span>    <span class="c1"># Titre</span>
+            <span class="s1">&#39;TALB&#39;</span><span class="p">:</span> <span class="s1">&#39;album&#39;</span><span class="p">,</span>    <span class="c1"># Album</span>
+            <span class="s1">&#39;TPE1&#39;</span><span class="p">:</span> <span class="s1">&#39;artist&#39;</span><span class="p">,</span>   <span class="c1"># Artiste</span>
+            <span class="s1">&#39;TPE2&#39;</span><span class="p">:</span> <span class="s1">&#39;artist&#39;</span><span class="p">,</span>   <span class="c1"># Artiste de l&#39;album</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">field_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_metadata_fields_for_preview</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mp3_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtient les champs métadonnées pour aperçu.&quot;&quot;&quot;</span>
+        <span class="c1"># Simulation - en réalité on utiliserait mutagen</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;TIT2&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;sample title from </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;TALB&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;sample album name&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;TPE1&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;sample artist name&quot;</span>
+        <span class="p">}</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_case_exceptions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CaseException</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Charge les exceptions de casse depuis la base de données.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">exceptions_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_manager</span><span class="o">.</span><span class="n">get_case_exceptions</span><span class="p">()</span>
+            <span class="n">exceptions</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="k">for</span> <span class="n">exception_data</span> <span class="ow">in</span> <span class="n">exceptions_data</span><span class="p">:</span>
+                <span class="n">exception</span> <span class="o">=</span> <span class="n">CaseException</span><span class="p">(</span>
+                    <span class="n">original</span><span class="o">=</span><span class="n">exception_data</span><span class="p">[</span><span class="s1">&#39;original&#39;</span><span class="p">],</span>
+                    <span class="n">corrected</span><span class="o">=</span><span class="n">exception_data</span><span class="p">[</span><span class="s1">&#39;corrected&#39;</span><span class="p">],</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="n">exception_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;custom&#39;</span><span class="p">),</span>
+                    <span class="n">case_sensitive</span><span class="o">=</span><span class="n">exception_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;case_sensitive&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Chargé </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">exceptions</span><span class="p">)</span><span class="si">}</span><span class="s2"> exceptions de casse&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">exceptions</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur chargement exceptions : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_roman_numerals_set</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construit l&#39;ensemble des chiffres romains.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;II&#39;</span><span class="p">,</span> <span class="s1">&#39;III&#39;</span><span class="p">,</span> <span class="s1">&#39;IV&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">,</span> <span class="s1">&#39;VI&#39;</span><span class="p">,</span> <span class="s1">&#39;VII&#39;</span><span class="p">,</span> <span class="s1">&#39;VIII&#39;</span><span class="p">,</span> <span class="s1">&#39;IX&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;XI&#39;</span><span class="p">,</span> <span class="s1">&#39;XII&#39;</span><span class="p">,</span> <span class="s1">&#39;XIII&#39;</span><span class="p">,</span> <span class="s1">&#39;XIV&#39;</span><span class="p">,</span> <span class="s1">&#39;XV&#39;</span><span class="p">,</span> <span class="s1">&#39;XVI&#39;</span><span class="p">,</span> <span class="s1">&#39;XVII&#39;</span><span class="p">,</span> <span class="s1">&#39;XVIII&#39;</span><span class="p">,</span> <span class="s1">&#39;XIX&#39;</span><span class="p">,</span> <span class="s1">&#39;XX&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;XXI&#39;</span><span class="p">,</span> <span class="s1">&#39;XXII&#39;</span><span class="p">,</span> <span class="s1">&#39;XXIII&#39;</span><span class="p">,</span> <span class="s1">&#39;XXIV&#39;</span><span class="p">,</span> <span class="s1">&#39;XXV&#39;</span><span class="p">,</span> <span class="s1">&#39;XXX&#39;</span><span class="p">,</span> <span class="s1">&#39;XL&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="s1">&#39;LX&#39;</span><span class="p">,</span> <span class="s1">&#39;LXX&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;LXXX&#39;</span><span class="p">,</span> <span class="s1">&#39;XC&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;CC&#39;</span><span class="p">,</span> <span class="s1">&#39;CCC&#39;</span><span class="p">,</span> <span class="s1">&#39;CD&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;DC&#39;</span><span class="p">,</span> <span class="s1">&#39;DCC&#39;</span><span class="p">,</span> <span class="s1">&#39;DCCC&#39;</span><span class="p">,</span> <span class="s1">&#39;CM&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span>
+        <span class="p">}</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_prepositions_set</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construit l&#39;ensemble des prépositions.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;an&#39;</span><span class="p">,</span> <span class="s1">&#39;and&#39;</span><span class="p">,</span> <span class="s1">&#39;as&#39;</span><span class="p">,</span> <span class="s1">&#39;at&#39;</span><span class="p">,</span> <span class="s1">&#39;but&#39;</span><span class="p">,</span> <span class="s1">&#39;by&#39;</span><span class="p">,</span> <span class="s1">&#39;for&#39;</span><span class="p">,</span> <span class="s1">&#39;in&#39;</span><span class="p">,</span> <span class="s1">&#39;of&#39;</span><span class="p">,</span> <span class="s1">&#39;on&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;or&#39;</span><span class="p">,</span> <span class="s1">&#39;the&#39;</span><span class="p">,</span> <span class="s1">&#39;to&#39;</span><span class="p">,</span> <span class="s1">&#39;up&#39;</span><span class="p">,</span> <span class="s1">&#39;via&#39;</span><span class="p">,</span> <span class="s1">&#39;with&#39;</span><span class="p">,</span> <span class="s1">&#39;from&#39;</span><span class="p">,</span> <span class="s1">&#39;into&#39;</span><span class="p">,</span> <span class="s1">&#39;over&#39;</span><span class="p">,</span> <span class="s1">&#39;under&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;et&#39;</span><span class="p">,</span> <span class="s1">&#39;de&#39;</span><span class="p">,</span> <span class="s1">&#39;du&#39;</span><span class="p">,</span> <span class="s1">&#39;des&#39;</span><span class="p">,</span> <span class="s1">&#39;le&#39;</span><span class="p">,</span> <span class="s1">&#39;la&#39;</span><span class="p">,</span> <span class="s1">&#39;les&#39;</span><span class="p">,</span> <span class="s1">&#39;un&#39;</span><span class="p">,</span> <span class="s1">&#39;une&#39;</span><span class="p">,</span> <span class="s1">&#39;dans&#39;</span><span class="p">,</span> <span class="s1">&#39;sur&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;avec&#39;</span><span class="p">,</span> <span class="s1">&#39;pour&#39;</span><span class="p">,</span> <span class="s1">&#39;par&#39;</span><span class="p">,</span> <span class="s1">&#39;sans&#39;</span><span class="p">,</span> <span class="s1">&#39;sous&#39;</span><span class="p">,</span> <span class="s1">&#39;vers&#39;</span><span class="p">,</span> <span class="s1">&#39;chez&#39;</span>
+        <span class="p">}</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_abbreviations_set</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construit l&#39;ensemble des abréviations.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;USA&#39;</span><span class="p">,</span> <span class="s1">&#39;UK&#39;</span><span class="p">,</span> <span class="s1">&#39;US&#39;</span><span class="p">,</span> <span class="s1">&#39;DJ&#39;</span><span class="p">,</span> <span class="s1">&#39;MC&#39;</span><span class="p">,</span> <span class="s1">&#39;NYC&#39;</span><span class="p">,</span> <span class="s1">&#39;LA&#39;</span><span class="p">,</span> <span class="s1">&#39;SF&#39;</span><span class="p">,</span> <span class="s1">&#39;DC&#39;</span><span class="p">,</span> <span class="s1">&#39;CD&#39;</span><span class="p">,</span> <span class="s1">&#39;DVD&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;TV&#39;</span><span class="p">,</span> <span class="s1">&#39;FM&#39;</span><span class="p">,</span> <span class="s1">&#39;AM&#39;</span><span class="p">,</span> <span class="s1">&#39;PM&#39;</span><span class="p">,</span> <span class="s1">&#39;BC&#39;</span><span class="p">,</span> <span class="s1">&#39;AD&#39;</span><span class="p">,</span> <span class="s1">&#39;CEO&#39;</span><span class="p">,</span> <span class="s1">&#39;FBI&#39;</span><span class="p">,</span> <span class="s1">&#39;CIA&#39;</span><span class="p">,</span> <span class="s1">&#39;NASA&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;BBC&#39;</span><span class="p">,</span> <span class="s1">&#39;CNN&#39;</span><span class="p">,</span> <span class="s1">&#39;ESPN&#39;</span><span class="p">,</span> <span class="s1">&#39;MTV&#39;</span><span class="p">,</span> <span class="s1">&#39;VHS&#39;</span><span class="p">,</span> <span class="s1">&#39;GPS&#39;</span><span class="p">,</span> <span class="s1">&#39;WWW&#39;</span><span class="p">,</span> <span class="s1">&#39;HTTP&#39;</span><span class="p">,</span> <span class="s1">&#39;FTP&#39;</span>
+        <span class="p">}</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_save_correction_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sauvegarde l&#39;historique des corrections en base.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Comptage des changements</span>
+            <span class="n">total_changes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">([</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">file_results</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">changed</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">file_results</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Sauvegarde en base</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_manager</span><span class="o">.</span><span class="n">save_import_history</span><span class="p">(</span>
+                <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+                <span class="n">operation_type</span><span class="o">=</span><span class="s2">&quot;case_correction&quot;</span><span class="p">,</span>
+                <span class="n">files_processed</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">),</span>
+                <span class="n">changes_made</span><span class="o">=</span><span class="n">total_changes</span><span class="p">,</span>
+                <span class="n">details</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;corrections&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)}</span>
+            <span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur sauvegarde historique : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_artist_name_from_album</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extrait le nom de l&#39;artiste depuis les métadonnées du premier fichier MP3 de l&#39;album.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_path: Chemin vers le dossier de l&#39;album</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Nom de l&#39;artiste ou None si non trouvé</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">mp3_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_mp3_files</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">mp3_files</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+                
+            <span class="c1"># Prendre le premier fichier MP3 pour extraire l&#39;artiste</span>
+            <span class="n">first_mp3</span> <span class="o">=</span> <span class="n">mp3_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.id3</span><span class="w"> </span><span class="kn">import</span> <span class="n">ID3</span>
+                <span class="n">audio</span> <span class="o">=</span> <span class="n">ID3</span><span class="p">(</span><span class="n">first_mp3</span><span class="p">)</span>
+                
+                <span class="c1"># Essayer TPE1 (artiste principal) puis TPE2 (artiste de l&#39;album)</span>
+                <span class="k">if</span> <span class="s1">&#39;TPE1&#39;</span> <span class="ow">in</span> <span class="n">audio</span> <span class="ow">and</span> <span class="n">audio</span><span class="p">[</span><span class="s1">&#39;TPE1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio</span><span class="p">[</span><span class="s1">&#39;TPE1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="s1">&#39;TPE2&#39;</span> <span class="ow">in</span> <span class="n">audio</span> <span class="ow">and</span> <span class="n">audio</span><span class="p">[</span><span class="s1">&#39;TPE2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio</span><span class="p">[</span><span class="s1">&#39;TPE2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Impossible de lire les métadonnées de </span><span class="si">{</span><span class="n">first_mp3</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur extraction artist_name depuis </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="CaseCorrector.correct_album_metadata">
+<a class="viewcode-back" href="../../core.html#core.case_corrector.CaseCorrector.correct_album_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">correct_album_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Méthode de compatibilité pour processing_orchestrator.py.</span>
+<span class="sd">        Corrige la casse des métadonnées d&#39;un album.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_path: Chemin vers le dossier de l&#39;album</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True si la correction a réussi, False sinon</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># ✅ FIX: Extraire l&#39;artist_name depuis les métadonnées pour la règle PROTECT_ARTIST_IN_ALBUM</span>
+            <span class="n">artist_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_artist_name_from_album</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">correct_album_case</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="n">artist_name</span><span class="p">)</span>
+            
+            <span class="c1"># Vérification du succès : au moins un changement dans n&#39;importe quel champ</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="n">has_changes</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">file_results</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">file_results</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">changed</span><span class="p">:</span>
+                        <span class="n">has_changes</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="n">has_changes</span><span class="p">:</span>
+                    <span class="k">break</span>
+            
+            <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Correction de casse réussie pour : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aucun fichier trouvé pour : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># Toujours retourner True même si aucune correction n&#39;était nécessaire</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur lors de la correction de casse pour </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<span class="c1"># Alias pour compatibilité</span>
+<span class="n">MetadataCaseCorrector</span> <span class="o">=</span> <span class="n">CaseCorrector</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

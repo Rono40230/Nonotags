@@ -14,6 +14,8 @@ __pycache__/
 # Logs
 logs/
 *.log
+debug_*.txt
+debug_output*.txt
 
 # Fichiers temporaires
 .tmp/

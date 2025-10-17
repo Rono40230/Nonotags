@@ -1,0 +1,808 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core.tag_synchronizer &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/translations.js?v=e6b791cb"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_services.html">API Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Code du module</a></li>
+      <li class="breadcrumb-item active">core.tag_synchronizer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Code source de core.tag_synchronizer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module 6 - Tag Synchronizer (GROUPE 6)</span>
+<span class="sd">Finalisation et synchronisation des métadonnées MP3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.mp3</span><span class="w"> </span><span class="kn">import</span> <span class="n">MP3</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.id3</span><span class="w"> </span><span class="kn">import</span> <span class="n">ID3</span><span class="p">,</span> <span class="n">APIC</span><span class="p">,</span> <span class="n">TIT2</span><span class="p">,</span> <span class="n">TPE1</span><span class="p">,</span> <span class="n">TALB</span><span class="p">,</span> <span class="n">TYER</span><span class="p">,</span> <span class="n">TCON</span><span class="p">,</span> <span class="n">TRCK</span><span class="p">,</span> <span class="n">TPE2</span><span class="p">,</span> <span class="n">TLEN</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.id3._util</span><span class="w"> </span><span class="kn">import</span> <span class="n">ID3NoHeaderError</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">support.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">support.state_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ApplicationState</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">support.honest_logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">HonestLogger</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">support.config_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigManager</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">support.state_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateManager</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">support.validator</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetadataValidator</span><span class="p">,</span> <span class="n">FileValidator</span><span class="p">,</span> <span class="n">ValidationResult</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">database.db_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatabaseManager</span>
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur d&#39;import des modules de support : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SynchronizationAction">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.SynchronizationAction">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SynchronizationAction</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Énumération des actions de synchronisation.&quot;&quot;&quot;</span>
+    <span class="n">ASSOCIATE_COVER</span> <span class="o">=</span> <span class="s2">&quot;associate_cover&quot;</span>
+    <span class="n">UPDATE_TAGS</span> <span class="o">=</span> <span class="s2">&quot;update_tags&quot;</span>
+    <span class="n">VALIDATE_CONSISTENCY</span> <span class="o">=</span> <span class="s2">&quot;validate_consistency&quot;</span>
+    <span class="n">BACKUP_ORIGINAL</span> <span class="o">=</span> <span class="s2">&quot;backup_original&quot;</span>
+    <span class="n">RESTORE_FROM_BACKUP</span> <span class="o">=</span> <span class="s2">&quot;restore_from_backup&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="CoverAssociationResult">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.CoverAssociationResult">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CoverAssociationResult</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Résultats possibles de l&#39;association de pochette.&quot;&quot;&quot;</span>
+    <span class="n">SUCCESS</span> <span class="o">=</span> <span class="s2">&quot;success&quot;</span>
+    <span class="n">COVER_NOT_FOUND</span> <span class="o">=</span> <span class="s2">&quot;cover_not_found&quot;</span>
+    <span class="n">INVALID_FORMAT</span> <span class="o">=</span> <span class="s2">&quot;invalid_format&quot;</span>
+    <span class="n">SIZE_TOO_SMALL</span> <span class="o">=</span> <span class="s2">&quot;size_too_small&quot;</span>
+    <span class="n">ALREADY_EXISTS</span> <span class="o">=</span> <span class="s2">&quot;already_exists&quot;</span>
+    <span class="n">ERROR</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="SynchronizationResult">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.SynchronizationResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SynchronizationResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Résultat de la synchronisation d&#39;un fichier.&quot;&quot;&quot;</span>
+    <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">cover_associated</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">tags_updated</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">actions_performed</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">SynchronizationAction</span><span class="p">]</span>
+    <span class="n">cover_result</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CoverAssociationResult</span><span class="p">]</span>
+    <span class="n">warnings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">processing_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span></div>
+
+
+
+<div class="viewcode-block" id="AlbumSynchronizationResult">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.AlbumSynchronizationResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AlbumSynchronizationResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Résultat de la synchronisation complète d&#39;un album.&quot;&quot;&quot;</span>
+    <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">files_processed</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">covers_associated</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">tags_updated</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">total_files</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">file_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">SynchronizationResult</span><span class="p">]</span>
+    <span class="n">processing_time</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">errors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">warnings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="TagSynchronizer">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.TagSynchronizer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TagSynchronizer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Module de finalisation et synchronisation des métadonnées MP3.</span>
+<span class="sd">    </span>
+<span class="sd">    Fonctionnalités :</span>
+<span class="sd">    - Association automatique des pochettes cover.jpg</span>
+<span class="sd">    - Synchronisation temps réel des tags physiques</span>
+<span class="sd">    - Validation de cohérence des métadonnées</span>
+<span class="sd">    - Sauvegarde et restauration des originaux</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise le module de synchronisation.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Initialisation des modules de support</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">main_logger</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span> <span class="o">=</span> <span class="n">HonestLogger</span><span class="p">(</span><span class="s2">&quot;TagSynchronizer&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_manager</span> <span class="o">=</span> <span class="n">ConfigManager</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span> <span class="o">=</span> <span class="n">StateManager</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validator</span> <span class="o">=</span> <span class="n">MetadataValidator</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_validator</span> <span class="o">=</span> <span class="n">FileValidator</span><span class="p">()</span>  <span class="c1"># ✅ Pour validate_directory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_manager</span> <span class="o">=</span> <span class="n">DatabaseManager</span><span class="p">()</span>
+            
+            <span class="c1"># Configuration du module</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_manager</span><span class="o">.</span><span class="n">processing</span>
+            
+            <span class="c1"># Formats d&#39;images supportés pour les pochettes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">supported_image_formats</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="s1">&#39;.bmp&#39;</span><span class="p">,</span> <span class="s1">&#39;.gif&#39;</span><span class="p">}</span>
+            
+            <span class="c1"># Taille minimale pour les pochettes (pixels)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_cover_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+            
+            <span class="c1"># Taille maximale recommandée (pour éviter des fichiers trop volumineux)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_cover_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+            
+            <span class="c1"># Extensions audio supportées</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">supported_audio_formats</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;.mp3&#39;</span><span class="p">,</span> <span class="s1">&#39;.flac&#39;</span><span class="p">,</span> <span class="s1">&#39;.m4a&#39;</span><span class="p">,</span> <span class="s1">&#39;.ogg&#39;</span><span class="p">,</span> <span class="s1">&#39;.wav&#39;</span><span class="p">}</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;TagSynchronizer initialisé avec succès&quot;</span><span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur lors de l&#39;initialisation de TagSynchronizer : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span>
+    
+<div class="viewcode-block" id="TagSynchronizer.find_cover_image">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.TagSynchronizer.find_cover_image">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_cover_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recherche un fichier de pochette dans le dossier.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            directory: Chemin du dossier à analyser</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[str]: Chemin vers le fichier de pochette trouvé</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dir_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+            
+            <span class="c1"># Noms de fichiers prioritaires pour les pochettes</span>
+            <span class="n">priority_names</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s1">&#39;cover.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;cover.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;cover.png&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;folder.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;folder.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;folder.png&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;front.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;front.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;front.png&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;album.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;album.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;album.png&#39;</span>
+            <span class="p">]</span>
+            
+            <span class="c1"># Recherche prioritaire</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">priority_names</span><span class="p">:</span>
+                <span class="n">cover_file</span> <span class="o">=</span> <span class="n">dir_path</span> <span class="o">/</span> <span class="n">name</span>
+                <span class="k">if</span> <span class="n">cover_file</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="n">cover_file</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_image_formats</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">cover_file</span><span class="p">)</span>
+            
+            <span class="c1"># Recherche élargie de tous les fichiers images</span>
+            <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="n">dir_path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> 
+                    <span class="n">file_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_image_formats</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur lors de la recherche de pochette dans </span><span class="si">{</span><span class="n">directory</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+<div class="viewcode-block" id="TagSynchronizer.validate_cover_image">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.TagSynchronizer.validate_cover_image">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_cover_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Valide un fichier image pour l&#39;utilisation comme pochette.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            image_path: Chemin vers le fichier image</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[bool, List[str]]: (Validité, Liste des avertissements)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Fichier image introuvable&quot;</span><span class="p">]</span>
+            
+            <span class="c1"># Validation du format</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_image_formats</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Format d&#39;image non supporté&quot;</span><span class="p">]</span>
+            
+            <span class="c1"># Validation avec PIL</span>
+            <span class="k">with</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">img</span><span class="p">:</span>
+                <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span>
+                
+                <span class="c1"># Vérification de la taille minimale</span>
+                <span class="k">if</span> <span class="n">width</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_cover_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">height</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_cover_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Image trop petite : </span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">height</span><span class="si">}</span><span class="s2"> pixels (minimum : </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">min_cover_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">min_cover_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">]</span>
+                
+                <span class="c1"># Avertissement pour les images non carrées</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="n">height</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">min</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Image non carrée : </span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">height</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="c1"># Avertissement pour les très grandes images</span>
+                <span class="k">if</span> <span class="n">width</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_cover_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_cover_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Image très grande : </span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">height</span><span class="si">}</span><span class="s2"> pixels (recommandé : max </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cover_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cover_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                
+                <span class="c1"># Validation du mode couleur</span>
+                <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">,</span> <span class="s1">&#39;RGBA&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">):</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mode couleur inhabituel : </span><span class="si">{</span><span class="n">img</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">warnings</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Erreur lors de la validation de l&#39;image : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="TagSynchronizer.associate_cover_to_mp3">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.TagSynchronizer.associate_cover_to_mp3">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">associate_cover_to_mp3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mp3_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cover_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CoverAssociationResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Associe une pochette à un fichier MP3.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            mp3_path: Chemin vers le fichier MP3</span>
+<span class="sd">            cover_path: Chemin vers l&#39;image de pochette</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            CoverAssociationResult: Résultat de l&#39;association</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cover_path</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 19] Pas de pochette fournie&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">CoverAssociationResult</span><span class="o">.</span><span class="n">COVER_NOT_FOUND</span>
+            
+            <span class="c1"># Validation de l&#39;image</span>
+            <span class="n">is_valid</span><span class="p">,</span> <span class="n">warnings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_cover_image</span><span class="p">(</span><span class="n">cover_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🖼️ [RÈGLE 19] Validation image: </span><span class="si">{</span><span class="n">is_valid</span><span class="si">}</span><span class="s2">, warnings: </span><span class="si">{</span><span class="n">warnings</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 19] Image invalide </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">cover_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">warnings</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">CoverAssociationResult</span><span class="o">.</span><span class="n">INVALID_FORMAT</span>
+            
+            <span class="c1"># Chargement du fichier MP3</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">audio_file</span> <span class="o">=</span> <span class="n">MP3</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">,</span> <span class="n">ID3</span><span class="o">=</span><span class="n">ID3</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📁 [RÈGLE 19] MP3 chargé avec tags existants&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ID3NoHeaderError</span><span class="p">:</span>
+                <span class="c1"># Création d&#39;un nouveau header ID3 si absent</span>
+                <span class="n">audio_file</span> <span class="o">=</span> <span class="n">MP3</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">)</span>
+                <span class="n">audio_file</span><span class="o">.</span><span class="n">add_tags</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🏷️ [RÈGLE 19] Nouveau header ID3 créé&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Vérification si une pochette existe déjà</span>
+            <span class="n">existing_covers</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;APIC&#39;</span><span class="p">):</span>
+                        <span class="n">existing_covers</span> <span class="o">+=</span> <span class="mi">1</span>
+                        
+            <span class="k">if</span> <span class="n">existing_covers</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ [RÈGLE 19] </span><span class="si">{</span><span class="n">existing_covers</span><span class="si">}</span><span class="s2"> pochette(s) existante(s) trouvée(s) dans </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">CoverAssociationResult</span><span class="o">.</span><span class="n">ALREADY_EXISTS</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [RÈGLE 19] Pas de pochette existante, procédure d&#39;ajout&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Lecture de l&#39;image</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cover_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">img_file</span><span class="p">:</span>
+                <span class="n">img_data</span> <span class="o">=</span> <span class="n">img_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            
+            <span class="n">img_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">img_data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 [RÈGLE 19] Taille image: </span><span class="si">{</span><span class="n">img_size</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Détermination du type MIME</span>
+            <span class="n">cover_ext</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cover_path</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">mime_types</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;.jpg&#39;</span><span class="p">:</span> <span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;.jpeg&#39;</span><span class="p">:</span> <span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;.png&#39;</span><span class="p">:</span> <span class="s1">&#39;image/png&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;.bmp&#39;</span><span class="p">:</span> <span class="s1">&#39;image/bmp&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;.gif&#39;</span><span class="p">:</span> <span class="s1">&#39;image/gif&#39;</span>
+            <span class="p">}</span>
+            <span class="n">mime_type</span> <span class="o">=</span> <span class="n">mime_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cover_ext</span><span class="p">,</span> <span class="s1">&#39;image/jpeg&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔧 [RÈGLE 19] Type MIME détecté: </span><span class="si">{</span><span class="n">mime_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Ajout de la pochette</span>
+            <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+                <span class="n">APIC</span><span class="p">(</span>
+                    <span class="n">encoding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="c1"># UTF-8</span>
+                    <span class="n">mime</span><span class="o">=</span><span class="n">mime_type</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="c1"># Cover (front)</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Cover&#39;</span><span class="p">,</span>
+                    <span class="n">data</span><span class="o">=</span><span class="n">img_data</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Sauvegarde</span>
+            <span class="n">audio_file</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            
+            <span class="k">return</span> <span class="n">CoverAssociationResult</span><span class="o">.</span><span class="n">SUCCESS</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 19] Erreur association pochette à </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">CoverAssociationResult</span><span class="o">.</span><span class="n">ERROR</span></div>
+
+    
+<div class="viewcode-block" id="TagSynchronizer.update_mp3_tags">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.TagSynchronizer.update_mp3_tags">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_mp3_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mp3_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Met à jour les tags d&#39;un fichier MP3 avec les métadonnées fournies.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            mp3_path: Chemin vers le fichier MP3</span>
+<span class="sd">            metadata: Dictionnaire des métadonnées à appliquer</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Succès de la mise à jour</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Chargement du fichier MP3</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">audio_file</span> <span class="o">=</span> <span class="n">MP3</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">,</span> <span class="n">ID3</span><span class="o">=</span><span class="n">ID3</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ID3NoHeaderError</span><span class="p">:</span>
+                <span class="c1"># Création d&#39;un nouveau header ID3 si absent</span>
+                <span class="n">audio_file</span> <span class="o">=</span> <span class="n">MP3</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">)</span>
+                <span class="n">audio_file</span><span class="o">.</span><span class="n">add_tags</span><span class="p">()</span>
+            
+            <span class="c1"># Mise à jour des tags selon les métadonnées fournies</span>
+            <span class="n">tag_mapping</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;TIT2&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">TIT2</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">v</span><span class="p">),</span>  <span class="c1"># Titre</span>
+                <span class="s1">&#39;TPE1&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">TPE1</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">v</span><span class="p">),</span>  <span class="c1"># Artiste</span>
+                <span class="s1">&#39;TALB&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">TALB</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">v</span><span class="p">),</span>  <span class="c1"># Album</span>
+                <span class="s1">&#39;TYER&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">TYER</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">v</span><span class="p">),</span>  <span class="c1"># Année</span>
+                <span class="s1">&#39;TCON&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">TCON</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">v</span><span class="p">),</span>  <span class="c1"># Genre</span>
+                <span class="s1">&#39;TRCK&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">TRCK</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">v</span><span class="p">),</span>  <span class="c1"># Numéro de piste</span>
+                <span class="s1">&#39;TPE2&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">TPE2</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">v</span><span class="p">),</span>  <span class="c1"># Interprète</span>
+                <span class="s1">&#39;TLEN&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">TLEN</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">v</span><span class="p">),</span>  <span class="c1"># Durée</span>
+            <span class="p">}</span>
+            
+            <span class="n">updated_tags</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">skipped_tags</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="k">for</span> <span class="n">tag_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">tag_name</span> <span class="ow">in</span> <span class="n">tag_mapping</span> <span class="ow">and</span> <span class="n">value</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">tag_obj</span> <span class="o">=</span> <span class="n">tag_mapping</span><span class="p">[</span><span class="n">tag_name</span><span class="p">](</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                        <span class="n">audio_file</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tag_obj</span><span class="p">)</span>
+                        <span class="n">updated_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tag_name</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [RÈGLE 20] Tag </span><span class="si">{</span><span class="n">tag_name</span><span class="si">}</span><span class="s2"> mis à jour: &#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ [RÈGLE 20] Erreur mise à jour tag </span><span class="si">{</span><span class="n">tag_name</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">tag_name</span> <span class="ow">in</span> <span class="n">tag_mapping</span><span class="p">:</span>
+                    <span class="n">skipped_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tag_name</span><span class="si">}</span><span class="s2">(vide)&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⏭️ [RÈGLE 20] Tag </span><span class="si">{</span><span class="n">tag_name</span><span class="si">}</span><span class="s2"> ignoré (valeur vide)&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">skipped_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tag_name</span><span class="si">}</span><span class="s2">(non mappé)&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⏭️ [RÈGLE 20] Tag </span><span class="si">{</span><span class="n">tag_name</span><span class="si">}</span><span class="s2"> ignoré (non mappé)&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Sauvegarde si des tags ont été mis à jour</span>
+            <span class="k">if</span> <span class="n">updated_tags</span><span class="p">:</span>
+                <span class="n">audio_file</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">skipped_tags</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⏭️ [RÈGLE 20] </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">skipped_tags</span><span class="p">)</span><span class="si">}</span><span class="s2"> tags ignorés : </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">skipped_tags</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 20] Aucun tag valide à synchroniser dans &#39;</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">skipped_tags</span><span class="p">)</span><span class="si">}</span><span class="s2"> ignorés)&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+                
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 20] Erreur synchronisation tags de &#39;</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+    
+<div class="viewcode-block" id="TagSynchronizer.synchronize_file">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.TagSynchronizer.synchronize_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">synchronize_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mp3_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynchronizationResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Synchronise un fichier MP3 (pochette + tags).</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            mp3_path: Chemin vers le fichier MP3</span>
+<span class="sd">            metadata: Métadonnées optionnelles à appliquer</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            SynchronizationResult: Résultat de la synchronisation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔄 [GROUPE 6] SYNCHRONIZE_FILE - Synchronisation complète &#39;</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">)</span>
+            <span class="n">directory</span> <span class="o">=</span> <span class="n">file_path</span><span class="o">.</span><span class="n">parent</span>
+            
+            <span class="n">actions_performed</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">cover_associated</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">tags_updated</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">cover_result</span> <span class="o">=</span> <span class="kc">None</span>
+            
+            <span class="c1"># 1. Association de la pochette (RÈGLE 19)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🖼️ [GROUPE 6] Étape 1/2 - Recherche pochette dans: </span><span class="si">{</span><span class="n">directory</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">cover_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_cover_image</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">directory</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">cover_path</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔍 [GROUPE 6] Pochette trouvée: </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">cover_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">cover_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">associate_cover_to_mp3</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">,</span> <span class="n">cover_path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">cover_result</span> <span class="o">==</span> <span class="n">CoverAssociationResult</span><span class="o">.</span><span class="n">SUCCESS</span><span class="p">:</span>
+                    <span class="n">cover_associated</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">actions_performed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SynchronizationAction</span><span class="o">.</span><span class="n">ASSOCIATE_COVER</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [GROUPE 6] RÈGLE 19 - Pochette associée avec succès&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">cover_result</span> <span class="o">==</span> <span class="n">CoverAssociationResult</span><span class="o">.</span><span class="n">ALREADY_EXISTS</span><span class="p">:</span>
+                    <span class="n">warning_msg</span> <span class="o">=</span> <span class="s2">&quot;Pochette déjà présente&quot;</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">warning_msg</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ℹ️ [GROUPE 6] RÈGLE 19 - </span><span class="si">{</span><span class="n">warning_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">warning_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Association de pochette échouée : </span><span class="si">{</span><span class="n">cover_result</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">warning_msg</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [GROUPE 6] RÈGLE 19 - </span><span class="si">{</span><span class="n">warning_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cover_result</span> <span class="o">=</span> <span class="n">CoverAssociationResult</span><span class="o">.</span><span class="n">COVER_NOT_FOUND</span>
+                <span class="n">warning_msg</span> <span class="o">=</span> <span class="s2">&quot;Aucune pochette trouvée dans le dossier&quot;</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">warning_msg</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ [GROUPE 6] RÈGLE 19 - </span><span class="si">{</span><span class="n">warning_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># 2. Mise à jour des tags (RÈGLE 20)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🏷️ [GROUPE 6] Étape 2/2 - Synchronisation tags&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">metadata</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 [GROUPE 6] Métadonnées à synchroniser: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">tags_updated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_mp3_tags</span><span class="p">(</span><span class="n">mp3_path</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">tags_updated</span><span class="p">:</span>
+                    <span class="n">actions_performed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SynchronizationAction</span><span class="o">.</span><span class="n">UPDATE_TAGS</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [GROUPE 6] RÈGLE 20 - Tags synchronisés avec succès&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ [GROUPE 6] RÈGLE 20 - Aucun tag mis à jour&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ℹ️ [GROUPE 6] RÈGLE 20 - Pas de métadonnées fournies, tags non modifiés&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Résumé de la synchronisation</span>
+            <span class="k">if</span> <span class="n">actions_performed</span><span class="p">:</span>
+                    <span class="n">actions_performed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SynchronizationAction</span><span class="o">.</span><span class="n">UPDATE_TAGS</span><span class="p">)</span>
+            
+            <span class="n">processing_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            
+            <span class="k">return</span> <span class="n">SynchronizationResult</span><span class="p">(</span>
+                <span class="n">file_path</span><span class="o">=</span><span class="n">mp3_path</span><span class="p">,</span>
+                <span class="n">cover_associated</span><span class="o">=</span><span class="n">cover_associated</span><span class="p">,</span>
+                <span class="n">tags_updated</span><span class="o">=</span><span class="n">tags_updated</span><span class="p">,</span>
+                <span class="n">actions_performed</span><span class="o">=</span><span class="n">actions_performed</span><span class="p">,</span>
+                <span class="n">cover_result</span><span class="o">=</span><span class="n">cover_result</span><span class="p">,</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">,</span>
+                <span class="n">processing_time</span><span class="o">=</span><span class="n">processing_time</span>
+            <span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Erreur lors de la synchronisation de </span><span class="si">{</span><span class="n">mp3_path</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">SynchronizationResult</span><span class="p">(</span>
+                <span class="n">file_path</span><span class="o">=</span><span class="n">mp3_path</span><span class="p">,</span>
+                <span class="n">cover_associated</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">tags_updated</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">actions_performed</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">cover_result</span><span class="o">=</span><span class="n">CoverAssociationResult</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">error</span><span class="o">=</span><span class="n">error_msg</span><span class="p">,</span>
+                <span class="n">processing_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="TagSynchronizer.synchronize_album">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.TagSynchronizer.synchronize_album">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">synchronize_album</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">apply_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlbumSynchronizationResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Synchronise tous les fichiers MP3 d&#39;un album.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_path: Chemin du dossier d&#39;album</span>
+<span class="sd">            apply_metadata: Si True, applique les métadonnées depuis les fichiers</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            AlbumSynchronizationResult: Résultat de la synchronisation complète</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Début de la synchronisation de l&#39;album : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Mise à jour du statut</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">set_app_state</span><span class="p">(</span><span class="n">ApplicationState</span><span class="o">.</span><span class="n">PROCESSING</span><span class="p">)</span>
+            
+            <span class="c1"># Validation du dossier</span>
+            <span class="n">validation_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_validator</span><span class="o">.</span><span class="n">validate_directory</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">validation_result</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">AlbumSynchronizationResult</span><span class="p">(</span>
+                    <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+                    <span class="n">files_processed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">covers_associated</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">tags_updated</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">total_files</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">file_results</span><span class="o">=</span><span class="p">[],</span>
+                    <span class="n">processing_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span>
+                    <span class="n">errors</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Dossier invalide : </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">validation_result</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span>
+                    <span class="n">warnings</span><span class="o">=</span><span class="n">validation_result</span><span class="o">.</span><span class="n">warnings</span>
+                <span class="p">)</span>
+            
+            <span class="c1"># Recherche des fichiers MP3</span>
+            <span class="n">album_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="n">mp3_files</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># Recherche avec différentes casses pour l&#39;extension</span>
+            <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;*.mp3&#39;</span><span class="p">,</span> <span class="s1">&#39;*.MP3&#39;</span><span class="p">,</span> <span class="s1">&#39;*.Mp3&#39;</span><span class="p">,</span> <span class="s1">&#39;*.mP3&#39;</span><span class="p">]:</span>
+                <span class="n">mp3_files</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">album_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
+            <span class="c1"># Supprime les doublons potentiels</span>
+            <span class="n">mp3_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">))</span>
+            
+            <span class="c1"># Traitement de chaque fichier</span>
+            <span class="n">file_results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">covers_associated</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">tags_updated</span> <span class="o">=</span> <span class="mi">0</span>
+            
+            <span class="k">for</span> <span class="n">mp3_file</span> <span class="ow">in</span> <span class="n">mp3_files</span><span class="p">:</span>
+                <span class="c1"># Récupération des métadonnées existantes si demandé</span>
+                <span class="n">metadata</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">apply_metadata</span><span class="p">:</span>
+                    <span class="n">file_validation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">validate_mp3_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">file_validation</span><span class="o">.</span><span class="n">is_valid</span> <span class="ow">and</span> <span class="n">file_validation</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+                        <span class="n">metadata</span> <span class="o">=</span> <span class="n">file_validation</span><span class="o">.</span><span class="n">metadata</span>
+                
+                <span class="c1"># Synchronisation du fichier</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronize_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">),</span> <span class="n">metadata</span><span class="p">)</span>
+                <span class="n">file_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">cover_associated</span><span class="p">:</span>
+                    <span class="n">covers_associated</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">tags_updated</span><span class="p">:</span>
+                    <span class="n">tags_updated</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="n">processing_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            
+            <span class="c1"># Collecte des erreurs et avertissements</span>
+            <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">file_results</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+                    <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">warnings</span><span class="p">)</span>
+            
+            <span class="c1"># Logging du résultat</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Synchronisation terminée pour </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">file_results</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> fichiers traités, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">covers_associated</span><span class="si">}</span><span class="s2"> pochettes associées, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tags_updated</span><span class="si">}</span><span class="s2"> mises à jour de tags&quot;</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Mise à jour du statut</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="s2">&quot;tag_synchronization_completed&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Enregistrement en base</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db_manager</span><span class="o">.</span><span class="n">add_import_history</span><span class="p">(</span>
+                    <span class="n">folder_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+                    <span class="n">action</span><span class="o">=</span><span class="s2">&quot;synchronize_album&quot;</span><span class="p">,</span>
+                    <span class="n">details</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s2">&quot;files_processed&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">file_results</span><span class="p">),</span>
+                        <span class="s2">&quot;covers_associated&quot;</span><span class="p">:</span> <span class="n">covers_associated</span><span class="p">,</span>
+                        <span class="s2">&quot;tags_updated&quot;</span><span class="p">:</span> <span class="n">tags_updated</span><span class="p">,</span>
+                        <span class="s2">&quot;total_files&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">),</span>
+                        <span class="s2">&quot;processing_time&quot;</span><span class="p">:</span> <span class="n">processing_time</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur lors de l&#39;enregistrement en base : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">AlbumSynchronizationResult</span><span class="p">(</span>
+                <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+                <span class="n">files_processed</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">file_results</span><span class="p">),</span>
+                <span class="n">covers_associated</span><span class="o">=</span><span class="n">covers_associated</span><span class="p">,</span>
+                <span class="n">tags_updated</span><span class="o">=</span><span class="n">tags_updated</span><span class="p">,</span>
+                <span class="n">total_files</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">),</span>
+                <span class="n">file_results</span><span class="o">=</span><span class="n">file_results</span><span class="p">,</span>
+                <span class="n">processing_time</span><span class="o">=</span><span class="n">processing_time</span><span class="p">,</span>
+                <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span>
+            <span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Erreur lors de la synchronisation de l&#39;album </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">AlbumSynchronizationResult</span><span class="p">(</span>
+                <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+                <span class="n">files_processed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">covers_associated</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">tags_updated</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">total_files</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">file_results</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">processing_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span>
+                <span class="n">errors</span><span class="o">=</span><span class="p">[</span><span class="n">error_msg</span><span class="p">],</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="p">[]</span>
+            <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="TagSynchronizer.create_backup">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.TagSynchronizer.create_backup">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_backup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Crée une sauvegarde d&#39;un fichier MP3 avant modification.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            file_path: Chemin vers le fichier à sauvegarder</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[str]: Chemin vers le fichier de sauvegarde</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">source_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="n">backup_dir</span> <span class="o">=</span> <span class="n">source_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;.nonotags_backup&quot;</span>
+            <span class="n">backup_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            
+            <span class="n">backup_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source_path</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">_backup_</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span><span class="si">}{</span><span class="n">source_path</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">backup_path</span> <span class="o">=</span> <span class="n">backup_dir</span> <span class="o">/</span> <span class="n">backup_name</span>
+            
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">backup_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sauvegarde créée : </span><span class="si">{</span><span class="n">backup_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">backup_path</span><span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur lors de la création de sauvegarde pour </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+<div class="viewcode-block" id="TagSynchronizer.restore_from_backup">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.TagSynchronizer.restore_from_backup">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">restore_from_backup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backup_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Restaure un fichier depuis une sauvegarde.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            backup_path: Chemin vers la sauvegarde</span>
+<span class="sd">            target_path: Chemin de destination</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Succès de la restauration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">backup_path</span><span class="p">,</span> <span class="n">target_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fichier restauré depuis </span><span class="si">{</span><span class="n">backup_path</span><span class="si">}</span><span class="s2"> vers </span><span class="si">{</span><span class="n">target_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur lors de la restauration de </span><span class="si">{</span><span class="n">backup_path</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+    
+<div class="viewcode-block" id="TagSynchronizer.synchronize_album_tags">
+<a class="viewcode-back" href="../../core.html#core.tag_synchronizer.TagSynchronizer.synchronize_album_tags">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">synchronize_album_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Méthode de compatibilité pour processing_orchestrator.py.</span>
+<span class="sd">        Synchronise les tags d&#39;un album.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_path: Chemin vers le dossier de l&#39;album</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True si la synchronisation a réussi, False sinon</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronize_album</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+            
+            <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Synchronisation réussie pour : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreurs lors de la synchronisation de : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">success</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur critique lors de la synchronisation de </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

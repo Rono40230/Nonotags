@@ -16,7 +16,7 @@ class ExceptionsWindow(Gtk.Window):
     """Fenêtre de gestion des exceptions de casse"""
     
     def __init__(self, parent=None):
-        super().__init__(title="⚙️ Gestion des exceptions de casse")
+        super().__init__(title="Gestion des exceptions de casse")
         
         self.parent = parent
         self.logger = AppLogger()
@@ -146,8 +146,8 @@ class ExceptionsWindow(Gtk.Window):
         title_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         header_box.pack_start(title_box, True, True, 10)
         
-        title_label = Gtk.Label("⚙️ Gestion des exceptions de casse")
-        title_label.set_markup("<span size='large' weight='bold'>⚙️ Gestion des exceptions de casse</span>")
+        title_label = Gtk.Label("Gestion des exceptions de casse")
+        title_label.set_markup("<span size='large' weight='bold'>Gestion des exceptions de casse</span>")
         title_label.set_halign(Gtk.Align.START)
         title_box.pack_start(title_label, False, False, 0)
         
@@ -166,18 +166,18 @@ class ExceptionsWindow(Gtk.Window):
         parent.pack_start(toolbar_box, False, False, 0)
         
         # Boutons d'action
-        self.new_button = Gtk.Button("➕ Nouveau")
+        self.new_button = Gtk.Button("Nouveau")
         self.new_button.get_style_context().add_class("exception-button")
         self.new_button.connect("clicked", self.on_new_clicked)
         toolbar_box.pack_start(self.new_button, False, False, 0)
         
-        self.edit_button = Gtk.Button("✏️ Modifier")
+        self.edit_button = Gtk.Button("Modifier")
         self.edit_button.get_style_context().add_class("exception-button")
         self.edit_button.connect("clicked", self.on_edit_clicked)
         self.edit_button.set_sensitive(False)
         toolbar_box.pack_start(self.edit_button, False, False, 0)
         
-        self.delete_button = Gtk.Button("🗑️ Supprimer")
+        self.delete_button = Gtk.Button("Supprimer")
         self.delete_button.get_style_context().add_class("exception-button")
         self.delete_button.connect("clicked", self.on_delete_clicked)
         self.delete_button.set_sensitive(False)
@@ -188,7 +188,7 @@ class ExceptionsWindow(Gtk.Window):
         toolbar_box.pack_start(separator, False, False, 5)
         
         # Recherche
-        search_label = Gtk.Label("🔍 Recherche:")
+        search_label = Gtk.Label("Recherche:")
         toolbar_box.pack_start(search_label, False, False, 0)
         
         self.search_entry = Gtk.Entry()
@@ -200,7 +200,7 @@ class ExceptionsWindow(Gtk.Window):
         # Bouton actualiser
         toolbar_box.pack_end(Gtk.Box(), True, True, 0)  # Espaceur
         
-        refresh_button = Gtk.Button("🔄 Actualiser")
+        refresh_button = Gtk.Button("Actualiser")
         refresh_button.get_style_context().add_class("exception-button")
         refresh_button.connect("clicked", self.on_refresh_clicked)
         toolbar_box.pack_end(refresh_button, False, False, 0)
@@ -212,8 +212,8 @@ class ExceptionsWindow(Gtk.Window):
         parent.pack1(left_box, True, False)
         
         # Titre de la liste
-        list_label = Gtk.Label("📋 Liste des exceptions")
-        list_label.set_markup("<span weight='bold'>📋 Liste des exceptions</span>")
+        list_label = Gtk.Label("Liste des exceptions")
+        list_label.set_markup("<span weight='bold'>Liste des exceptions</span>")
         list_label.set_halign(Gtk.Align.START)
         list_label.set_margin_left(10)
         list_label.set_margin_top(5)
@@ -269,8 +269,8 @@ class ExceptionsWindow(Gtk.Window):
         parent.pack2(right_box, False, False)
         
         # Titre du formulaire
-        form_label = Gtk.Label("✏️ Ajouter/Modifier une exception")
-        form_label.set_markup("<span weight='bold'>✏️ Ajouter/Modifier une exception</span>")
+        form_label = Gtk.Label("Ajouter/Modifier une exception")
+        form_label.set_markup("<span weight='bold'>Ajouter/Modifier une exception</span>")
         form_label.set_halign(Gtk.Align.START)
         form_label.set_margin_left(10)
         form_label.set_margin_top(5)
@@ -312,13 +312,13 @@ class ExceptionsWindow(Gtk.Window):
         button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         form_grid.attach(button_box, 1, 2, 2, 1)
         
-        self.save_button = Gtk.Button("💾 Sauvegarder")
+        self.save_button = Gtk.Button("Sauvegarder")
         self.save_button.get_style_context().add_class("exception-button")
         self.save_button.connect("clicked", self.on_save_clicked)
         self.save_button.set_sensitive(False)
         button_box.pack_start(self.save_button, False, False, 0)
         
-        self.cancel_button = Gtk.Button("❌ Annuler")
+        self.cancel_button = Gtk.Button("Annuler")
         self.cancel_button.get_style_context().add_class("exception-button")
         self.cancel_button.connect("clicked", self.on_cancel_clicked)
         self.cancel_button.set_sensitive(False)
@@ -422,21 +422,21 @@ class ExceptionsWindow(Gtk.Window):
         after = self.after_entry.get_text().strip()
         
         if not before:
-            self.logger.warning("❌ DEBUG - Validation: mot 'avant' vide")
+            self.logger.warning("DEBUG - Validation: mot 'avant' vide")
             self._update_status("Le mot 'Avant' est requis", "warning")
             return False
         
         if not after:
-            self.logger.warning("❌ DEBUG - Validation: mot 'après' vide")
+            self.logger.warning("DEBUG - Validation: mot 'après' vide")
             self._update_status("Le mot 'Après' est requis", "warning")
             return False
         
         if not self.validator.input_validator.validate_exception_word(before).is_valid:
-            self.logger.warning(f"❌ DEBUG - Validation: mot avant invalide '{before}'")
+            self.logger.warning(f"DEBUG - Validation: mot avant invalide '{before}'")
             self._update_status("Mot 'Avant' invalide (caractères spéciaux non autorisés)", "warning")
             return False
         
-        self.logger.info("✅ DEBUG - Validation réussie")
+        self.logger.info("DEBUG - Validation réussie")
         return True
 
     # === CALLBACKS ===
@@ -514,10 +514,10 @@ class ExceptionsWindow(Gtk.Window):
     
     def on_save_clicked(self, button):
         """Sauvegarder l'exception"""
-        self.logger.info(f"🔄 DEBUG - Début sauvegarde, form_mode: {self.form_mode}")
+        self.logger.info(f"DEBUG - Début sauvegarde, form_mode: {self.form_mode}")
         
         if not self._validate_form():
-            self.logger.warning("❌ DEBUG - Validation formulaire échouée")
+            self.logger.warning("DEBUG - Validation formulaire échouée")
             return
         
         before = self.before_entry.get_text().strip().lower()  # Toujours en minuscules pour la clé
@@ -537,7 +537,7 @@ class ExceptionsWindow(Gtk.Window):
                     return
                 
             elif self.form_mode == 'edit' and self.current_exception_id:
-                self.logger.info(f"✏️ DEBUG - Mode édition: current_id='{self.current_exception_id}'")
+                self.logger.info(f"DEBUG - Mode édition: current_id='{self.current_exception_id}'")
                 # Pour l'édition, on supprime l'ancienne et on recrée
                 self.db_manager.remove_case_exception(self.current_exception_id)
                 success = self.db_manager.add_case_exception(before, after)

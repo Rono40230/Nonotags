@@ -15,7 +15,7 @@ class AudioConverterWindow(Gtk.Window):
     """Fenêtre de conversion audio avec layout 4 blocs"""
     
     def __init__(self):
-        super().__init__(title="🔄 Convertisseur Audio")
+        super().__init__(title="Convertisseur Audio")
         
         # Configuration de la fenêtre
         self.set_default_size(1000, 700)
@@ -58,7 +58,7 @@ class AudioConverterWindow(Gtk.Window):
     
     def _create_file_selection_block(self, parent_box):
         """BLOC 1 : Sélection des fichiers sources"""
-        frame = Gtk.Frame(label="📁 Fichiers sources")
+        frame = Gtk.Frame(label="Fichiers sources")
         frame.set_size_request(450, 350)
         parent_box.pack_start(frame, True, True, 0)
         
@@ -72,15 +72,15 @@ class AudioConverterWindow(Gtk.Window):
         # Boutons d'ajout
         buttons_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         
-        add_files_btn = Gtk.Button("➕ Ajouter fichiers")
+        add_files_btn = Gtk.Button("Ajouter fichiers")
         add_files_btn.connect("clicked", self.on_add_files)
         buttons_box.pack_start(add_files_btn, True, True, 0)
         
-        add_folder_btn = Gtk.Button("📂 Ajouter dossier")
+        add_folder_btn = Gtk.Button("Ajouter dossier")
         add_folder_btn.connect("clicked", self.on_add_folder)
         buttons_box.pack_start(add_folder_btn, True, True, 0)
         
-        clear_btn = Gtk.Button("🗑️ Vider")
+        clear_btn = Gtk.Button("Vider")
         clear_btn.connect("clicked", self.on_clear_files)
         buttons_box.pack_start(clear_btn, False, False, 0)
         
@@ -118,7 +118,7 @@ class AudioConverterWindow(Gtk.Window):
     
     def _create_settings_block(self, parent_box):
         """BLOC 2 : Paramètres de conversion"""
-        frame = Gtk.Frame(label="⚙️ Paramètres de conversion")
+        frame = Gtk.Frame(label="Paramètres de conversion")
         frame.set_size_request(450, 350)
         parent_box.pack_start(frame, True, True, 0)
         
@@ -131,7 +131,7 @@ class AudioConverterWindow(Gtk.Window):
         
         # Format de sortie
         format_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        format_label = Gtk.Label("🎵 Format de sortie:")
+        format_label = Gtk.Label("Format de sortie :")
         format_label.set_size_request(150, -1)
         format_box.pack_start(format_label, False, False, 0)
         
@@ -153,7 +153,7 @@ class AudioConverterWindow(Gtk.Window):
         
         # Qualité de conversion
         quality_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        quality_label = Gtk.Label("🎚️ Qualité:")
+        quality_label = Gtk.Label("Qualité :")
         quality_label.set_size_request(150, -1)
         quality_box.pack_start(quality_label, False, False, 0)
         
@@ -172,7 +172,7 @@ class AudioConverterWindow(Gtk.Window):
         vbox.pack_start(quality_box, False, False, 0)
         
         # Informations
-        info_frame = Gtk.Frame(label="ℹ️ Information")
+        info_frame = Gtk.Frame(label="Information")
         info_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
         info_vbox.set_margin_left(10)
         info_vbox.set_margin_right(10)
@@ -182,17 +182,17 @@ class AudioConverterWindow(Gtk.Window):
         self.ffmpeg_status_label = Gtk.Label()
         info_vbox.pack_start(self.ffmpeg_status_label, False, False, 0)
         
-        format_info = Gtk.Label("""• MP3: Format compressé universel
-• FLAC: Sans perte, fichiers plus volumineux
-• WAV: Non compressé, très volumineux
-• OGG: Alternative libre au MP3
-• M4A: Format Apple, bonne qualité
+        format_info = Gtk.Label("""• MP3 : Format compressé universel
+• FLAC : Sans perte, fichiers plus volumineux
+• WAV : Non compressé, très volumineux
+• OGG : Alternative libre au MP3
+• M4A : Format Apple, bonne qualité
 
 Qualités disponibles:
-• Basse: Plus rapide, fichiers plus petits
-• Standard: Équilibre qualité/taille optimal
-• Haute: Meilleure qualité audio
-• Maximum: Qualité maximale disponible""")
+• Basse : Plus rapide, fichiers plus petits
+• Standard : Équilibre qualité/taille optimal
+• Haute : Meilleure qualité audio
+• Maximum : Qualité maximale disponible""")
         format_info.set_halign(Gtk.Align.START)
         format_info.set_line_wrap(True)
         info_vbox.pack_start(format_info, False, False, 0)
@@ -202,7 +202,7 @@ Qualités disponibles:
     
     def _create_conversion_queue_block(self, parent_box):
         """BLOC 3 : Queue de conversion"""
-        frame = Gtk.Frame(label="📋 Queue de conversion")
+        frame = Gtk.Frame(label="Queue de conversion")
         parent_box.pack_start(frame, True, True, 0)
         
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -215,15 +215,15 @@ Qualités disponibles:
         # Boutons de gestion de la queue
         queue_buttons_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         
-        add_to_queue_btn = Gtk.Button("➕ Ajouter à la queue")
+        add_to_queue_btn = Gtk.Button("Ajouter à la queue")
         add_to_queue_btn.connect("clicked", self.on_add_to_queue)
         queue_buttons_box.pack_start(add_to_queue_btn, False, False, 0)
         
-        remove_from_queue_btn = Gtk.Button("➖ Supprimer sélection")
+        remove_from_queue_btn = Gtk.Button("Supprimer sélection")
         remove_from_queue_btn.connect("clicked", self.on_remove_from_queue)
         queue_buttons_box.pack_start(remove_from_queue_btn, False, False, 0)
         
-        clear_queue_btn = Gtk.Button("🗑️ Vider la queue")
+        clear_queue_btn = Gtk.Button("Vider la queue")
         clear_queue_btn.connect("clicked", self.on_clear_queue)
         queue_buttons_box.pack_start(clear_queue_btn, False, False, 0)
         
@@ -262,7 +262,7 @@ Qualités disponibles:
     
     def _create_controls_block(self, parent_box):
         """BLOC 4 : Contrôles et progression globale"""
-        frame = Gtk.Frame(label="🎛️ Contrôles")
+        frame = Gtk.Frame(label="Contrôles")
         parent_box.pack_start(frame, False, False, 0)
         
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
@@ -275,11 +275,11 @@ Qualités disponibles:
         # Boutons de contrôle
         controls_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         
-        self.start_btn = Gtk.Button("▶️ Démarrer")
+        self.start_btn = Gtk.Button("Démarrer")
         self.start_btn.connect("clicked", self.on_start_conversion)
         controls_box.pack_start(self.start_btn, False, False, 0)
         
-        self.stop_btn = Gtk.Button("⏹️ Arrêter")
+        self.stop_btn = Gtk.Button("Arrêter")
         self.stop_btn.connect("clicked", self.on_stop_conversion)
         self.stop_btn.set_sensitive(False)
         controls_box.pack_start(self.stop_btn, False, False, 0)
@@ -323,10 +323,10 @@ Qualités disponibles:
     def _check_ffmpeg_availability(self):
         """Vérifie la disponibilité de FFmpeg"""
         if self.converter.ffmpeg_available:
-            self.ffmpeg_status_label.set_text("✅ FFmpeg disponible")
+            self.ffmpeg_status_label.set_text("FFmpeg disponible")
             self.ffmpeg_status_label.set_name("success-label")
         else:
-            self.ffmpeg_status_label.set_text("❌ FFmpeg requis (sudo apt install ffmpeg)")
+            self.ffmpeg_status_label.set_text("FFmpeg requis (sudo apt install ffmpeg)")
             self.ffmpeg_status_label.set_name("error-label")
     
     # === CALLBACKS INTERFACE ===
@@ -416,7 +416,7 @@ Qualités disponibles:
             added_count += 1
         
         self._update_stats()
-        print(f"✅ {added_count} fichiers ajoutés à la queue de conversion avec qualité {target_quality}")
+        print(f"{added_count} fichiers ajoutés à la queue de conversion avec qualité {target_quality}")
     
     def on_remove_from_queue(self, button):
         """Supprimer les éléments sélectionnés de la queue"""
@@ -557,7 +557,7 @@ Qualités disponibles:
             added_count += 1
         
         self._update_stats()
-        print(f"✅ {added_count} fichiers ajoutés à la queue de conversion avec qualité {target_quality}")
+        print(f"{added_count} fichiers ajoutés à la queue de conversion avec qualité {target_quality}")
     
     def on_remove_from_queue(self, button):
         """Supprimer les éléments sélectionnés de la queue"""
@@ -698,7 +698,7 @@ Qualités disponibles:
             added_count += 1
         
         self._update_stats()
-        print(f"✅ {added_count} fichiers ajoutés à la queue de conversion avec qualité {target_quality}")
+        print(f"{added_count} fichiers ajoutés à la queue de conversion avec qualité {target_quality}")
     
     def on_remove_from_queue(self, button):
         """Supprimer les éléments sélectionnés de la queue"""
@@ -839,7 +839,7 @@ Qualités disponibles:
             added_count += 1
         
         self._update_stats()
-        print(f"✅ {added_count} fichiers ajoutés à la queue de conversion avec qualité {target_quality}")
+        print(f"{added_count} fichiers ajoutés à la queue de conversion avec qualité {target_quality}")
     
     def on_remove_from_queue(self, button):
         """Supprimer les éléments sélectionnés de la queue"""
@@ -907,12 +907,12 @@ Qualités disponibles:
     
     def _on_job_completed(self, job):
         """Callback: job terminé"""
-        GLib.idle_add(self._update_job_in_queue, job, "✅ " + job.status.value, "100%")
+        GLib.idle_add(self._update_job_in_queue, job, job.status.value, "100%")
         GLib.idle_add(self._update_stats)
     
     def _on_job_error(self, job, error_message):
         """Callback: erreur de job"""
-        GLib.idle_add(self._update_job_in_queue, job, "❌ " + job.status.value, "Erreur")
+        GLib.idle_add(self._update_job_in_queue, job, job.status.value, "Erreur")
         GLib.idle_add(self._update_stats)
     
     def _on_queue_finished(self):

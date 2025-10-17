@@ -1,0 +1,348 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nonotags - Gestionnaire de métadonnées MP3 &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=e6b791cb"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="Installation de Nonotags" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_services.html">API Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Nonotags - Gestionnaire de métadonnées MP3</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="nonotags-gestionnaire-de-metadonnees-mp3">
+<h1>Nonotags - Gestionnaire de métadonnées MP3<a class="headerlink" href="#nonotags-gestionnaire-de-metadonnees-mp3" title="Lien vers cette rubrique"></a></h1>
+<p><strong>Nonotags</strong> est une application GTK3 pour la gestion et correction automatique des métadonnées de fichiers MP3.
+Elle offre une interface utilisateur moderne pour importer, corriger et synchroniser les métadonnées musicales.</p>
+<section id="fonctionnalites-principales">
+<h2>Fonctionnalités principales<a class="headerlink" href="#fonctionnalites-principales" title="Lien vers cette rubrique"></a></h2>
+<ul class="simple">
+<li><p><strong>Import automatique</strong> : Analyse et correction des métadonnées lors de l’import</p></li>
+<li><p><strong>Correction intelligente</strong> : Règles hardcodées + exceptions utilisateur</p></li>
+<li><p><strong>Interface moderne</strong> : GTK3 avec cards responsives et lazy loading</p></li>
+<li><p><strong>Base de données</strong> : SQLite pour persister les exceptions</p></li>
+<li><p><strong>Performance optimisée</strong> : Cache LRU, traitement par lots, profiling intégré</p></li>
+</ul>
+</section>
+<section id="guide-d-utilisation">
+<h2>Guide d’utilisation<a class="headerlink" href="#guide-d-utilisation" title="Lien vers cette rubrique"></a></h2>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation de Nonotags</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#prerequis-systeme">Prérequis système</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installation-depuis-les-sources">Installation depuis les sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#dependances-principales">Dépendances principales</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#configuration-systeme">Configuration système</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#depannage">Dépannage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utilisation.html">Guide d’utilisation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utilisation.html#demarrage-rapide">Démarrage rapide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilisation.html#import-d-albums">Import d’albums</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilisation.html#correction-manuelle">Correction manuelle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilisation.html#fonctionnalites-avancees">Fonctionnalités avancées</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilisation.html#raccourcis-clavier">Raccourcis clavier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilisation.html#depannage">Dépannage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#fichiers-de-configuration">Fichiers de configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#parametres-disponibles">Paramètres disponibles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#configuration-par-defaut">Configuration par défaut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#modification-de-la-configuration">Modification de la configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#logs-et-debogage">Logs et débogage</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Lien vers cette rubrique"></a></h2>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api_core.html">API Core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_core.html#module-core.case_corrector">Case Corrector</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.case_corrector.CaseCorrectionResult"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.case_corrector.CaseCorrectionRule"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.case_corrector.CaseCorrector"><code class="docutils literal notranslate"><span class="pre">CaseCorrector</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.case_corrector.CaseException"><code class="docutils literal notranslate"><span class="pre">CaseException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.case_corrector.MetadataCaseCorrector"><code class="docutils literal notranslate"><span class="pre">MetadataCaseCorrector</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_core.html#module-core.metadata_processor">Metadata Processor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_processor.AlbumCleaningStats"><code class="docutils literal notranslate"><span class="pre">AlbumCleaningStats</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_processor.CleaningResults"><code class="docutils literal notranslate"><span class="pre">CleaningResults</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_processor.CleaningRule"><code class="docutils literal notranslate"><span class="pre">CleaningRule</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_processor.ExceptionsManager"><code class="docutils literal notranslate"><span class="pre">ExceptionsManager</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_processor.MetadataChange"><code class="docutils literal notranslate"><span class="pre">MetadataChange</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_processor.MetadataCleaner"><code class="docutils literal notranslate"><span class="pre">MetadataCleaner</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_processor.MetadataProcessor"><code class="docutils literal notranslate"><span class="pre">MetadataProcessor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_processor.RulesEngine"><code class="docutils literal notranslate"><span class="pre">RulesEngine</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_processor.SyncManager"><code class="docutils literal notranslate"><span class="pre">SyncManager</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_core.html#module-core.file_cleaner">File Cleaner</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.file_cleaner.CleaningAction"><code class="docutils literal notranslate"><span class="pre">CleaningAction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.file_cleaner.CleaningResult"><code class="docutils literal notranslate"><span class="pre">CleaningResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.file_cleaner.CleaningStats"><code class="docutils literal notranslate"><span class="pre">CleaningStats</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.file_cleaner.FileCleaner"><code class="docutils literal notranslate"><span class="pre">FileCleaner</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_core.html#module-core.file_renamer">File Renamer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.file_renamer.AlbumRenamingResult"><code class="docutils literal notranslate"><span class="pre">AlbumRenamingResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.file_renamer.FileRenamer"><code class="docutils literal notranslate"><span class="pre">FileRenamer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.file_renamer.RenamingResult"><code class="docutils literal notranslate"><span class="pre">RenamingResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.file_renamer.RenamingRule"><code class="docutils literal notranslate"><span class="pre">RenamingRule</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_core.html#module-core.metadata_formatter">Metadata Formatter</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_formatter.AlbumFormattingResult"><code class="docutils literal notranslate"><span class="pre">AlbumFormattingResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_formatter.FormattingResult"><code class="docutils literal notranslate"><span class="pre">FormattingResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_formatter.FormattingRule"><code class="docutils literal notranslate"><span class="pre">FormattingRule</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_formatter.MetadataFormatter"><code class="docutils literal notranslate"><span class="pre">MetadataFormatter</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.metadata_formatter.MetadataProcessor"><code class="docutils literal notranslate"><span class="pre">MetadataProcessor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_core.html#module-core.tag_synchronizer">Tag Synchronizer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.tag_synchronizer.AlbumSynchronizationResult"><code class="docutils literal notranslate"><span class="pre">AlbumSynchronizationResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.tag_synchronizer.CoverAssociationResult"><code class="docutils literal notranslate"><span class="pre">CoverAssociationResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.tag_synchronizer.SynchronizationAction"><code class="docutils literal notranslate"><span class="pre">SynchronizationAction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.tag_synchronizer.SynchronizationResult"><code class="docutils literal notranslate"><span class="pre">SynchronizationResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_core.html#core.tag_synchronizer.TagSynchronizer"><code class="docutils literal notranslate"><span class="pre">TagSynchronizer</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_services.html">API Services</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_services.html#module-services.music_scanner">Music Scanner</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_services.html#services.music_scanner.MusicScanner"><code class="docutils literal notranslate"><span class="pre">MusicScanner</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_services.html#module-services.audio_player">Audio Player</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_services.html#services.audio_player.AudioPlayer"><code class="docutils literal notranslate"><span class="pre">AudioPlayer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_services.html#services.audio_player.PlayerState"><code class="docutils literal notranslate"><span class="pre">PlayerState</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_services.html#module-services.cover_search">Cover Search</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_services.html#services.cover_search.CoverResult"><code class="docutils literal notranslate"><span class="pre">CoverResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_services.html#services.cover_search.CoverSearchError"><code class="docutils literal notranslate"><span class="pre">CoverSearchError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_services.html#services.cover_search.CoverSearchService"><code class="docutils literal notranslate"><span class="pre">CoverSearchService</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_ui.html">API UI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_ui.html#module-ui.views.main_window">Main Window</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_ui.html#ui.views.main_window.NonotagsApp"><code class="docutils literal notranslate"><span class="pre">NonotagsApp</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_ui.html#module-ui.processing_orchestrator">Processing Orchestrator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_ui.html#ui.processing_orchestrator.ProcessingOrchestrator"><code class="docutils literal notranslate"><span class="pre">ProcessingOrchestrator</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_ui.html#ui.processing_orchestrator.ProcessingState"><code class="docutils literal notranslate"><span class="pre">ProcessingState</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_ui.html#ui.processing_orchestrator.ProcessingStep"><code class="docutils literal notranslate"><span class="pre">ProcessingStep</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_ui.html#module-ui.startup_window">Startup Window</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_ui.html#ui.startup_window.StartupWindow"><code class="docutils literal notranslate"><span class="pre">StartupWindow</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_ui.html#components">Components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_ui.html#module-ui.components.album_card">Album Card</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_ui.html#module-ui.models.album_model">Models</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_support.html">API Support</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_support.html#module-support.config_manager">Config Manager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.config_manager.APIConfig"><code class="docutils literal notranslate"><span class="pre">APIConfig</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.config_manager.ConfigManager"><code class="docutils literal notranslate"><span class="pre">ConfigManager</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.config_manager.LoggingConfig"><code class="docutils literal notranslate"><span class="pre">LoggingConfig</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.config_manager.PathsConfig"><code class="docutils literal notranslate"><span class="pre">PathsConfig</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.config_manager.ProcessingConfig"><code class="docutils literal notranslate"><span class="pre">ProcessingConfig</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.config_manager.UIConfig"><code class="docutils literal notranslate"><span class="pre">UIConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_support.html#module-support.logger">Logger</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.logger.AppLogger"><code class="docutils literal notranslate"><span class="pre">AppLogger</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.logger.get_logger"><code class="docutils literal notranslate"><span class="pre">get_logger()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_support.html#module-support.state_manager">State Manager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.state_manager.AlbumState"><code class="docutils literal notranslate"><span class="pre">AlbumState</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.state_manager.ApplicationState"><code class="docutils literal notranslate"><span class="pre">ApplicationState</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.state_manager.ImportStatus"><code class="docutils literal notranslate"><span class="pre">ImportStatus</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.state_manager.ImportTask"><code class="docutils literal notranslate"><span class="pre">ImportTask</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.state_manager.StateManager"><code class="docutils literal notranslate"><span class="pre">StateManager</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_support.html#module-support.validator">Validator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.validator.FileValidator"><code class="docutils literal notranslate"><span class="pre">FileValidator</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.validator.MetadataValidator"><code class="docutils literal notranslate"><span class="pre">MetadataValidator</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.validator.UserInputValidator"><code class="docutils literal notranslate"><span class="pre">UserInputValidator</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.validator.ValidationResult"><code class="docutils literal notranslate"><span class="pre">ValidationResult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.validator.Validator"><code class="docutils literal notranslate"><span class="pre">Validator</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_support.html#module-support.cache">Cache</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.cache.LRUCache"><code class="docutils literal notranslate"><span class="pre">LRUCache</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.cache.cached_metadata"><code class="docutils literal notranslate"><span class="pre">cached_metadata()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_support.html#module-support.thread_pool">Thread Pool</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.thread_pool.LimitedThreadPool"><code class="docutils literal notranslate"><span class="pre">LimitedThreadPool</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.thread_pool.ThreadPoolConfig"><code class="docutils literal notranslate"><span class="pre">ThreadPoolConfig</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.thread_pool.get_thread_pool"><code class="docutils literal notranslate"><span class="pre">get_thread_pool()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_support.html#module-support.error_handler">Error Handler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.error_handler.ErrorHandler"><code class="docutils literal notranslate"><span class="pre">ErrorHandler</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api_support.html#support.error_handler.get_error_handler"><code class="docutils literal notranslate"><span class="pre">get_error_handler()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_database.html">API Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_database.html#module-database.db_manager">Database Manager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_database.html#database.db_manager.DatabaseManager"><code class="docutils literal notranslate"><span class="pre">DatabaseManager</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_database.html#module-database.models">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api_database.html#database.models.CaseExceptionModel"><code class="docutils literal notranslate"><span class="pre">CaseExceptionModel</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="modules">
+<h2>Modules<a class="headerlink" href="#modules" title="Lien vers cette rubrique"></a></h2>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core.html">core package</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="indices-et-tables">
+<h1>Indices et tables<a class="headerlink" href="#indices-et-tables" title="Lien vers cette rubrique"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Index du module</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Page de recherche</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation de Nonotags" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -48,8 +48,8 @@ echo -e "${CYAN}Gestionnaire de métadonnées MP3 moderne pour Fedora${NC}"
 echo "================================================================="
 
 # Vérification du répertoire de travail
-if [ ! -f "launch_gtk3.py" ]; then
-    print_error "Fichier launch_gtk3.py non trouvé!"
+if [ ! -f "main.py" ]; then
+    print_error "Fichier main.py non trouvé!"
     print_info "Assurez-vous d'être dans le répertoire Nonotags"
     print_info "Usage: cd /chemin/vers/Nonotags && ./run_nonotags.sh"
     exit 1
@@ -162,7 +162,7 @@ import sys
 import os
 sys.path.insert(0, '.')
 try:
-    from ui.main_app import NonotagsApp
+    from ui.views.main_window import NonotagsApp
     print('Modules OK')
 except Exception as e:
     print(f'Erreur: {e}')
@@ -196,7 +196,7 @@ print_info "Logs disponibles dans: $LOG_FILE"
     echo "" >> "$LOG_FILE"
     
     # Lancement effectif
-    python3 launch_gtk3.py 2>&1 | tee -a "$LOG_FILE"
+    python3 main.py 2>&1 | tee -a "$LOG_FILE"
     
 } || {
     EXIT_CODE=$?

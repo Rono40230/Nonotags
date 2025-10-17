@@ -1,0 +1,760 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core.metadata_formatter &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/translations.js?v=e6b791cb"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_services.html">API Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Code du module</a></li>
+      <li class="breadcrumb-item active">core.metadata_formatter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Code source de core.metadata_formatter</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module 4 - Formatage des métadonnées (GROUPE 4)</span>
+<span class="sd">Système de formatage et normalisation des métadonnées MP3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="c1"># Imports des modules de support</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">support.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">AppLogger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">support.config_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">support.state_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">support.validator</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetadataValidator</span><span class="p">,</span> <span class="n">FileValidator</span><span class="p">,</span> <span class="n">ValidationResult</span>
+
+<span class="c1"># Import du gestionnaire de base de données</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">database.db_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatabaseManager</span>
+
+
+<div class="viewcode-block" id="FormattingRule">
+<a class="viewcode-back" href="../../core.html#core.metadata_formatter.FormattingRule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FormattingRule</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Énumération des règles de formatage.&quot;&quot;&quot;</span>
+    <span class="n">COPY_ARTIST_TO_ALBUMARTIST</span> <span class="o">=</span> <span class="s2">&quot;copy_artist_to_albumartist&quot;</span>     <span class="c1"># Copie artiste → interprète</span>
+    <span class="n">FORMAT_TRACK_NUMBERS</span> <span class="o">=</span> <span class="s2">&quot;format_track_numbers&quot;</span>                 <span class="c1"># Formatage numéros de piste</span>
+    <span class="n">HANDLE_COMPILATION_YEAR</span> <span class="o">=</span> <span class="s2">&quot;handle_compilation_year&quot;</span>           <span class="c1"># Gestion année compilation</span>
+    <span class="n">NORMALIZE_GENRE</span> <span class="o">=</span> <span class="s2">&quot;normalize_genre&quot;</span>                           <span class="c1"># Normalisation des genres</span>
+    <span class="n">FORMAT_DURATION</span> <span class="o">=</span> <span class="s2">&quot;format_duration&quot;</span>                           <span class="c1"># Formatage durée</span>
+    <span class="n">VALIDATE_REQUIRED_FIELDS</span> <span class="o">=</span> <span class="s2">&quot;validate_required_fields&quot;</span>         <span class="c1"># Validation champs requis</span></div>
+
+
+
+<div class="viewcode-block" id="FormattingResult">
+<a class="viewcode-back" href="../../core.html#core.metadata_formatter.FormattingResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FormattingResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Résultat d&#39;une opération de formatage.&quot;&quot;&quot;</span>
+    <span class="n">original_value</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="n">formatted_value</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="n">field_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">rules_applied</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">FormattingRule</span><span class="p">]</span>
+    <span class="n">changed</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">warnings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="AlbumFormattingResult">
+<a class="viewcode-back" href="../../core.html#core.metadata_formatter.AlbumFormattingResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AlbumFormattingResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Résultat du formatage d&#39;un album complet.&quot;&quot;&quot;</span>
+    <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">files_processed</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">total_changes</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">field_changes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+    <span class="n">warnings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">errors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">processing_time</span><span class="p">:</span> <span class="nb">float</span></div>
+
+
+
+<div class="viewcode-block" id="MetadataFormatter">
+<a class="viewcode-back" href="../../core.html#core.metadata_formatter.MetadataFormatter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MetadataFormatter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gestionnaire de formatage des métadonnées MP3.</span>
+<span class="sd">    </span>
+<span class="sd">    Fonctionnalités :</span>
+<span class="sd">    - Copie artiste vers champ interprète (albumartist)</span>
+<span class="sd">    - Formatage des numéros de piste (01, 02, 03...)</span>
+<span class="sd">    - Gestion des années de compilation</span>
+<span class="sd">    - Normalisation des genres</span>
+<span class="sd">    - Validation des champs requis</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise le formateur de métadonnées.&quot;&quot;&quot;</span>
+        <span class="c1"># Initialisation des modules de support</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">support.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">main_logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_manager</span> <span class="o">=</span> <span class="n">ConfigManager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span> <span class="o">=</span> <span class="n">StateManager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validator</span> <span class="o">=</span> <span class="n">MetadataValidator</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_validator</span> <span class="o">=</span> <span class="n">FileValidator</span><span class="p">()</span>  <span class="c1"># ✅ Pour validate_directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_manager</span> <span class="o">=</span> <span class="n">DatabaseManager</span><span class="p">()</span>
+        
+        <span class="c1"># Configuration du module</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processing_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_manager</span><span class="o">.</span><span class="n">processing</span>
+        
+        <span class="c1"># Genres prédéfinis standardisés</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">standard_genres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_standard_genres</span><span class="p">()</span>
+        
+        <span class="c1"># Configuration du formatage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">formatting_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_formatting_config</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;MetadataFormatter initialisé avec succès&quot;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="MetadataFormatter.format_album_metadata">
+<a class="viewcode-back" href="../../core.html#core.metadata_formatter.MetadataFormatter.format_album_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_album_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlbumFormattingResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Formate les métadonnées pour un album complet.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_path: Chemin vers le dossier de l&#39;album</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Résultat du formatage de l&#39;album</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">support.honest_logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">honest_logger</span>
+        
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">honest_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 GROUPE 4 - Début formatage métadonnées album : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Début formatage métadonnées album : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Mise à jour du statut</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">update_album_processing_status</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="s2">&quot;formatting_metadata&quot;</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Validation du répertoire</span>
+            <span class="n">validation_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_validator</span><span class="o">.</span><span class="n">validate_directory</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">validation_result</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Répertoire invalide : </span><span class="si">{</span><span class="n">validation_result</span><span class="o">.</span><span class="n">errors</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_error_result</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="n">validation_result</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+            
+            <span class="c1"># Recherche des fichiers MP3</span>
+            <span class="n">mp3_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_mp3_files</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">mp3_files</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aucun fichier MP3 trouvé dans </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_empty_result</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            
+            <span class="c1"># Extraction des informations globales de l&#39;album</span>
+            <span class="n">album_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_album_info</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">)</span>
+            
+            <span class="c1"># Formatage de chaque fichier</span>
+            <span class="n">total_changes</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">field_changes</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="k">for</span> <span class="n">mp3_file</span> <span class="ow">in</span> <span class="n">mp3_files</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># Validation du fichier MP3</span>
+                    <span class="n">file_validation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">validate_mp3_file</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">file_validation</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fichier MP3 invalide ignoré : </span><span class="si">{</span><span class="n">mp3_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fichier invalide : </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    
+                    <span class="c1"># Formatage du fichier</span>
+                    <span class="n">file_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_file_metadata</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">,</span> <span class="n">album_info</span><span class="p">)</span>
+                    
+                    <span class="c1"># Compilation des résultats</span>
+                    <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">file_results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">changed</span><span class="p">:</span>
+                            <span class="n">total_changes</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="n">field_changes</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">field_changes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                        
+                        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">warnings</span><span class="p">:</span>
+                            <span class="n">warnings</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">warnings</span><span class="p">)</span>
+                
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Erreur formatage </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+                    <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            
+            <span class="c1"># Calcul du temps de traitement</span>
+            <span class="n">processing_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+            
+            <span class="c1"># Création du résultat</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">AlbumFormattingResult</span><span class="p">(</span>
+                <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+                <span class="n">files_processed</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">([</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">errors</span> <span class="k">if</span> <span class="s2">&quot;invalide&quot;</span> <span class="ow">in</span> <span class="n">e</span><span class="p">]),</span>
+                <span class="n">total_changes</span><span class="o">=</span><span class="n">total_changes</span><span class="p">,</span>
+                <span class="n">field_changes</span><span class="o">=</span><span class="n">field_changes</span><span class="p">,</span>
+                <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">,</span>
+                <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span>
+                <span class="n">processing_time</span><span class="o">=</span><span class="n">processing_time</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Mise à jour du statut</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">update_album_processing_status</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="s2">&quot;metadata_formatting_completed&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Sauvegarde en base de données</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_save_formatting_history</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Formatage terminé : </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">files_processed</span><span class="si">}</span><span class="s2"> fichiers, </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">total_changes</span><span class="si">}</span><span class="s2"> changements&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur lors du formatage : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">update_album_processing_status</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="s2">&quot;metadata_formatting_error&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_error_result</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)])</span></div>
+
+    
+<div class="viewcode-block" id="MetadataFormatter.format_metadata_field">
+<a class="viewcode-back" href="../../core.html#core.metadata_formatter.MetadataFormatter.format_metadata_field">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_metadata_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">field_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">metadata_context</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FormattingResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Formate un champ de métadonnées spécifique.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            field_name: Nom du champ (TIT2, TALB, TPE1, etc.)</span>
+<span class="sd">            field_value: Valeur actuelle du champ</span>
+<span class="sd">            metadata_context: Contexte des autres métadonnées</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Résultat du formatage du champ</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">metadata_context</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">metadata_context</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="n">original_value</span> <span class="o">=</span> <span class="n">field_value</span>
+        <span class="n">formatted_value</span> <span class="o">=</span> <span class="n">field_value</span>
+        <span class="n">rules_applied</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Application des règles selon le type de champ</span>
+        <span class="k">if</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s2">&quot;TRCK&quot;</span><span class="p">:</span>  <span class="c1"># Numéro de piste</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🎵 [GROUPE 4] Application RÈGLE 14 sur piste TRCK: &#39;</span><span class="si">{</span><span class="n">field_value</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="n">formatted_value</span><span class="p">,</span> <span class="n">track_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_track_number</span><span class="p">(</span><span class="n">field_value</span><span class="p">)</span>
+            <span class="n">rules_applied</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">track_rules</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">track_rules</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [GROUPE 4] RÈGLE 14 appliquée avec succès&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ [GROUPE 4] RÈGLE 14 non appliquée&quot;</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s2">&quot;TPE2&quot;</span><span class="p">:</span>  <span class="c1"># Artiste de l&#39;album (interprète)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;👤 [GROUPE 4] Application RÈGLE 13 sur albumartist TPE2: &#39;</span><span class="si">{</span><span class="n">field_value</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="n">formatted_value</span><span class="p">,</span> <span class="n">artist_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_artist_to_albumartist</span><span class="p">(</span>
+                <span class="n">field_value</span><span class="p">,</span> <span class="n">metadata_context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TPE1&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">rules_applied</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">artist_rules</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">artist_rules</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [GROUPE 4] RÈGLE 13 appliquée avec succès&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ℹ️ [GROUPE 4] RÈGLE 13 non appliquée (conditions non remplies)&quot;</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s2">&quot;TYER&quot;</span> <span class="ow">or</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s2">&quot;TDRC&quot;</span><span class="p">:</span>  <span class="c1"># Année</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📅 [GROUPE 4] Application RÈGLE 21 sur année </span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2">: &#39;</span><span class="si">{</span><span class="n">field_value</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="n">formatted_value</span><span class="p">,</span> <span class="n">year_rules</span><span class="p">,</span> <span class="n">year_warnings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_compilation_year</span><span class="p">(</span>
+                <span class="n">field_value</span><span class="p">,</span> <span class="n">metadata_context</span>
+            <span class="p">)</span>
+            <span class="n">rules_applied</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">year_rules</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">year_warnings</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">year_rules</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [GROUPE 4] RÈGLE 21 appliquée avec succès&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ℹ️ [GROUPE 4] RÈGLE 21 non appliquée (année standard)&quot;</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s2">&quot;TCON&quot;</span><span class="p">:</span>  <span class="c1"># Genre</span>
+            <span class="n">formatted_value</span><span class="p">,</span> <span class="n">genre_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_genre</span><span class="p">(</span><span class="n">field_value</span><span class="p">)</span>
+            <span class="n">rules_applied</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">genre_rules</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s2">&quot;TLEN&quot;</span><span class="p">:</span>  <span class="c1"># Durée</span>
+            <span class="n">formatted_value</span><span class="p">,</span> <span class="n">duration_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_duration</span><span class="p">(</span><span class="n">field_value</span><span class="p">)</span>
+            <span class="n">rules_applied</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">duration_rules</span><span class="p">)</span>
+        
+        <span class="c1"># Validation des champs requis</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_required_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">):</span>
+            <span class="n">validation_rules</span><span class="p">,</span> <span class="n">validation_warnings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_required_field</span><span class="p">(</span>
+                <span class="n">field_name</span><span class="p">,</span> <span class="n">formatted_value</span>
+            <span class="p">)</span>
+            <span class="n">rules_applied</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">validation_rules</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">validation_warnings</span><span class="p">)</span>
+        
+        <span class="n">changed</span> <span class="o">=</span> <span class="n">original_value</span> <span class="o">!=</span> <span class="n">formatted_value</span>
+        
+        <span class="k">return</span> <span class="n">FormattingResult</span><span class="p">(</span>
+            <span class="n">original_value</span><span class="o">=</span><span class="n">original_value</span><span class="p">,</span>
+            <span class="n">formatted_value</span><span class="o">=</span><span class="n">formatted_value</span><span class="p">,</span>
+            <span class="n">field_name</span><span class="o">=</span><span class="n">field_name</span><span class="p">,</span>
+            <span class="n">rules_applied</span><span class="o">=</span><span class="n">rules_applied</span><span class="p">,</span>
+            <span class="n">changed</span><span class="o">=</span><span class="n">changed</span><span class="p">,</span>
+            <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span> <span class="k">if</span> <span class="n">warnings</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="MetadataFormatter.preview_formatting_changes">
+<a class="viewcode-back" href="../../core.html#core.metadata_formatter.MetadataFormatter.preview_formatting_changes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preview_formatting_changes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Aperçu des changements de formatage sans les appliquer.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_path: Chemin vers l&#39;album</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict avec aperçu des changements par fichier</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aperçu formatage : </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="n">mp3_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_mp3_files</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+        <span class="n">preview_results</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># Extraction des informations globales</span>
+        <span class="n">album_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_album_info</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">mp3_file</span> <span class="ow">in</span> <span class="n">mp3_files</span><span class="p">:</span>
+            <span class="n">file_preview</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="c1"># Simulation des métadonnées à formater</span>
+            <span class="n">metadata_fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_metadata_fields_for_preview</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_value</span> <span class="ow">in</span> <span class="n">metadata_fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">field_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_metadata_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">field_value</span><span class="p">,</span> <span class="n">metadata_fields</span><span class="p">)</span>
+                    
+                    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">changed</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">warnings</span><span class="p">:</span>
+                        <span class="n">preview_item</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="n">field_name</span><span class="p">,</span>
+                            <span class="s1">&#39;original&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">original_value</span><span class="p">,</span>
+                            <span class="s1">&#39;formatted&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">formatted_value</span><span class="p">,</span>
+                            <span class="s1">&#39;rules&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">rule</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">rules_applied</span><span class="p">],</span>
+                            <span class="s1">&#39;changed&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">changed</span>
+                        <span class="p">}</span>
+                        
+                        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">warnings</span><span class="p">:</span>
+                            <span class="n">preview_item</span><span class="p">[</span><span class="s1">&#39;warnings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">warnings</span>
+                        
+                        <span class="n">file_preview</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">preview_item</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">file_preview</span><span class="p">:</span>
+                <span class="n">preview_results</span><span class="p">[</span><span class="n">mp3_file</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_preview</span>
+        
+        <span class="k">return</span> <span class="n">preview_results</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_format_track_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">track_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">FormattingRule</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Formate le numéro de piste (01, 02, 03...).&quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">track_value</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 14] Valeur piste vide ou None - Pas de formatage&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">track_value</span><span class="p">,</span> <span class="p">[]</span>
+        
+        <span class="c1"># Extraction du numéro de piste</span>
+        <span class="n">track_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">track_value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📝 [RÈGLE 14] Piste convertie en string: &#39;</span><span class="si">{</span><span class="n">track_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Pattern pour extraire le numéro de piste (ex: &quot;1/12&quot; → &quot;1&quot;)</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^(\d+)&#39;</span><span class="p">,</span> <span class="n">track_str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 14] Pattern numérique non trouvé dans: &#39;</span><span class="si">{</span><span class="n">track_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">track_value</span><span class="p">,</span> <span class="p">[]</span>
+        
+        <span class="n">track_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔢 [RÈGLE 14] Numéro extrait: </span><span class="si">{</span><span class="n">track_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Formatage avec zéro initial si nécessaire</span>
+        <span class="n">zero_padding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatting_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;track_zero_padding&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚙️ [RÈGLE 14] Zero padding activé: </span><span class="si">{</span><span class="n">zero_padding</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">zero_padding</span><span class="p">:</span>
+            <span class="n">formatted_track</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">track_number</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [RÈGLE 14] Formatage avec zéro: &#39;</span><span class="si">{</span><span class="n">track_str</span><span class="si">}</span><span class="s2">&#39; → &#39;</span><span class="si">{</span><span class="n">formatted_track</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">formatted_track</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">track_number</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [RÈGLE 14] Formatage simple: &#39;</span><span class="si">{</span><span class="n">track_str</span><span class="si">}</span><span class="s2">&#39; → &#39;</span><span class="si">{</span><span class="n">formatted_track</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Préservation du total si présent (ex: &quot;01/12&quot;)</span>
+        <span class="k">if</span> <span class="s1">&#39;/&#39;</span> <span class="ow">in</span> <span class="n">track_str</span><span class="p">:</span>
+            <span class="n">total_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;/(\d+)&#39;</span><span class="p">,</span> <span class="n">track_str</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">total_match</span><span class="p">:</span>
+                <span class="n">total_tracks</span> <span class="o">=</span> <span class="n">total_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">formatted_track</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">total_tracks</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 [RÈGLE 14] Total préservé: &#39;</span><span class="si">{</span><span class="n">formatted_track</span><span class="si">}</span><span class="s2">&#39; (total: </span><span class="si">{</span><span class="n">total_tracks</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ [RÈGLE 14] Slash détecté mais total non extrait de: &#39;</span><span class="si">{</span><span class="n">track_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">formatted_track</span><span class="p">,</span> <span class="p">[</span><span class="n">FormattingRule</span><span class="o">.</span><span class="n">FORMAT_TRACK_NUMBERS</span><span class="p">]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_copy_artist_to_albumartist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">albumartist_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">artist_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">FormattingRule</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Copie l&#39;artiste vers le champ interprète si vide.&quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="n">albumartist_value</span> <span class="ow">and</span> <span class="n">albumartist_value</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="c1"># Le champ interprète existe déjà</span>
+            <span class="k">return</span> <span class="n">albumartist_value</span><span class="p">,</span> <span class="p">[]</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">artist_value</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">artist_value</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="c1"># Pas d&#39;artiste source</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 13] Artiste source vide ou None: &#39;</span><span class="si">{</span><span class="n">artist_value</span><span class="si">}</span><span class="s2">&#39; - Impossible de copier&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">albumartist_value</span><span class="p">,</span> <span class="p">[]</span>
+        
+        <span class="c1"># Copie de l&#39;artiste vers interprète</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">artist_value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="p">[</span><span class="n">FormattingRule</span><span class="o">.</span><span class="n">COPY_ARTIST_TO_ALBUMARTIST</span><span class="p">]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_compilation_year</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">year_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">metadata_context</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">FormattingRule</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gère les années de compilation.&quot;&quot;&quot;</span>
+        <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">year_value</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 21] Valeur année vide ou None - Pas de traitement&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">year_value</span><span class="p">,</span> <span class="p">[],</span> <span class="n">warnings</span>
+        
+        <span class="n">year_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">year_value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📝 [RÈGLE 21] Année convertie: &#39;</span><span class="si">{</span><span class="n">year_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Détection d&#39;une compilation (plusieurs années)</span>
+        <span class="n">year_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;(\d</span><span class="si">{4}</span><span class="s1">)&#39;</span>
+        <span class="n">years</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">year_pattern</span><span class="p">,</span> <span class="n">year_str</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">years</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Compilation détectée</span>
+            <span class="n">min_year</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">years</span><span class="p">)</span>
+            <span class="n">max_year</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">years</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">min_year</span> <span class="o">!=</span> <span class="n">max_year</span><span class="p">:</span>
+                <span class="c1"># Format compilation : &quot;1995-2000&quot;</span>
+                <span class="n">formatted_year</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">min_year</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">max_year</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">warning_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Compilation détectée : années </span><span class="si">{</span><span class="n">min_year</span><span class="si">}</span><span class="s2"> à </span><span class="si">{</span><span class="n">max_year</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">warning_msg</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">formatted_year</span><span class="p">,</span> <span class="p">[</span><span class="n">FormattingRule</span><span class="o">.</span><span class="n">HANDLE_COMPILATION_YEAR</span><span class="p">],</span> <span class="n">warnings</span>
+        
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">years</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Année unique, validation de la plage</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">years</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">current_year</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">year</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📅 [RÈGLE 21] Validation année unique: </span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s2"> (actuelle: </span><span class="si">{</span><span class="n">current_year</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">year</span> <span class="o">&lt;</span> <span class="mi">1900</span> <span class="ow">or</span> <span class="n">year</span> <span class="o">&gt;</span> <span class="n">current_year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">warning_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Année suspecte : </span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">warning_msg</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ [RÈGLE 21] </span><span class="si">{</span><span class="n">warning_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [RÈGLE 21] Année valide: </span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">years</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[],</span> <span class="n">warnings</span>
+        
+        <span class="c1"># Année non détectable</span>
+        <span class="n">warning_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Format d&#39;année non reconnu : </span><span class="si">{</span><span class="n">year_str</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">warning_msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ [RÈGLE 21] </span><span class="si">{</span><span class="n">warning_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">year_value</span><span class="p">,</span> <span class="p">[],</span> <span class="n">warnings</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_genre</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">genre_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">FormattingRule</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalise le genre musical.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">genre_value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">genre_value</span><span class="p">,</span> <span class="p">[]</span>
+        
+        <span class="n">genre_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">genre_value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        
+        <span class="c1"># Suppression des parenthèses de numérotation ID3v1 (ex: &quot;(13)&quot; → &quot;Pop&quot;)</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^\(\d+\)$&#39;</span><span class="p">,</span> <span class="n">genre_str</span><span class="p">):</span>
+            <span class="c1"># Genre numérique ID3v1, conversion nécessaire</span>
+            <span class="n">genre_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">genre_str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;()&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">genre_number</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">standard_genres</span><span class="p">):</span>
+                <span class="n">normalized_genre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">standard_genres</span><span class="p">[</span><span class="n">genre_number</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">normalized_genre</span><span class="p">,</span> <span class="p">[</span><span class="n">FormattingRule</span><span class="o">.</span><span class="n">NORMALIZE_GENRE</span><span class="p">]</span>
+        
+        <span class="c1"># Nettoyage du genre textuel</span>
+        <span class="n">genre_clean</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^[\(\[]?\d+[\)\]]?\s*&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">genre_str</span><span class="p">)</span>  <span class="c1"># Suppression numéros</span>
+        <span class="n">genre_clean</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s&amp;/+-]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">genre_clean</span><span class="p">)</span>  <span class="c1"># Suppression caractères spéciaux (garde /, &amp;, +, -)</span>
+        <span class="n">genre_clean</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">genre_clean</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>  <span class="c1"># Normalisation espaces</span>
+        
+        <span class="c1"># Capitalisation</span>
+        <span class="k">if</span> <span class="n">genre_clean</span><span class="p">:</span>
+            <span class="n">genre_clean</span> <span class="o">=</span> <span class="n">genre_clean</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+            
+            <span class="c1"># Recherche dans les genres standards pour normalisation</span>
+            <span class="n">genre_lower</span> <span class="o">=</span> <span class="n">genre_clean</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">standard_genre</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">standard_genres</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">standard_genre</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">genre_lower</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">standard_genre</span><span class="p">,</span> <span class="p">[</span><span class="n">FormattingRule</span><span class="o">.</span><span class="n">NORMALIZE_GENRE</span><span class="p">]</span>
+            
+            <span class="k">return</span> <span class="n">genre_clean</span><span class="p">,</span> <span class="p">[</span><span class="n">FormattingRule</span><span class="o">.</span><span class="n">NORMALIZE_GENRE</span><span class="p">]</span> <span class="k">if</span> <span class="n">genre_clean</span> <span class="o">!=</span> <span class="n">genre_str</span> <span class="k">else</span> <span class="p">[]</span>
+        
+        <span class="k">return</span> <span class="n">genre_value</span><span class="p">,</span> <span class="p">[]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_format_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">FormattingRule</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Formate la durée (généralement pas modifiée, juste validée).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">duration_value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">duration_value</span><span class="p">,</span> <span class="p">[]</span>
+        
+        <span class="c1"># La durée est généralement en millisecondes dans TLEN</span>
+        <span class="c1"># On la laisse telle quelle mais on peut la valider</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">duration_ms</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">duration_value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">duration_ms</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[</span><span class="n">FormattingRule</span><span class="o">.</span><span class="n">FORMAT_DURATION</span><span class="p">]</span>  <span class="c1"># Durée invalide</span>
+            <span class="k">return</span> <span class="n">duration_value</span><span class="p">,</span> <span class="p">[]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">duration_value</span><span class="p">,</span> <span class="p">[]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_required_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">field_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">FormattingRule</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Valide les champs requis.&quot;&quot;&quot;</span>
+        <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_required_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">field_value</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">field_value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">field_value</span><span class="o">.</span><span class="n">strip</span><span class="p">()):</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Champ requis manquant : </span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">FormattingRule</span><span class="o">.</span><span class="n">VALIDATE_REQUIRED_FIELDS</span><span class="p">],</span> <span class="n">warnings</span>
+        
+        <span class="k">return</span> <span class="p">[],</span> <span class="n">warnings</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_required_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Détermine si un champ est requis.&quot;&quot;&quot;</span>
+        <span class="n">required_fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatting_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;required_fields&#39;</span><span class="p">,</span> <span class="p">[</span>
+            <span class="s1">&#39;TIT2&#39;</span><span class="p">,</span>  <span class="c1"># Titre</span>
+            <span class="s1">&#39;TPE1&#39;</span><span class="p">,</span>  <span class="c1"># Artiste</span>
+            <span class="s1">&#39;TALB&#39;</span><span class="p">,</span>  <span class="c1"># Album</span>
+            <span class="s1">&#39;TRCK&#39;</span><span class="p">,</span>  <span class="c1"># Numéro de piste</span>
+        <span class="p">])</span>
+        <span class="k">return</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">required_fields</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_mp3_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Trouve tous les fichiers MP3 dans un répertoire.&quot;&quot;&quot;</span>
+        <span class="n">mp3_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.mp3&quot;</span><span class="p">):</span>
+                <span class="n">mp3_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file_path</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur recherche fichiers MP3 : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_album_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mp3_files</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extrait les informations globales de l&#39;album.&quot;&quot;&quot;</span>
+        <span class="c1"># Placeholder pour l&#39;extraction des informations d&#39;album</span>
+        <span class="c1"># En réalité, on lirait les métadonnées avec mutagen</span>
+        <span class="n">album_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;artist&#39;</span><span class="p">:</span> <span class="s1">&#39;Sample Artist&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;album&#39;</span><span class="p">:</span> <span class="s1">&#39;Sample Album&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;year&#39;</span><span class="p">:</span> <span class="s1">&#39;2023&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;total_tracks&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">),</span>
+            <span class="s1">&#39;is_compilation&#39;</span><span class="p">:</span> <span class="kc">False</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">album_info</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_format_file_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mp3_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">album_info</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FormattingResult</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Formate les métadonnées d&#39;un fichier MP3.&quot;&quot;&quot;</span>
+        <span class="c1"># Placeholder pour le formatage d&#39;un fichier</span>
+        <span class="c1"># En réalité, on utiliserait mutagen pour lire/écrire les tags</span>
+        
+        <span class="c1"># Simulation des métadonnées</span>
+        <span class="n">metadata_fields</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;TIT2&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Sample Title </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;TPE1&#39;</span><span class="p">:</span> <span class="n">album_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;artist&#39;</span><span class="p">,</span> <span class="s1">&#39;Unknown Artist&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;TPE2&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>  <span class="c1"># Interprète vide à remplir</span>
+            <span class="s1">&#39;TALB&#39;</span><span class="p">:</span> <span class="n">album_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;album&#39;</span><span class="p">,</span> <span class="s1">&#39;Unknown Album&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;TRCK&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>  <span class="c1"># Simulation numéro</span>
+            <span class="s1">&#39;TYER&#39;</span><span class="p">:</span> <span class="n">album_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;TCON&#39;</span><span class="p">:</span> <span class="s1">&#39;Rock&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_value</span> <span class="ow">in</span> <span class="n">metadata_fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_metadata_field</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">field_value</span><span class="p">,</span> <span class="n">metadata_fields</span><span class="p">)</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+        
+        <span class="k">return</span> <span class="n">results</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_metadata_fields_for_preview</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mp3_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtient les champs métadonnées pour aperçu.&quot;&quot;&quot;</span>
+        <span class="c1"># Simulation - en réalité on utiliserait mutagen</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;TIT2&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;sample title </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;TPE1&#39;</span><span class="p">:</span> <span class="s1">&#39;sample artist&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;TPE2&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>  <span class="c1"># Vide pour test copie artiste</span>
+            <span class="s1">&#39;TALB&#39;</span><span class="p">:</span> <span class="s1">&#39;sample album&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;TRCK&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span>  <span class="c1"># Test formatage</span>
+            <span class="s1">&#39;TYER&#39;</span><span class="p">:</span> <span class="s1">&#39;2023&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;TCON&#39;</span><span class="p">:</span> <span class="s1">&#39;(13)&#39;</span><span class="p">,</span>  <span class="c1"># Test normalisation genre</span>
+        <span class="p">}</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_standard_genres</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construit la liste des genres musicaux standardisés.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="s2">&quot;Blues&quot;</span><span class="p">,</span> <span class="s2">&quot;Classic Rock&quot;</span><span class="p">,</span> <span class="s2">&quot;Country&quot;</span><span class="p">,</span> <span class="s2">&quot;Dance&quot;</span><span class="p">,</span> <span class="s2">&quot;Disco&quot;</span><span class="p">,</span> <span class="s2">&quot;Funk&quot;</span><span class="p">,</span> <span class="s2">&quot;Grunge&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Hip-Hop&quot;</span><span class="p">,</span> <span class="s2">&quot;Jazz&quot;</span><span class="p">,</span> <span class="s2">&quot;Metal&quot;</span><span class="p">,</span> <span class="s2">&quot;New Age&quot;</span><span class="p">,</span> <span class="s2">&quot;Oldies&quot;</span><span class="p">,</span> <span class="s2">&quot;Other&quot;</span><span class="p">,</span> <span class="s2">&quot;Pop&quot;</span><span class="p">,</span> <span class="s2">&quot;R&amp;B&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Rap&quot;</span><span class="p">,</span> <span class="s2">&quot;Reggae&quot;</span><span class="p">,</span> <span class="s2">&quot;Rock&quot;</span><span class="p">,</span> <span class="s2">&quot;Techno&quot;</span><span class="p">,</span> <span class="s2">&quot;Industrial&quot;</span><span class="p">,</span> <span class="s2">&quot;Alternative&quot;</span><span class="p">,</span> <span class="s2">&quot;Ska&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Death Metal&quot;</span><span class="p">,</span> <span class="s2">&quot;Pranks&quot;</span><span class="p">,</span> <span class="s2">&quot;Soundtrack&quot;</span><span class="p">,</span> <span class="s2">&quot;Euro-Techno&quot;</span><span class="p">,</span> <span class="s2">&quot;Ambient&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Trip-Hop&quot;</span><span class="p">,</span> <span class="s2">&quot;Vocal&quot;</span><span class="p">,</span> <span class="s2">&quot;Jazz+Funk&quot;</span><span class="p">,</span> <span class="s2">&quot;Fusion&quot;</span><span class="p">,</span> <span class="s2">&quot;Trance&quot;</span><span class="p">,</span> <span class="s2">&quot;Classical&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Instrumental&quot;</span><span class="p">,</span> <span class="s2">&quot;Acid&quot;</span><span class="p">,</span> <span class="s2">&quot;House&quot;</span><span class="p">,</span> <span class="s2">&quot;Game&quot;</span><span class="p">,</span> <span class="s2">&quot;Sound Clip&quot;</span><span class="p">,</span> <span class="s2">&quot;Gospel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Noise&quot;</span><span class="p">,</span> <span class="s2">&quot;Alternative Rock&quot;</span><span class="p">,</span> <span class="s2">&quot;Bass&quot;</span><span class="p">,</span> <span class="s2">&quot;Soul&quot;</span><span class="p">,</span> <span class="s2">&quot;Punk&quot;</span><span class="p">,</span> <span class="s2">&quot;Space&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Meditative&quot;</span><span class="p">,</span> <span class="s2">&quot;Instrumental Pop&quot;</span><span class="p">,</span> <span class="s2">&quot;Instrumental Rock&quot;</span><span class="p">,</span> <span class="s2">&quot;Ethnic&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Gothic&quot;</span><span class="p">,</span> <span class="s2">&quot;Darkwave&quot;</span><span class="p">,</span> <span class="s2">&quot;Techno-Industrial&quot;</span><span class="p">,</span> <span class="s2">&quot;Electronic&quot;</span><span class="p">,</span> <span class="s2">&quot;Pop-Folk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Eurodance&quot;</span><span class="p">,</span> <span class="s2">&quot;Dream&quot;</span><span class="p">,</span> <span class="s2">&quot;Southern Rock&quot;</span><span class="p">,</span> <span class="s2">&quot;Comedy&quot;</span><span class="p">,</span> <span class="s2">&quot;Cult&quot;</span><span class="p">,</span> <span class="s2">&quot;Gangsta&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Top 40&quot;</span><span class="p">,</span> <span class="s2">&quot;Christian Rap&quot;</span><span class="p">,</span> <span class="s2">&quot;Pop/Funk&quot;</span><span class="p">,</span> <span class="s2">&quot;Jungle&quot;</span><span class="p">,</span> <span class="s2">&quot;Native US&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Cabaret&quot;</span><span class="p">,</span> <span class="s2">&quot;New Wave&quot;</span><span class="p">,</span> <span class="s2">&quot;Psychadelic&quot;</span><span class="p">,</span> <span class="s2">&quot;Rave&quot;</span><span class="p">,</span> <span class="s2">&quot;Showtunes&quot;</span><span class="p">,</span> <span class="s2">&quot;Trailer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Lo-Fi&quot;</span><span class="p">,</span> <span class="s2">&quot;Tribal&quot;</span><span class="p">,</span> <span class="s2">&quot;Acid Punk&quot;</span><span class="p">,</span> <span class="s2">&quot;Acid Jazz&quot;</span><span class="p">,</span> <span class="s2">&quot;Polka&quot;</span><span class="p">,</span> <span class="s2">&quot;Retro&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Musical&quot;</span><span class="p">,</span> <span class="s2">&quot;Rock &amp; Roll&quot;</span><span class="p">,</span> <span class="s2">&quot;Hard Rock&quot;</span>
+        <span class="p">]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_formatting_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Charge la configuration de formatage.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;track_zero_padding&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;required_fields&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;TIT2&#39;</span><span class="p">,</span> <span class="s1">&#39;TPE1&#39;</span><span class="p">,</span> <span class="s1">&#39;TALB&#39;</span><span class="p">,</span> <span class="s1">&#39;TRCK&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;copy_artist_to_albumartist&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;normalize_genres&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;handle_compilation_years&#39;</span><span class="p">:</span> <span class="kc">True</span>
+        <span class="p">}</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_error_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">errors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AlbumFormattingResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crée un résultat d&#39;erreur.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AlbumFormattingResult</span><span class="p">(</span>
+            <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+            <span class="n">files_processed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">total_changes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">field_changes</span><span class="o">=</span><span class="p">{},</span>
+            <span class="n">warnings</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span>
+            <span class="n">processing_time</span><span class="o">=</span><span class="mf">0.0</span>
+        <span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_empty_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlbumFormattingResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crée un résultat vide.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AlbumFormattingResult</span><span class="p">(</span>
+            <span class="n">album_path</span><span class="o">=</span><span class="n">album_path</span><span class="p">,</span>
+            <span class="n">files_processed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">total_changes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">field_changes</span><span class="o">=</span><span class="p">{},</span>
+            <span class="n">warnings</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Aucun fichier MP3 trouvé&quot;</span><span class="p">],</span>
+            <span class="n">errors</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">processing_time</span><span class="o">=</span><span class="mf">0.0</span>
+        <span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_save_formatting_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">AlbumFormattingResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sauvegarde l&#39;historique de formatage en base.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_manager</span><span class="o">.</span><span class="n">save_import_history</span><span class="p">(</span>
+                <span class="n">album_path</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">album_path</span><span class="p">,</span>
+                <span class="n">operation_type</span><span class="o">=</span><span class="s2">&quot;metadata_formatting&quot;</span><span class="p">,</span>
+                <span class="n">files_processed</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">files_processed</span><span class="p">,</span>
+                <span class="n">changes_made</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">total_changes</span><span class="p">,</span>
+                <span class="n">details</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;field_changes&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">field_changes</span><span class="p">,</span>
+                    <span class="s2">&quot;processing_time&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">processing_time</span><span class="p">,</span>
+                    <span class="s2">&quot;warnings_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">warnings</span><span class="p">),</span>
+                    <span class="s2">&quot;errors_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur sauvegarde historique : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Alias pour compatibilité</span>
+<span class="n">MetadataProcessor</span> <span class="o">=</span> <span class="n">MetadataFormatter</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

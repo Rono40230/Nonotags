@@ -39,35 +39,29 @@ class StartupWindow(Gtk.Window):
         # Boutons d'action selon cahier des charges
         buttons_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         
-        import_btn = Gtk.Button.new_with_label("📁 Importer des albums")
+        import_btn = Gtk.Button.new_with_label("Importer des albums")
         import_btn.get_style_context().add_class("button-import")
         import_btn.set_size_request(250, 40)
         import_btn.connect("clicked", self.on_import_clicked)
         buttons_box.pack_start(import_btn, False, False, 0)
         
-        exceptions_btn = Gtk.Button.new_with_label("⚙️ Ajouter des exceptions d'importation")
+        exceptions_btn = Gtk.Button.new_with_label("Ajouter des exceptions d'importation")
         exceptions_btn.get_style_context().add_class("button-exceptions")
         exceptions_btn.set_size_request(250, 40)
         exceptions_btn.connect("clicked", self.on_exceptions_clicked)
         buttons_box.pack_start(exceptions_btn, False, False, 0)
         
-        playlists_btn = Gtk.Button.new_with_label("🎵 Gestionnaire de Playlists")
+        playlists_btn = Gtk.Button.new_with_label("Gérer des Playlists")
         playlists_btn.get_style_context().add_class("button-playlists")
         playlists_btn.set_size_request(250, 40)
         playlists_btn.connect("clicked", self.on_playlists_clicked)
         buttons_box.pack_start(playlists_btn, False, False, 0)
         
-        converter_btn = Gtk.Button.new_with_label("🔄 Convertisseur Audio")
+        converter_btn = Gtk.Button.new_with_label("Convertir des fichiers audio")
         converter_btn.get_style_context().add_class("button-converter")
         converter_btn.set_size_request(250, 40)
         converter_btn.connect("clicked", self.on_converter_clicked)
         buttons_box.pack_start(converter_btn, False, False, 0)
-        
-        open_app_btn = Gtk.Button.new_with_label("🚀 Ouvrir l'application")
-        open_app_btn.get_style_context().add_class("button-open-app")
-        open_app_btn.set_size_request(250, 40)
-        open_app_btn.connect("clicked", self.on_open_app_clicked)
-        buttons_box.pack_start(open_app_btn, False, False, 0)
         
         main_box.pack_start(buttons_box, False, False, 0)
         
@@ -120,11 +114,6 @@ class StartupWindow(Gtk.Window):
         converter_window = AudioConverterWindow()
         converter_window.show_all()
         
-    def on_open_app_clicked(self, button):
-        """Ouvre la fenêtre principale et ferme la fenêtre de démarrage"""
-        self.hide()  # Cache la fenêtre de démarrage
-        self.app.create_main_window()  # Crée et affiche la fenêtre principale
-
     def on_startup_window_close(self, window, event):
         """Gestionnaire de fermeture de la fenêtre de démarrage"""
         Gtk.main_quit()

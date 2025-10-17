@@ -1,0 +1,489 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=e6b791cb"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="core package" href="core.html" />
+    <link rel="prev" title="API Database" href="api_database.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_services.html">API Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core.html">core package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">core</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/modules.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="core">
+<h1>core<a class="headerlink" href="#core" title="Lien vers cette rubrique"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.html#module-core.case_corrector">core.case_corrector module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionResult"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionResult.changed"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult.changed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionResult.corrected"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult.corrected</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionResult.exceptions_used"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult.exceptions_used</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionResult.original"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult.original</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionResult.rules_applied"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult.rules_applied</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionRule"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionRule.HANDLE_EXCEPTIONS"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.HANDLE_EXCEPTIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionRule.HANDLE_PREPOSITIONS"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.HANDLE_PREPOSITIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionRule.PROTECT_ABBREVIATIONS"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.PROTECT_ABBREVIATIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionRule.PROTECT_ARTIST_IN_ALBUM"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.PROTECT_ARTIST_IN_ALBUM</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionRule.PROTECT_ROMAN_NUMERALS"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.PROTECT_ROMAN_NUMERALS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionRule.PROTECT_SINGLE_I"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.PROTECT_SINGLE_I</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrectionRule.SENTENCE_CASE"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.SENTENCE_CASE</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrector"><code class="docutils literal notranslate"><span class="pre">CaseCorrector</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrector.add_case_exception"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.add_case_exception()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrector.correct_album_case"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.correct_album_case()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrector.correct_album_metadata"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.correct_album_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrector.correct_text_case"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.correct_text_case()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseCorrector.preview_case_corrections"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.preview_case_corrections()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.case_corrector.CaseException"><code class="docutils literal notranslate"><span class="pre">CaseException</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseException.case_sensitive"><code class="docutils literal notranslate"><span class="pre">CaseException.case_sensitive</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseException.corrected"><code class="docutils literal notranslate"><span class="pre">CaseException.corrected</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseException.original"><code class="docutils literal notranslate"><span class="pre">CaseException.original</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector.CaseException.type"><code class="docutils literal notranslate"><span class="pre">CaseException.type</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.case_corrector.MetadataCaseCorrector"><code class="docutils literal notranslate"><span class="pre">MetadataCaseCorrector</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="core.html#module-core.case_corrector_clean">core.case_corrector_clean module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionResult"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionResult.changed"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult.changed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionResult.corrected"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult.corrected</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionResult.exceptions_used"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult.exceptions_used</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionResult.original"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult.original</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionResult.rules_applied"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionResult.rules_applied</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionRule"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionRule.HANDLE_EXCEPTIONS"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.HANDLE_EXCEPTIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionRule.HANDLE_PREPOSITIONS"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.HANDLE_PREPOSITIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionRule.PROTECT_ABBREVIATIONS"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.PROTECT_ABBREVIATIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionRule.PROTECT_ARTIST_IN_ALBUM"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.PROTECT_ARTIST_IN_ALBUM</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionRule.PROTECT_ROMAN_NUMERALS"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.PROTECT_ROMAN_NUMERALS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionRule.PROTECT_SINGLE_I"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.PROTECT_SINGLE_I</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrectionRule.SENTENCE_CASE"><code class="docutils literal notranslate"><span class="pre">CaseCorrectionRule.SENTENCE_CASE</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrector"><code class="docutils literal notranslate"><span class="pre">CaseCorrector</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrector.correct_album_case"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.correct_album_case()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseCorrector.correct_text_case"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.correct_text_case()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseException"><code class="docutils literal notranslate"><span class="pre">CaseException</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseException.case_sensitive"><code class="docutils literal notranslate"><span class="pre">CaseException.case_sensitive</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseException.corrected"><code class="docutils literal notranslate"><span class="pre">CaseException.corrected</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseException.original"><code class="docutils literal notranslate"><span class="pre">CaseException.original</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.case_corrector_clean.CaseException.type"><code class="docutils literal notranslate"><span class="pre">CaseException.type</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="core.html#module-core.file_cleaner">core.file_cleaner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.file_cleaner.CleaningAction"><code class="docutils literal notranslate"><span class="pre">CleaningAction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningAction.DELETE_FILE"><code class="docutils literal notranslate"><span class="pre">CleaningAction.DELETE_FILE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningAction.DELETE_FOLDER"><code class="docutils literal notranslate"><span class="pre">CleaningAction.DELETE_FOLDER</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningAction.RENAME_FILE"><code class="docutils literal notranslate"><span class="pre">CleaningAction.RENAME_FILE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningAction.SKIP"><code class="docutils literal notranslate"><span class="pre">CleaningAction.SKIP</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.file_cleaner.CleaningResult"><code class="docutils literal notranslate"><span class="pre">CleaningResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningResult.action"><code class="docutils literal notranslate"><span class="pre">CleaningResult.action</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningResult.error_message"><code class="docutils literal notranslate"><span class="pre">CleaningResult.error_message</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningResult.size_freed"><code class="docutils literal notranslate"><span class="pre">CleaningResult.size_freed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningResult.source_path"><code class="docutils literal notranslate"><span class="pre">CleaningResult.source_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningResult.success"><code class="docutils literal notranslate"><span class="pre">CleaningResult.success</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningResult.target_path"><code class="docutils literal notranslate"><span class="pre">CleaningResult.target_path</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.file_cleaner.CleaningStats"><code class="docutils literal notranslate"><span class="pre">CleaningStats</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningStats.album_path"><code class="docutils literal notranslate"><span class="pre">CleaningStats.album_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningStats.errors"><code class="docutils literal notranslate"><span class="pre">CleaningStats.errors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningStats.files_deleted"><code class="docutils literal notranslate"><span class="pre">CleaningStats.files_deleted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningStats.files_renamed"><code class="docutils literal notranslate"><span class="pre">CleaningStats.files_renamed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningStats.folders_deleted"><code class="docutils literal notranslate"><span class="pre">CleaningStats.folders_deleted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.CleaningStats.total_size_freed"><code class="docutils literal notranslate"><span class="pre">CleaningStats.total_size_freed</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.file_cleaner.FileCleaner"><code class="docutils literal notranslate"><span class="pre">FileCleaner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.FileCleaner.clean_album_directory"><code class="docutils literal notranslate"><span class="pre">FileCleaner.clean_album_directory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.FileCleaner.clean_album_folder"><code class="docutils literal notranslate"><span class="pre">FileCleaner.clean_album_folder()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.FileCleaner.clean_album_metadata"><code class="docutils literal notranslate"><span class="pre">FileCleaner.clean_album_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_cleaner.FileCleaner.get_cleaning_preview"><code class="docutils literal notranslate"><span class="pre">FileCleaner.get_cleaning_preview()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="core.html#module-core.file_renamer">core.file_renamer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.file_renamer.AlbumRenamingResult"><code class="docutils literal notranslate"><span class="pre">AlbumRenamingResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.AlbumRenamingResult.album_path"><code class="docutils literal notranslate"><span class="pre">AlbumRenamingResult.album_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.AlbumRenamingResult.errors"><code class="docutils literal notranslate"><span class="pre">AlbumRenamingResult.errors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.AlbumRenamingResult.file_results"><code class="docutils literal notranslate"><span class="pre">AlbumRenamingResult.file_results</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.AlbumRenamingResult.files_renamed"><code class="docutils literal notranslate"><span class="pre">AlbumRenamingResult.files_renamed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.AlbumRenamingResult.folder_renamed"><code class="docutils literal notranslate"><span class="pre">AlbumRenamingResult.folder_renamed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.AlbumRenamingResult.folder_result"><code class="docutils literal notranslate"><span class="pre">AlbumRenamingResult.folder_result</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.AlbumRenamingResult.processing_time"><code class="docutils literal notranslate"><span class="pre">AlbumRenamingResult.processing_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.AlbumRenamingResult.total_files"><code class="docutils literal notranslate"><span class="pre">AlbumRenamingResult.total_files</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.AlbumRenamingResult.warnings"><code class="docutils literal notranslate"><span class="pre">AlbumRenamingResult.warnings</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer"><code class="docutils literal notranslate"><span class="pre">FileRenamer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer.format_album_folder"><code class="docutils literal notranslate"><span class="pre">FileRenamer.format_album_folder()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer.format_track_filename"><code class="docutils literal notranslate"><span class="pre">FileRenamer.format_track_filename()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer.get_mp3_metadata"><code class="docutils literal notranslate"><span class="pre">FileRenamer.get_mp3_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer.preview_album_renaming"><code class="docutils literal notranslate"><span class="pre">FileRenamer.preview_album_renaming()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer.preview_file_renaming"><code class="docutils literal notranslate"><span class="pre">FileRenamer.preview_file_renaming()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer.preview_folder_renaming"><code class="docutils literal notranslate"><span class="pre">FileRenamer.preview_folder_renaming()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer.rename_album"><code class="docutils literal notranslate"><span class="pre">FileRenamer.rename_album()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer.rename_album_files"><code class="docutils literal notranslate"><span class="pre">FileRenamer.rename_album_files()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer.rename_file"><code class="docutils literal notranslate"><span class="pre">FileRenamer.rename_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer.rename_folder"><code class="docutils literal notranslate"><span class="pre">FileRenamer.rename_folder()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.FileRenamer.sanitize_filename"><code class="docutils literal notranslate"><span class="pre">FileRenamer.sanitize_filename()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.file_renamer.RenamingResult"><code class="docutils literal notranslate"><span class="pre">RenamingResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingResult.error"><code class="docutils literal notranslate"><span class="pre">RenamingResult.error</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingResult.new_path"><code class="docutils literal notranslate"><span class="pre">RenamingResult.new_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingResult.original_path"><code class="docutils literal notranslate"><span class="pre">RenamingResult.original_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingResult.renamed"><code class="docutils literal notranslate"><span class="pre">RenamingResult.renamed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingResult.rules_applied"><code class="docutils literal notranslate"><span class="pre">RenamingResult.rules_applied</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingResult.warnings"><code class="docutils literal notranslate"><span class="pre">RenamingResult.warnings</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.file_renamer.RenamingRule"><code class="docutils literal notranslate"><span class="pre">RenamingRule</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingRule.FORMAT_ALBUM_FOLDER"><code class="docutils literal notranslate"><span class="pre">RenamingRule.FORMAT_ALBUM_FOLDER</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingRule.FORMAT_TRACK_FILENAME"><code class="docutils literal notranslate"><span class="pre">RenamingRule.FORMAT_TRACK_FILENAME</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingRule.HANDLE_DUPLICATE_NAME"><code class="docutils literal notranslate"><span class="pre">RenamingRule.HANDLE_DUPLICATE_NAME</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingRule.HANDLE_MULTI_YEAR"><code class="docutils literal notranslate"><span class="pre">RenamingRule.HANDLE_MULTI_YEAR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingRule.PRESERVE_EXTENSION"><code class="docutils literal notranslate"><span class="pre">RenamingRule.PRESERVE_EXTENSION</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.file_renamer.RenamingRule.SANITIZE_FILENAME"><code class="docutils literal notranslate"><span class="pre">RenamingRule.SANITIZE_FILENAME</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="core.html#module-core.metadata_formatter">core.metadata_formatter module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_formatter.AlbumFormattingResult"><code class="docutils literal notranslate"><span class="pre">AlbumFormattingResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.AlbumFormattingResult.album_path"><code class="docutils literal notranslate"><span class="pre">AlbumFormattingResult.album_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.AlbumFormattingResult.errors"><code class="docutils literal notranslate"><span class="pre">AlbumFormattingResult.errors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.AlbumFormattingResult.field_changes"><code class="docutils literal notranslate"><span class="pre">AlbumFormattingResult.field_changes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.AlbumFormattingResult.files_processed"><code class="docutils literal notranslate"><span class="pre">AlbumFormattingResult.files_processed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.AlbumFormattingResult.processing_time"><code class="docutils literal notranslate"><span class="pre">AlbumFormattingResult.processing_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.AlbumFormattingResult.total_changes"><code class="docutils literal notranslate"><span class="pre">AlbumFormattingResult.total_changes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.AlbumFormattingResult.warnings"><code class="docutils literal notranslate"><span class="pre">AlbumFormattingResult.warnings</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingResult"><code class="docutils literal notranslate"><span class="pre">FormattingResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingResult.changed"><code class="docutils literal notranslate"><span class="pre">FormattingResult.changed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingResult.field_name"><code class="docutils literal notranslate"><span class="pre">FormattingResult.field_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingResult.formatted_value"><code class="docutils literal notranslate"><span class="pre">FormattingResult.formatted_value</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingResult.original_value"><code class="docutils literal notranslate"><span class="pre">FormattingResult.original_value</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingResult.rules_applied"><code class="docutils literal notranslate"><span class="pre">FormattingResult.rules_applied</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingResult.warnings"><code class="docutils literal notranslate"><span class="pre">FormattingResult.warnings</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingRule"><code class="docutils literal notranslate"><span class="pre">FormattingRule</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingRule.COPY_ARTIST_TO_ALBUMARTIST"><code class="docutils literal notranslate"><span class="pre">FormattingRule.COPY_ARTIST_TO_ALBUMARTIST</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingRule.FORMAT_DURATION"><code class="docutils literal notranslate"><span class="pre">FormattingRule.FORMAT_DURATION</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingRule.FORMAT_TRACK_NUMBERS"><code class="docutils literal notranslate"><span class="pre">FormattingRule.FORMAT_TRACK_NUMBERS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingRule.HANDLE_COMPILATION_YEAR"><code class="docutils literal notranslate"><span class="pre">FormattingRule.HANDLE_COMPILATION_YEAR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingRule.NORMALIZE_GENRE"><code class="docutils literal notranslate"><span class="pre">FormattingRule.NORMALIZE_GENRE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.FormattingRule.VALIDATE_REQUIRED_FIELDS"><code class="docutils literal notranslate"><span class="pre">FormattingRule.VALIDATE_REQUIRED_FIELDS</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_formatter.MetadataFormatter"><code class="docutils literal notranslate"><span class="pre">MetadataFormatter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.MetadataFormatter.format_album_metadata"><code class="docutils literal notranslate"><span class="pre">MetadataFormatter.format_album_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.MetadataFormatter.format_metadata_field"><code class="docutils literal notranslate"><span class="pre">MetadataFormatter.format_metadata_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_formatter.MetadataFormatter.preview_formatting_changes"><code class="docutils literal notranslate"><span class="pre">MetadataFormatter.preview_formatting_changes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_formatter.MetadataProcessor"><code class="docutils literal notranslate"><span class="pre">MetadataProcessor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="core.html#module-core.metadata_processor">core.metadata_processor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_processor.AlbumCleaningStats"><code class="docutils literal notranslate"><span class="pre">AlbumCleaningStats</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.AlbumCleaningStats.album_path"><code class="docutils literal notranslate"><span class="pre">AlbumCleaningStats.album_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.AlbumCleaningStats.files_modified"><code class="docutils literal notranslate"><span class="pre">AlbumCleaningStats.files_modified</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.AlbumCleaningStats.files_processed"><code class="docutils literal notranslate"><span class="pre">AlbumCleaningStats.files_processed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.AlbumCleaningStats.processing_time"><code class="docutils literal notranslate"><span class="pre">AlbumCleaningStats.processing_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.AlbumCleaningStats.rule_stats"><code class="docutils literal notranslate"><span class="pre">AlbumCleaningStats.rule_stats</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.AlbumCleaningStats.total_changes"><code class="docutils literal notranslate"><span class="pre">AlbumCleaningStats.total_changes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.AlbumCleaningStats.total_errors"><code class="docutils literal notranslate"><span class="pre">AlbumCleaningStats.total_errors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.AlbumCleaningStats.total_warnings"><code class="docutils literal notranslate"><span class="pre">AlbumCleaningStats.total_warnings</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_processor.CleaningResults"><code class="docutils literal notranslate"><span class="pre">CleaningResults</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.CleaningResults.changes"><code class="docutils literal notranslate"><span class="pre">CleaningResults.changes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.CleaningResults.errors"><code class="docutils literal notranslate"><span class="pre">CleaningResults.errors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.CleaningResults.file_path"><code class="docutils literal notranslate"><span class="pre">CleaningResults.file_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.CleaningResults.processing_time"><code class="docutils literal notranslate"><span class="pre">CleaningResults.processing_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.CleaningResults.success"><code class="docutils literal notranslate"><span class="pre">CleaningResults.success</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.CleaningResults.warnings"><code class="docutils literal notranslate"><span class="pre">CleaningResults.warnings</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_processor.CleaningRule"><code class="docutils literal notranslate"><span class="pre">CleaningRule</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.CleaningRule.CLEAN_WHITESPACE"><code class="docutils literal notranslate"><span class="pre">CleaningRule.CLEAN_WHITESPACE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.CleaningRule.NORMALIZE_CONJUNCTIONS"><code class="docutils literal notranslate"><span class="pre">CleaningRule.NORMALIZE_CONJUNCTIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.CleaningRule.REMOVE_COMMENTS"><code class="docutils literal notranslate"><span class="pre">CleaningRule.REMOVE_COMMENTS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.CleaningRule.REMOVE_PARENTHESES"><code class="docutils literal notranslate"><span class="pre">CleaningRule.REMOVE_PARENTHESES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.CleaningRule.REMOVE_SPECIAL_CHARS"><code class="docutils literal notranslate"><span class="pre">CleaningRule.REMOVE_SPECIAL_CHARS</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_processor.ExceptionsManager"><code class="docutils literal notranslate"><span class="pre">ExceptionsManager</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_processor.MetadataChange"><code class="docutils literal notranslate"><span class="pre">MetadataChange</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.MetadataChange.field_name"><code class="docutils literal notranslate"><span class="pre">MetadataChange.field_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.MetadataChange.new_value"><code class="docutils literal notranslate"><span class="pre">MetadataChange.new_value</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.MetadataChange.old_value"><code class="docutils literal notranslate"><span class="pre">MetadataChange.old_value</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.MetadataChange.rule_applied"><code class="docutils literal notranslate"><span class="pre">MetadataChange.rule_applied</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.MetadataChange.timestamp"><code class="docutils literal notranslate"><span class="pre">MetadataChange.timestamp</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_processor.MetadataCleaner"><code class="docutils literal notranslate"><span class="pre">MetadataCleaner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.MetadataCleaner.clean_album_metadata"><code class="docutils literal notranslate"><span class="pre">MetadataCleaner.clean_album_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.MetadataCleaner.clean_file_metadata"><code class="docutils literal notranslate"><span class="pre">MetadataCleaner.clean_file_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.MetadataCleaner.get_cleaning_preview"><code class="docutils literal notranslate"><span class="pre">MetadataCleaner.get_cleaning_preview()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.metadata_processor.MetadataCleaner.remove_all_comments"><code class="docutils literal notranslate"><span class="pre">MetadataCleaner.remove_all_comments()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_processor.MetadataProcessor"><code class="docutils literal notranslate"><span class="pre">MetadataProcessor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_processor.RulesEngine"><code class="docutils literal notranslate"><span class="pre">RulesEngine</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.metadata_processor.SyncManager"><code class="docutils literal notranslate"><span class="pre">SyncManager</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="core.html#module-core.refresh_manager">core.refresh_manager module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.refresh_manager.RefreshManager"><code class="docutils literal notranslate"><span class="pre">RefreshManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.refresh_manager.RefreshManager.force_refresh_all"><code class="docutils literal notranslate"><span class="pre">RefreshManager.force_refresh_all()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.refresh_manager.RefreshManager.get_instance"><code class="docutils literal notranslate"><span class="pre">RefreshManager.get_instance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.refresh_manager.RefreshManager.get_status"><code class="docutils literal notranslate"><span class="pre">RefreshManager.get_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.refresh_manager.RefreshManager.notify_metadata_changed"><code class="docutils literal notranslate"><span class="pre">RefreshManager.notify_metadata_changed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.refresh_manager.RefreshManager.register_display_component"><code class="docutils literal notranslate"><span class="pre">RefreshManager.register_display_component()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.refresh_manager.RefreshManager.unregister_display_component"><code class="docutils literal notranslate"><span class="pre">RefreshManager.unregister_display_component()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="core.html#module-core.tag_synchronizer">core.tag_synchronizer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.tag_synchronizer.AlbumSynchronizationResult"><code class="docutils literal notranslate"><span class="pre">AlbumSynchronizationResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.AlbumSynchronizationResult.album_path"><code class="docutils literal notranslate"><span class="pre">AlbumSynchronizationResult.album_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.AlbumSynchronizationResult.covers_associated"><code class="docutils literal notranslate"><span class="pre">AlbumSynchronizationResult.covers_associated</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.AlbumSynchronizationResult.errors"><code class="docutils literal notranslate"><span class="pre">AlbumSynchronizationResult.errors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.AlbumSynchronizationResult.file_results"><code class="docutils literal notranslate"><span class="pre">AlbumSynchronizationResult.file_results</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.AlbumSynchronizationResult.files_processed"><code class="docutils literal notranslate"><span class="pre">AlbumSynchronizationResult.files_processed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.AlbumSynchronizationResult.processing_time"><code class="docutils literal notranslate"><span class="pre">AlbumSynchronizationResult.processing_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.AlbumSynchronizationResult.tags_updated"><code class="docutils literal notranslate"><span class="pre">AlbumSynchronizationResult.tags_updated</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.AlbumSynchronizationResult.total_files"><code class="docutils literal notranslate"><span class="pre">AlbumSynchronizationResult.total_files</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.AlbumSynchronizationResult.warnings"><code class="docutils literal notranslate"><span class="pre">AlbumSynchronizationResult.warnings</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.tag_synchronizer.CoverAssociationResult"><code class="docutils literal notranslate"><span class="pre">CoverAssociationResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.CoverAssociationResult.ALREADY_EXISTS"><code class="docutils literal notranslate"><span class="pre">CoverAssociationResult.ALREADY_EXISTS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.CoverAssociationResult.COVER_NOT_FOUND"><code class="docutils literal notranslate"><span class="pre">CoverAssociationResult.COVER_NOT_FOUND</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.CoverAssociationResult.ERROR"><code class="docutils literal notranslate"><span class="pre">CoverAssociationResult.ERROR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.CoverAssociationResult.INVALID_FORMAT"><code class="docutils literal notranslate"><span class="pre">CoverAssociationResult.INVALID_FORMAT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.CoverAssociationResult.SIZE_TOO_SMALL"><code class="docutils literal notranslate"><span class="pre">CoverAssociationResult.SIZE_TOO_SMALL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.CoverAssociationResult.SUCCESS"><code class="docutils literal notranslate"><span class="pre">CoverAssociationResult.SUCCESS</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationAction"><code class="docutils literal notranslate"><span class="pre">SynchronizationAction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationAction.ASSOCIATE_COVER"><code class="docutils literal notranslate"><span class="pre">SynchronizationAction.ASSOCIATE_COVER</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationAction.BACKUP_ORIGINAL"><code class="docutils literal notranslate"><span class="pre">SynchronizationAction.BACKUP_ORIGINAL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationAction.RESTORE_FROM_BACKUP"><code class="docutils literal notranslate"><span class="pre">SynchronizationAction.RESTORE_FROM_BACKUP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationAction.UPDATE_TAGS"><code class="docutils literal notranslate"><span class="pre">SynchronizationAction.UPDATE_TAGS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationAction.VALIDATE_CONSISTENCY"><code class="docutils literal notranslate"><span class="pre">SynchronizationAction.VALIDATE_CONSISTENCY</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationResult"><code class="docutils literal notranslate"><span class="pre">SynchronizationResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationResult.actions_performed"><code class="docutils literal notranslate"><span class="pre">SynchronizationResult.actions_performed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationResult.cover_associated"><code class="docutils literal notranslate"><span class="pre">SynchronizationResult.cover_associated</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationResult.cover_result"><code class="docutils literal notranslate"><span class="pre">SynchronizationResult.cover_result</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationResult.error"><code class="docutils literal notranslate"><span class="pre">SynchronizationResult.error</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationResult.file_path"><code class="docutils literal notranslate"><span class="pre">SynchronizationResult.file_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationResult.processing_time"><code class="docutils literal notranslate"><span class="pre">SynchronizationResult.processing_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationResult.tags_updated"><code class="docutils literal notranslate"><span class="pre">SynchronizationResult.tags_updated</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.SynchronizationResult.warnings"><code class="docutils literal notranslate"><span class="pre">SynchronizationResult.warnings</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.tag_synchronizer.TagSynchronizer"><code class="docutils literal notranslate"><span class="pre">TagSynchronizer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.TagSynchronizer.associate_cover_to_mp3"><code class="docutils literal notranslate"><span class="pre">TagSynchronizer.associate_cover_to_mp3()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.TagSynchronizer.create_backup"><code class="docutils literal notranslate"><span class="pre">TagSynchronizer.create_backup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.TagSynchronizer.find_cover_image"><code class="docutils literal notranslate"><span class="pre">TagSynchronizer.find_cover_image()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.TagSynchronizer.restore_from_backup"><code class="docutils literal notranslate"><span class="pre">TagSynchronizer.restore_from_backup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.TagSynchronizer.synchronize_album"><code class="docutils literal notranslate"><span class="pre">TagSynchronizer.synchronize_album()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.TagSynchronizer.synchronize_album_tags"><code class="docutils literal notranslate"><span class="pre">TagSynchronizer.synchronize_album_tags()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.TagSynchronizer.synchronize_file"><code class="docutils literal notranslate"><span class="pre">TagSynchronizer.synchronize_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.TagSynchronizer.update_mp3_tags"><code class="docutils literal notranslate"><span class="pre">TagSynchronizer.update_mp3_tags()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.tag_synchronizer.TagSynchronizer.validate_cover_image"><code class="docutils literal notranslate"><span class="pre">TagSynchronizer.validate_cover_image()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="core.html#module-core">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.CaseCorrector"><code class="docutils literal notranslate"><span class="pre">CaseCorrector</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.CaseCorrector.add_case_exception"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.add_case_exception()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.CaseCorrector.correct_album_case"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.correct_album_case()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.CaseCorrector.correct_album_metadata"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.correct_album_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.CaseCorrector.correct_text_case"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.correct_text_case()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.CaseCorrector.preview_case_corrections"><code class="docutils literal notranslate"><span class="pre">CaseCorrector.preview_case_corrections()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.FileCleaner"><code class="docutils literal notranslate"><span class="pre">FileCleaner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileCleaner.clean_album_directory"><code class="docutils literal notranslate"><span class="pre">FileCleaner.clean_album_directory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileCleaner.clean_album_folder"><code class="docutils literal notranslate"><span class="pre">FileCleaner.clean_album_folder()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileCleaner.clean_album_metadata"><code class="docutils literal notranslate"><span class="pre">FileCleaner.clean_album_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileCleaner.get_cleaning_preview"><code class="docutils literal notranslate"><span class="pre">FileCleaner.get_cleaning_preview()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.FileRenamer"><code class="docutils literal notranslate"><span class="pre">FileRenamer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileRenamer.format_album_folder"><code class="docutils literal notranslate"><span class="pre">FileRenamer.format_album_folder()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileRenamer.format_track_filename"><code class="docutils literal notranslate"><span class="pre">FileRenamer.format_track_filename()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileRenamer.get_mp3_metadata"><code class="docutils literal notranslate"><span class="pre">FileRenamer.get_mp3_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileRenamer.preview_album_renaming"><code class="docutils literal notranslate"><span class="pre">FileRenamer.preview_album_renaming()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileRenamer.preview_file_renaming"><code class="docutils literal notranslate"><span class="pre">FileRenamer.preview_file_renaming()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileRenamer.preview_folder_renaming"><code class="docutils literal notranslate"><span class="pre">FileRenamer.preview_folder_renaming()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileRenamer.rename_album"><code class="docutils literal notranslate"><span class="pre">FileRenamer.rename_album()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileRenamer.rename_album_files"><code class="docutils literal notranslate"><span class="pre">FileRenamer.rename_album_files()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileRenamer.rename_file"><code class="docutils literal notranslate"><span class="pre">FileRenamer.rename_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileRenamer.rename_folder"><code class="docutils literal notranslate"><span class="pre">FileRenamer.rename_folder()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.FileRenamer.sanitize_filename"><code class="docutils literal notranslate"><span class="pre">FileRenamer.sanitize_filename()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.MetadataCaseCorrector"><code class="docutils literal notranslate"><span class="pre">MetadataCaseCorrector</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.MetadataCleaner"><code class="docutils literal notranslate"><span class="pre">MetadataCleaner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.MetadataCleaner.clean_album_metadata"><code class="docutils literal notranslate"><span class="pre">MetadataCleaner.clean_album_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.MetadataCleaner.clean_file_metadata"><code class="docutils literal notranslate"><span class="pre">MetadataCleaner.clean_file_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.MetadataCleaner.get_cleaning_preview"><code class="docutils literal notranslate"><span class="pre">MetadataCleaner.get_cleaning_preview()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.MetadataCleaner.remove_all_comments"><code class="docutils literal notranslate"><span class="pre">MetadataCleaner.remove_all_comments()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.MetadataFormatter"><code class="docutils literal notranslate"><span class="pre">MetadataFormatter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.MetadataFormatter.format_album_metadata"><code class="docutils literal notranslate"><span class="pre">MetadataFormatter.format_album_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.MetadataFormatter.format_metadata_field"><code class="docutils literal notranslate"><span class="pre">MetadataFormatter.format_metadata_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.html#core.MetadataFormatter.preview_formatting_changes"><code class="docutils literal notranslate"><span class="pre">MetadataFormatter.preview_formatting_changes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#core.MetadataProcessor"><code class="docutils literal notranslate"><span class="pre">MetadataProcessor</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="api_database.html" class="btn btn-neutral float-left" title="API Database" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="core.html" class="btn btn-neutral float-right" title="core package" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

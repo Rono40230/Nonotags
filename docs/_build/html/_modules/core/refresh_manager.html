@@ -1,0 +1,385 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core.refresh_manager &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/translations.js?v=e6b791cb"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_services.html">API Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Code du module</a></li>
+      <li class="breadcrumb-item active">core.refresh_manager</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Code source de core.refresh_manager</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module de rafraîchissement centralisé pour Nonotags</span>
+<span class="sd">Assure l&#39;effet miroir entre métadonnées et interface utilisateur</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gi.repository</span><span class="w"> </span><span class="kn">import</span> <span class="n">GLib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">weakref</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+
+<div class="viewcode-block" id="RefreshManager">
+<a class="viewcode-back" href="../../core.html#core.refresh_manager.RefreshManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RefreshManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gestionnaire centralisé de rafraîchissement d&#39;interface</span>
+<span class="sd">    Pattern Singleton pour coordination globale</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span><span class="o">.</span><span class="n">_initialized</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialized</span><span class="p">:</span>
+            <span class="k">return</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialized</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="c1"># Registry des composants d&#39;affichage (WeakReferences pour éviter les fuites mémoire)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_display_components</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">WeakSet</span><span class="p">()</span>
+        
+        <span class="c1"># Cache des albums modifiés (pour éviter les rafraîchissements redondants)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pending_refreshes</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        
+        <span class="c1"># Timer pour regrouper les notifications</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_timer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_delay_ms</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># 100ms de délai pour regrouper les notifications</span>
+    
+<div class="viewcode-block" id="RefreshManager.get_instance">
+<a class="viewcode-back" href="../../core.html#core.refresh_manager.RefreshManager.get_instance">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_instance</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Récupère l&#39;instance singleton&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="RefreshManager.register_display_component">
+<a class="viewcode-back" href="../../core.html#core.refresh_manager.RefreshManager.register_display_component">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_display_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Enregistre un composant d&#39;affichage pour les notifications</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            component: Objet avec une méthode de rafraîchissement (_refresh_albums_display, _update_display, etc.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">component</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">_display_components</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">component</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RefreshManager.unregister_display_component">
+<a class="viewcode-back" href="../../core.html#core.refresh_manager.RefreshManager.unregister_display_component">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unregister_display_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Désenregistre un composant d&#39;affichage</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            component: Composant à supprimer du registry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_display_components</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_display_components</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">component</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RefreshManager.notify_metadata_changed">
+<a class="viewcode-back" href="../../core.html#core.refresh_manager.RefreshManager.notify_metadata_changed">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">notify_metadata_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">immediate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Notifie que des métadonnées ont changé</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_paths: Liste des chemins d&#39;albums modifiés (None = tout rafraîchir)</span>
+<span class="sd">            immediate: Si True, rafraîchit immédiatement sans délai</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">album_paths</span><span class="p">:</span>
+            <span class="c1"># Normaliser les chemins d&#39;albums</span>
+            <span class="n">normalized_paths</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">album_paths</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                    <span class="c1"># Si c&#39;est un fichier, prendre le dossier parent</span>
+                    <span class="n">album_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">album_path</span> <span class="o">=</span> <span class="n">path</span>
+                <span class="n">normalized_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pending_refreshes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">normalized_paths</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Rafraîchissement global</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pending_refreshes</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">immediate</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_refresh</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_schedule_refresh</span><span class="p">()</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_schedule_refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Programme un rafraîchissement avec délai pour regrouper les notifications&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_timer</span><span class="p">:</span>
+            <span class="n">GLib</span><span class="o">.</span><span class="n">source_remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_refresh_timer</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_timer</span> <span class="o">=</span> <span class="n">GLib</span><span class="o">.</span><span class="n">timeout_add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_refresh_delay_ms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_refresh</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_execute_refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Exécute le rafraîchissement des composants enregistrés&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_display_components</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚠️ Aucun composant d&#39;affichage enregistré&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            
+            <span class="n">albums_to_refresh</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pending_refreshes</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pending_refreshes</span> <span class="k">else</span> <span class="kc">None</span>
+            
+            <span class="c1"># Parcourir tous les composants enregistrés</span>
+            <span class="n">refreshed_count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_display_components</span><span class="p">):</span>  <span class="c1"># Copie pour éviter les modifications concurrentes</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_component</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">albums_to_refresh</span><span class="p">):</span>
+                    <span class="n">refreshed_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="c1"># Nettoyer les rafraîchissements en attente</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pending_refreshes</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_timer</span> <span class="o">=</span> <span class="kc">None</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Erreur lors du rafraîchissement: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_timer</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Ne pas répéter le timer</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_refresh_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span><span class="p">,</span> <span class="n">albums_to_refresh</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rafraîchit un composant spécifique en mettant à jour directement ses cartes</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            component: Composant à rafraîchir (doit être NonotagsApp)</span>
+<span class="sd">            albums_to_refresh: Liste des albums à rafraîchir (None = tous)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True si le rafraîchissement a réussi</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">component_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">component</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            
+            <span class="c1"># Traitement spécial pour NonotagsApp</span>
+            <span class="k">if</span> <span class="n">component_type</span> <span class="o">==</span> <span class="s2">&quot;NonotagsApp&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_nonotags_app_cards</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">albums_to_refresh</span><span class="p">)</span>
+            
+            <span class="c1"># Fallback vers les méthodes existantes pour autres composants</span>
+            <span class="n">refresh_method</span> <span class="o">=</span> <span class="kc">None</span>
+            
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="s1">&#39;_refresh_albums_display&#39;</span><span class="p">):</span>
+                <span class="n">refresh_method</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">_refresh_albums_display</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="s1">&#39;_update_display&#39;</span><span class="p">):</span>
+                <span class="n">refresh_method</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">_update_display</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="s1">&#39;refresh&#39;</span><span class="p">):</span>
+                <span class="n">refresh_method</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">refresh</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="s1">&#39;update&#39;</span><span class="p">):</span>
+                <span class="n">refresh_method</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">update</span>
+            
+            <span class="k">if</span> <span class="n">refresh_method</span><span class="p">:</span>
+                <span class="c1"># Programmer le rafraîchissement dans le thread principal GTK</span>
+                <span class="n">GLib</span><span class="o">.</span><span class="n">idle_add</span><span class="p">(</span><span class="n">refresh_method</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+                
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ❌ Erreur rafraîchissement </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">component</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_refresh_nonotags_app_cards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">albums_to_refresh</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Met à jour directement les cartes dans NonotagsApp sans rescan complet</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            app: Instance de NonotagsApp</span>
+<span class="sd">            albums_to_refresh: Liste des dossiers d&#39;albums à rafraîchir</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True si le rafraîchissement a réussi</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s1">&#39;albums_grid&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            
+            <span class="c1"># Fonction à exécuter dans le thread principal GTK</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">update_cards</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">updated_count</span> <span class="o">=</span> <span class="mi">0</span>
+                    
+                    <span class="c1"># Parcourir toutes les cartes dans albums_grid</span>
+                    <span class="n">children</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">albums_grid</span><span class="o">.</span><span class="n">get_children</span><span class="p">()</span>
+                    
+                    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+                        <span class="n">child_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+                        
+                        <span class="c1"># Si c&#39;est un FlowBoxChild, récupérer la vraie carte à l&#39;intérieur</span>
+                        <span class="n">actual_card</span> <span class="o">=</span> <span class="n">child</span>
+                        <span class="k">if</span> <span class="n">child_type</span> <span class="o">==</span> <span class="s2">&quot;FlowBoxChild&quot;</span><span class="p">:</span>
+                            <span class="c1"># FlowBoxChild contient la vraie carte d&#39;album</span>
+                            <span class="n">actual_card</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">get_child</span><span class="p">()</span>
+                        
+                        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">actual_card</span><span class="p">,</span> <span class="s1">&#39;_update_display&#39;</span><span class="p">):</span>
+                            <span class="c1"># Si albums_to_refresh est spécifié, vérifier si cette carte correspond</span>
+                            <span class="k">if</span> <span class="n">albums_to_refresh</span><span class="p">:</span>
+                                <span class="n">card_path</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">actual_card</span><span class="p">,</span> <span class="s1">&#39;album_path&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="n">card_path</span> <span class="ow">and</span> <span class="n">card_path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">albums_to_refresh</span><span class="p">:</span>
+                                    <span class="k">continue</span>
+                            
+                            <span class="c1"># Mettre à jour la carte</span>
+                            <span class="n">actual_card</span><span class="o">.</span><span class="n">_update_display</span><span class="p">()</span>
+                            <span class="n">updated_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                    
+                    <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Ne pas répéter le timer</span>
+                    
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ❌ Erreur mise à jour cartes: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            
+            <span class="c1"># Programmer la mise à jour dans le thread principal</span>
+            <span class="n">GLib</span><span class="o">.</span><span class="n">idle_add</span><span class="p">(</span><span class="n">update_cards</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ❌ Erreur _refresh_nonotags_app_cards: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    
+<div class="viewcode-block" id="RefreshManager.force_refresh_all">
+<a class="viewcode-back" href="../../core.html#core.refresh_manager.RefreshManager.force_refresh_all">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">force_refresh_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Force un rafraîchissement immédiat de tous les composants&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pending_refreshes</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_refresh</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="RefreshManager.get_status">
+<a class="viewcode-back" href="../../core.html#core.refresh_manager.RefreshManager.get_status">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retourne le statut du gestionnaire pour debug&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;components_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_display_components</span><span class="p">),</span>
+            <span class="s2">&quot;pending_refreshes&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pending_refreshes</span><span class="p">),</span>
+            <span class="s2">&quot;pending_albums&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pending_refreshes</span><span class="p">),</span>
+            <span class="s2">&quot;timer_active&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_timer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">}</span></div>
+</div>
+
+
+
+<span class="c1"># Instance globale pour faciliter l&#39;accès</span>
+<span class="n">refresh_manager</span> <span class="o">=</span> <span class="n">RefreshManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

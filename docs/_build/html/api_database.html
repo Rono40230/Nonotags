@@ -1,0 +1,398 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Database &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=e6b791cb"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="core" href="modules.html" />
+    <link rel="prev" title="API Support" href="api_support.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_services.html">API Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_support.html">API Support</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-database.db_manager">Database Manager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#database.db_manager.DatabaseManager"><code class="docutils literal notranslate"><span class="pre">DatabaseManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.add_case_exception"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.add_case_exception()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.add_import_record"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.add_import_record()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.cleanup_old_records"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.cleanup_old_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.get_all_case_exceptions"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_all_case_exceptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.get_case_exception"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_case_exception()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.get_case_exceptions"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_case_exceptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.get_config_by_category"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_config_by_category()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.get_config_value"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_config_value()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.get_connection"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_connection()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.get_database_info"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_database_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.get_import_history"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_import_history()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.get_import_statistics"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_import_statistics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.remove_case_exception"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.remove_case_exception()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.save_import_history"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.save_import_history()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.set_config_value"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.set_config_value()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.db_manager.DatabaseManager.vacuum_database"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.vacuum_database()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-database.models">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#database.models.CaseExceptionModel"><code class="docutils literal notranslate"><span class="pre">CaseExceptionModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#database.models.CaseExceptionModel.add_exception"><code class="docutils literal notranslate"><span class="pre">CaseExceptionModel.add_exception()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.models.CaseExceptionModel.delete_exception"><code class="docutils literal notranslate"><span class="pre">CaseExceptionModel.delete_exception()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.models.CaseExceptionModel.get_all_exceptions"><code class="docutils literal notranslate"><span class="pre">CaseExceptionModel.get_all_exceptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#database.models.CaseExceptionModel.get_correction"><code class="docutils literal notranslate"><span class="pre">CaseExceptionModel.get_correction()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Database</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api_database.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-database">
+<h1>API Database<a class="headerlink" href="#api-database" title="Lien vers cette rubrique"></a></h1>
+<p>Le module <code class="docutils literal notranslate"><span class="pre">database</span></code> gère la persistance des données SQLite.</p>
+<section id="module-database.db_manager">
+<span id="database-manager"></span><h2>Database Manager<a class="headerlink" href="#module-database.db_manager" title="Lien vers cette rubrique"></a></h2>
+<p>Module 10 - Gestionnaire de base de données
+Gère la base de données SQLite avec les tables étendues.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">database.db_manager.</span></span><span class="sig-name descname"><span class="pre">DatabaseManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(disponible dans Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api_support.html#support.config_manager.ConfigManager" title="support.config_manager.ConfigManager"><span class="pre">ConfigManager</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(disponible dans Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Gestionnaire principal de la base de données SQLite.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.add_case_exception">
+<span class="sig-name descname"><span class="pre">add_case_exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserved_case</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.add_case_exception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.add_case_exception" title="Lien vers cette définition"></a></dt>
+<dd><p>Ajoute une exception de casse.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>word: Mot en version normalisée (minuscules)
+preserved_case: Casse à préserver</p>
+</dd>
+<dt>Returns:</dt><dd><p>True si ajouté avec succès, False sinon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.add_import_record">
+<span class="sig-name descname"><span class="pre">add_import_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">album_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files_processed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rules_applied</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(disponible dans Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.add_import_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.add_import_record" title="Lien vers cette définition"></a></dt>
+<dd><p>Ajoute un enregistrement d’import.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>album_path: Chemin de l’album importé
+status: Statut de l’import (“success”, “error”, “partial”)
+error_message: Message d’erreur si applicable
+files_processed: Nombre de fichiers traités
+rules_applied: Liste des règles appliquées</p>
+</dd>
+<dt>Returns:</dt><dd><p>True si ajouté avec succès, False sinon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.cleanup_old_records">
+<span class="sig-name descname"><span class="pre">cleanup_old_records</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">days</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.cleanup_old_records"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.cleanup_old_records" title="Lien vers cette définition"></a></dt>
+<dd><p>Nettoie les anciens enregistrements d’import.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>days: Nombre de jours à conserver</p>
+</dd>
+<dt>Returns:</dt><dd><p>Nombre d’enregistrements supprimés</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.get_all_case_exceptions">
+<span class="sig-name descname"><span class="pre">get_all_case_exceptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.get_all_case_exceptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.get_all_case_exceptions" title="Lien vers cette définition"></a></dt>
+<dd><p>Récupère toutes les exceptions de casse.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>Dictionnaire {mot_normalisé: casse_préservée}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.get_case_exception">
+<span class="sig-name descname"><span class="pre">get_case_exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(disponible dans Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.get_case_exception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.get_case_exception" title="Lien vers cette définition"></a></dt>
+<dd><p>Récupère l’exception de casse pour un mot.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>word: Mot à rechercher</p>
+</dd>
+<dt>Returns:</dt><dd><p>Casse préservée ou None si non trouvé</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.get_case_exceptions">
+<span class="sig-name descname"><span class="pre">get_case_exceptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(disponible dans Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(disponible dans Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.get_case_exceptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.get_case_exceptions" title="Lien vers cette définition"></a></dt>
+<dd><p>Récupère toutes les exceptions de casse dans un format structuré.
+Compatible avec le module CaseCorrector.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>Liste de dictionnaires avec les exceptions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.get_config_by_category">
+<span class="sig-name descname"><span class="pre">get_config_by_category</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(disponible dans Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.get_config_by_category"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.get_config_by_category" title="Lien vers cette définition"></a></dt>
+<dd><p>Récupère toutes les configurations d’une catégorie.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>category: Catégorie à récupérer</p>
+</dd>
+<dt>Returns:</dt><dd><p>Dictionnaire des configurations</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.get_config_value">
+<span class="sig-name descname"><span class="pre">get_config_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(disponible dans Python v3.14)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(disponible dans Python v3.14)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.get_config_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.get_config_value" title="Lien vers cette définition"></a></dt>
+<dd><p>Récupère une valeur de configuration.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>key: Clé de configuration
+default: Valeur par défaut si non trouvé</p>
+</dd>
+<dt>Returns:</dt><dd><p>Valeur de configuration ou valeur par défaut</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.get_connection">
+<span class="sig-name descname"><span class="pre">get_connection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection" title="(disponible dans Python v3.14)"><span class="pre">Connection</span></a></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.get_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.get_connection" title="Lien vers cette définition"></a></dt>
+<dd><p>Retourne une connexion à la base de données.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.get_database_info">
+<span class="sig-name descname"><span class="pre">get_database_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(disponible dans Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.get_database_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.get_database_info" title="Lien vers cette définition"></a></dt>
+<dd><p>Retourne des informations sur la base de données.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>Dictionnaire des informations</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.get_import_history">
+<span class="sig-name descname"><span class="pre">get_import_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(disponible dans Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(disponible dans Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.get_import_history"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.get_import_history" title="Lien vers cette définition"></a></dt>
+<dd><p>Récupère l’historique des imports.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>limit: Nombre maximum d’enregistrements</p>
+</dd>
+<dt>Returns:</dt><dd><p>Liste des enregistrements d’import</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.get_import_statistics">
+<span class="sig-name descname"><span class="pre">get_import_statistics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(disponible dans Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.get_import_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.get_import_statistics" title="Lien vers cette définition"></a></dt>
+<dd><p>Récupère des statistiques sur les imports.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>Dictionnaire des statistiques</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.remove_case_exception">
+<span class="sig-name descname"><span class="pre">remove_case_exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.remove_case_exception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.remove_case_exception" title="Lien vers cette définition"></a></dt>
+<dd><p>Supprime une exception de casse.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>word: Mot à supprimer</p>
+</dd>
+<dt>Returns:</dt><dd><p>True si supprimé avec succès, False sinon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.save_import_history">
+<span class="sig-name descname"><span class="pre">save_import_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">album_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">operation_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">files_processed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">changes_made</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(disponible dans Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(disponible dans Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'success'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(disponible dans Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.save_import_history"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.save_import_history" title="Lien vers cette définition"></a></dt>
+<dd><p>Sauvegarde un enregistrement d’historique d’import.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>album_path: Chemin de l’album traité
+operation_type: Type d’opération (case_correction, metadata_formatting, etc.)
+files_processed: Nombre de fichiers traités
+changes_made: Nombre de modifications apportées
+details: Détails supplémentaires (sera sérialisé en JSON)
+status: Statut de l’opération (success, warning, error)
+error_message: Message d’erreur si applicable</p>
+</dd>
+<dt>Returns:</dt><dd><p>True si sauvegardé avec succès</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.set_config_value">
+<span class="sig-name descname"><span class="pre">set_config_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(disponible dans Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'general'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.set_config_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.set_config_value" title="Lien vers cette définition"></a></dt>
+<dd><p>Définit une valeur de configuration.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>key: Clé de configuration
+value: Valeur à stocker
+category: Catégorie de la configuration
+description: Description de la configuration</p>
+</dd>
+<dt>Returns:</dt><dd><p>True si défini avec succès, False sinon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.db_manager.DatabaseManager.vacuum_database">
+<span class="sig-name descname"><span class="pre">vacuum_database</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/database/db_manager.html#DatabaseManager.vacuum_database"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.db_manager.DatabaseManager.vacuum_database" title="Lien vers cette définition"></a></dt>
+<dd><p>Optimise la base de données.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>True si l’optimisation a réussi, False sinon</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-database.models">
+<span id="models"></span><h2>Models<a class="headerlink" href="#module-database.models" title="Lien vers cette rubrique"></a></h2>
+<p>Modèles de base de données pour Nonotags</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="database.models.CaseExceptionModel">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">database.models.</span></span><span class="sig-name descname"><span class="pre">CaseExceptionModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/database/models.html#CaseExceptionModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.models.CaseExceptionModel" title="Lien vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(disponible dans Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Modèle pour gérer les exceptions de casse</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="database.models.CaseExceptionModel.add_exception">
+<span class="sig-name descname"><span class="pre">add_exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">corrected</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exception_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'custom'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/database/models.html#CaseExceptionModel.add_exception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.models.CaseExceptionModel.add_exception" title="Lien vers cette définition"></a></dt>
+<dd><p>Ajoute une exception de casse</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.models.CaseExceptionModel.delete_exception">
+<span class="sig-name descname"><span class="pre">delete_exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exception_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(disponible dans Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(disponible dans Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/database/models.html#CaseExceptionModel.delete_exception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.models.CaseExceptionModel.delete_exception" title="Lien vers cette définition"></a></dt>
+<dd><p>Supprime une exception</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.models.CaseExceptionModel.get_all_exceptions">
+<span class="sig-name descname"><span class="pre">get_all_exceptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(disponible dans Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(disponible dans Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/database/models.html#CaseExceptionModel.get_all_exceptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.models.CaseExceptionModel.get_all_exceptions" title="Lien vers cette définition"></a></dt>
+<dd><p>Récupère toutes les exceptions</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="database.models.CaseExceptionModel.get_correction">
+<span class="sig-name descname"><span class="pre">get_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(disponible dans Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(disponible dans Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/database/models.html#CaseExceptionModel.get_correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#database.models.CaseExceptionModel.get_correction" title="Lien vers cette définition"></a></dt>
+<dd><p>Récupère la correction pour un texte donné</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="api_support.html" class="btn btn-neutral float-left" title="API Support" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="modules.html" class="btn btn-neutral float-right" title="core" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

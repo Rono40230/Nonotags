@@ -373,3 +373,63 @@ class ConfigManager:
             'paths': asdict(self.paths),
             'api': asdict(self.api)
         }
+
+# =============================================================================
+# CONSTANTES HARDCODÉES - Centralisées pour éviter la duplication
+# =============================================================================
+
+# Genres musicaux disponibles dans l'interface
+MUSIC_GENRES = [
+    "Acid Jazz", "B.O. de Films", "Blues", "Chansons Française", "Disco",
+    "Electronique", "Flamenco", "Folk", "Funk", "Jazz", "Musique Afriquaine",
+    "Musique Andine", "Musique Brésilienne", "Musique Classique", "Musique Cubaine",
+    "Musique Franco-Hispanique", "New-Wave", "Pop", "Rap", "Reggae", "Rock",
+    "Soul", "Top 50", "Trip-Hop", "Zouk"
+]
+
+# Règles hardcodées organisées par groupes (d'après README.md)
+PROCESSING_RULES = {
+    "GROUPE_1_NETTOYAGE_FICHIERS": [
+        "Suppression des fichiers indésirables (.DS_Store, Thumbs.db, etc.)",
+        "Suppression des sous-dossiers dans le dossier d'album",
+        "Renommage automatique des fichiers cover (front.jpg → cover.jpg)"
+    ],
+    "GROUPE_2_NETTOYAGE_METADONNEES": [
+        "Suppression des commentaires dans les métadonnées",
+        "Suppression des parenthèses et contenu dans Titres/Artistes/Albums",
+        "Nettoyage des espaces en trop",
+        "Suppression des caractères spéciaux (!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~)",
+        "Normalisation 'and'/'et' vers '&'"
+    ],
+    "GROUPE_3_CORRECTIONS_CASSE": [
+        "Casse propre - Titres (Première lettre majuscule)",
+        "Casse propre - Albums (Première lettre majuscule)",
+        "Ne pas appliquer sur villes romaines/chiffres romains",
+        "Exception si artiste dans titre d'album",
+        "'I' reste 'I' dans Titres/Artistes/Albums"
+    ],
+    "GROUPE_4_FORMATAGE": [
+        "Copier artiste vers interprète",
+        "Format numéro piste (01, 02, 03)",
+        "Année compilation (1970)"
+    ],
+    "GROUPE_5_RENOMMAGE": [
+        "Format nom fichier (N° - Titre)",
+        "Format nom dossier (Année Album)",
+        "Gestion années multiples (année_min-année_max)"
+    ],
+    "GROUPE_6_FINALISATION": [
+        "Associer cover.jpg à tous les titres si présente",
+        "Mise à jour temps réel des métadonnées physiques"
+    ]
+}
+
+# Ordre d'exécution des groupes
+RULES_EXECUTION_ORDER = [
+    "GROUPE_1_NETTOYAGE_FICHIERS",
+    "GROUPE_2_NETTOYAGE_METADONNEES",
+    "GROUPE_3_CORRECTIONS_CASSE",
+    "GROUPE_4_FORMATAGE",
+    "GROUPE_5_RENOMMAGE",
+    "GROUPE_6_FINALISATION"
+]

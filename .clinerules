@@ -1,0 +1,218 @@
+# Nonotags - Règles Essentielles de Développement
+# ⚠️ IMPÉRATIF - Ne JAMAIS enfreindre ces règles
+
+## ⚠️ RÈGLES DE COMPORTEMENT CRITIQUE
+
+**PROFIL UTILISATEUR : Non-codeur - Claude modifie directement les fichiers dans VSCode**
+
+### 🎯 RÈGLES D'OR (INVIOLABLES)
+
+1. **Ne JAMAIS casser le code existant**
+   - ✅ Tester l'impact sur le code existant AVANT toute modification
+   - ✅ Si une modification risque de casser quelque chose : DEMANDER confirmation
+   - ❌ AUCUNE modification du code fonctionnel sans approbation explicite
+   - ✅ **AVERTIR** clairement si une modification touche du code sensible
+   - ✅ Compiler après chaque modification : `python -m py_compile <fichier.py>`
+
+2. **Zéro initiative non sollicitée**
+   - ❌ INTERDICTION ABSOLUE de proposer des "améliorations" non demandées
+   - ❌ Ne JAMAIS refactoriser sans demande explicite
+   - ❌ Ne JAMAIS "optimiser" le code sans instruction
+   - ✅ Faire UNIQUEMENT ce qui est demandé, rien de plus
+   - ✅ **EXCEPTION** : Signaler brièvement bugs CRITIQUES ou opportunités >30% performance
+
+3. **Communication pour non-codeurs**
+   - ✅ **MODIFICATIONS DIRECTES** : Claude modifie les fichiers directement dans VSCode
+   - ✅ **FEEDBACK MINIMAL** : Après modification, message court type "✅ Modifié : [fichier]"
+   - ✅ **EXPLICATIONS CIBLÉES** : Expliquer uniquement décisions importantes
+   - ❌ **PAS de résumé** détaillé (l'utilisateur voit les changements dans VSCode)
+   - ❌ **PAS de jargon** technique non expliqué
+
+4. **Gestion des bugs récurrents**
+   - ✅ Après **5 tentatives échouées** sur la même correction : CHANGER DE STRATÉGIE
+   - ✅ Reconnaître explicitement : "❌ Ma logique est incorrecte, je teste une autre approche"
+   - ✅ **EXPLIQUER** brièvement pourquoi la nouvelle approche est différente (2-3 lignes max)
+   - ✅ Proposer UNE alternative radicalement différente
+
+5. **Architecture modulaire OBLIGATOIRE**
+   - ✅ RESPECTER l'architecture existante : core/ → services/ → ui/
+   - ✅ Chaque fonctionnalité dans son propre module
+   - ✅ Single Responsibility Principle : un module = une responsabilité
+   - ❌ JAMAIS créer de structure ad-hoc sans validation
+
+### Format de réponse OBLIGATOIRE
+
+**Pour une modification simple (95% des cas) :**
+```
+✅ Modifié : `ui/views/album_edit_window.py`
+```
+
+**Pour une modification avec point important :**
+```
+✅ Modifié : `core/metadata_backup.py`
+
+💡 Utilise maintenant SQLite pour persistance des métadonnées originales.
+```
+
+**Pour correction après erreur :**
+```
+✅ Corrigé : `services/audio_converter.py`
+```
+
+**Pour bug récurrent (5+ échecs) :**
+```
+❌ Ma logique threading ne fonctionne pas.
+Nouvelle approche : utiliser GLib.idle_add() pour synchroniser l'UI.
+
+✅ Modifié : `ui/views/audio_converter_window.py`
+```
+
+**Pour demander confirmation avant modification sensible :**
+```
+⚠️ Cette modification va toucher `ui/main_app.py` utilisé par 8 modules.
+Risque de casser le code existant.
+
+Veux-tu que je continue ?
+```
+
+---
+
+## 🏗️ Architecture Nonotags (STRUCTURÉ ET STRICT)
+
+### Structure imposée
+```
+Nonotags/
+├── core/                # Logique métier (file_renamer, metadata_processor, etc.)
+├── database/            # Couche données (db_manager, models)
+├── services/            # Services métier (audio_player, music_scanner, audio_converter)
+├── support/             # Utilitaires (logger, config_manager, validator)
+├── ui/                  # Interface GTK3
+│   ├── components/      # Composants réutilisables
+│   ├── managers/        # Gestionnaires (window_manager, persistent_window_manager)
+│   ├── views/           # Fenêtres principales
+│   ├── resources/       # Ressources (CSS, images)
+│   └── transitions/     # Transitions entre écrans
+├── logs/                # Fichiers de log
+└── .clinerules          # CES RÈGLES
+```
+
+### Patterns archéologiques à respecter STRICTEMENT
+- **Modules séparés** : Chaque fonctionnalité = nouveau fichier
+- **Callbacks GTK3** : Convention `on_<action>_<element>` OBLIGATOIRE
+- **Threading** : GLib.idle_add() pour mise à jour UI depuis threads
+- **Métadonnées** : Mutagen PARTOUT (jamais autre chose)
+- **Bases de données** : SQLite avec pattern factory
+
+### Nommage STRICT
+- **Fichiers Python** : snake_case (ex: metadata_backup.py)
+- **Classes** : PascalCase (ex: AudioConverter, AlbumEditWindow)
+- **Fonctions/Méthodes** : snake_case (ex: _add_files_to_list)
+- **Constantes** : UPPER_SNAKE_CASE (ex: SUPPORTED_FORMATS)
+- **Attributs privés** : Préfixe underscore (ex: self._internal_state)
+
+---
+
+## 🔧 STANDARDS TECHNIQUES (OBLIGATOIRES)
+
+### Python
+- **Version** : Python 3.11+
+- **Indentation** : 4 espaces (JAMAIS tabs)
+- **Encodage** : UTF-8 obligatoire
+- **Imports** : Standard library → third-party → local
+- **Docstrings** : Toutes les classes et fonctions publiques
+- **Type hints** : Fortement recommandés pour API publiques
+
+### GTK3 UI
+- **Compilation** : `python -m py_compile <fichier.py>` APRÈS chaque modification
+- **Threads** : GLib.idle_add() pour mettre à jour l'UI depuis threads
+- **Widgets** : Classes Gtk3 standards UNIQUEMENT
+- **Callbacks** : Convention stricte `on_<action>_<element>`
+
+### Audio & Métadonnées
+- **Formats** : .mp3, .flac, .m4a, .mp4, .wav, .ogg
+- **Bibliothèque** : Mutagen TOUJOURS (jamais autre chose)
+  - ID3 pour MP3
+  - FLAC pour FLAC
+  - MP4 pour M4A/MP4
+- **Erreurs** : Capturer exceptions Mutagen spécifiquement
+
+### Logging & Feedback
+- **Français** : Commentaires + logs en français
+- **Format** : Logs avec emojis (✅ succès, ❌ erreurs, ⚠️ avertissements)
+- **Jamais** : `print()` pour logs → utiliser print() pour feedback utilisateur
+- **Clarté** : Les commentaires expliquent le POURQUOI, pas le QUOI
+
+## 📝 CONVENTIONS DE DOCUMENTS
+
+### Commentaires
+- **Français** : Commentaires et docstrings en français
+- **Clarté** : Les commentaires expliquent le POURQUOI, pas le QUOI
+- **Logs** : Utiliser print() avec emojis pour feedback utilisateur
+- **Debug** : Préfixe ❌ pour erreurs, ✅ pour succès, ⚠️ pour avertissements
+
+### Exemple de structure
+```python
+"""
+Description courte du module
+Description plus détaillée des fonctionnalités principales
+"""
+
+import os
+from typing import List, Dict, Optional
+from mutagen.flac import FLAC
+
+class AudioProcessor:
+    """Traite les fichiers audio"""
+    
+    def __init__(self):
+        self.supported_formats = ['.mp3', '.flac', '.m4a']
+    
+    def process_file(self, file_path: str) -> Dict:
+        """
+        Traite un fichier audio
+        
+        Args:
+            file_path: Chemin du fichier à traiter
+            
+        Returns:
+            Dictionnaire avec les métadonnées extraites
+        """
+        if not os.path.exists(file_path):
+            print(f"❌ Fichier introuvable: {file_path}")
+            return {}
+        
+        # Extraction des métadonnées
+        metadata = self._extract_metadata(file_path)
+        return metadata
+```
+
+---
+
+## ✅ Checklist avant chaque commit
+
+- [ ] Code compile sans erreurs : `python -m py_compile <fichier.py>`
+- [ ] Pas de code dupliqué
+- [ ] Pas de hardcoding (credentials, paths)
+- [ ] Logs clairs avec emojis
+- [ ] Gestion d'erreurs complète
+- [ ] **VÉRIFIÉ** : Aucun code existant cassé
+- [ ] **VÉRIFIÉ** : Architecture modulaire respectée
+- [ ] **VÉRIFIÉ** : Git status clean
+- [ ] Message de commit descriptif
+- [ ] Tests manuels effectués sur la fonctionnalité
+
+---
+
+## 🚫 Interdictions strictes (Ne JAMAIS)
+
+### À INTERDIRE ABSOLUMENT
+- ❌ Credentials/API keys en dur
+- ❌ Hardcoding de chemins (utiliser config_manager)
+- ❌ Code dupliqué entre modules
+- ❌ Import with * (`from module import *`)
+- ❌ Variables globales mutables
+- ❌ Modifications du code existant sans approbation
+- ❌ Refactorisation non demandée
+- ❌ Suppression de fonctionnalité sans documentation
+- ❌ Threading SANS GLib.idle_add() pour l'UI
+- ❌ Mutagen non utilisé pour métadonnées audio

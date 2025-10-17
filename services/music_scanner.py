@@ -10,6 +10,20 @@ from pathlib import Path
 import mutagen
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3NoHeaderError
+try:
+    from mutagen.flac import FLAC
+except ImportError:
+    FLAC = None
+try:
+    from mutagen.mp4 import MP4
+except ImportError:
+    MP4 = None
+try:
+    from mutagen.wav import WAV
+except ImportError:
+    WAV = None
+from services.metadata_backup import metadata_backup
+from support.thread_pool import get_thread_pool
 
 class MusicScanner:
     """Service de scan des dossiers musicaux"""
@@ -41,11 +55,23 @@ class MusicScanner:
             if music_files:
                 album_data = self._analyze_folder(root, music_files)
                 if album_data:
+                    # Sauvegarder les métadonnées originales avant toute correction
+                    try:
+                        metadata_backup.backup_album_metadata(root)
+                        print(f"✅ Métadonnées sauvegardées pour {os.path.basename(root)}")
+                    except Exception as e:
+                        print(f"⚠️ Erreur sauvegarde métadonnées {root}: {e}")
+                    
                     self.albums_found.append(album_data)
                     if progress_callback:
                         progress_callback(len(self.albums_found), album_data['title'])
         
         return self.albums_found
+    
+    def _process_album_batch(self, root: str, music_files: List[str]) -> Optional[Dict]:
+        """Traite un album dans un contexte threadé (pour batch processing)"""
+        album_data = self._analyze_folder(root, music_files)
+        return album_data
     
     def _filter_music_files(self, files: List[str]) -> List[str]:
         """Filtre les fichiers musicaux supportés"""
@@ -94,9 +120,11 @@ class MusicScanner:
     def _extract_metadata(self, file_path: str) -> Optional[Dict]:
         """Extrait les métadonnées d'un fichier musical"""
         try:
-            if file_path.lower().endswith('.mp3'):
+            file_ext = file_path.lower().endswith
+            
+            if file_ext('.mp3'):
+                # Support MP3 avec tags ID3
                 audio = MP3(file_path, ID3=mutagen.id3.ID3)
-                
                 return {
                     'title': self._get_tag_value(audio, 'TIT2') or self._guess_title_from_filename(file_path),
                     'artist': self._get_tag_value(audio, 'TPE1') or 'Artiste Inconnu',
@@ -105,6 +133,54 @@ class MusicScanner:
                     'genre': self._get_tag_value(audio, 'TCON') or 'Genre Inconnu',
                     'track_number': self._get_tag_value(audio, 'TRCK')
                 }
+            
+            elif file_ext('.flac') and FLAC:
+                # Support FLAC
+                audio = FLAC(file_path)
+                return {
+                    'title': audio.get('title', [self._guess_title_from_filename(file_path)])[0],
+                    'artist': audio.get('artist', ['Artiste Inconnu'])[0],
+                    'album': audio.get('album', ['Album Inconnu'])[0],
+                    'year': audio.get('date', ['----'])[0][:4] if audio.get('date') else '----',
+                    'genre': audio.get('genre', ['Genre Inconnu'])[0],
+                    'track_number': audio.get('tracknumber', [None])[0]
+                }
+            
+            elif (file_ext('.m4a') or file_ext('.mp4')) and MP4:
+                # Support M4A/MP4
+                audio = MP4(file_path)
+                return {
+                    'title': audio.get('\xa9nam', [self._guess_title_from_filename(file_path)])[0],
+                    'artist': audio.get('\xa9ART', ['Artiste Inconnu'])[0],
+                    'album': audio.get('\xa9alb', ['Album Inconnu'])[0],
+                    'year': audio.get('\xa9day', ['----'])[0][:4] if audio.get('\xa9day') else '----',
+                    'genre': audio.get('\xa9gen', ['Genre Inconnu'])[0],
+                    'track_number': audio.get('trkn', [(None,)])[0][0]
+                }
+            
+            elif file_ext('.ogg'):
+                # Support OGG (métadonnées basiques)
+                try:
+                    from mutagen.oggvorbis import OggVorbis
+                    audio = OggVorbis(file_path)
+                    return {
+                        'title': audio.get('title', [self._guess_title_from_filename(file_path)])[0],
+                        'artist': audio.get('artist', ['Artiste Inconnu'])[0],
+                        'album': audio.get('album', ['Album Inconnu'])[0],
+                        'year': audio.get('date', ['----'])[0][:4] if audio.get('date') else '----',
+                        'genre': audio.get('genre', ['Genre Inconnu'])[0],
+                        'track_number': audio.get('tracknumber', [None])[0]
+                    }
+                except ImportError:
+                    # Fallback si mutagen.oggvorbis n'est pas disponible
+                    pass
+            
+            elif file_ext('.wav') and WAV:
+                # Support WAV (métadonnées limitées)
+                audio = WAV(file_path)
+                # WAV a très peu de métadonnées, on utilise le nom de fichier
+                return self._guess_metadata_from_filename(file_path)
+        
         except (ID3NoHeaderError, Exception) as e:
             # Erreur lecture métadonnées, utiliser le nom de fichier
             return self._guess_metadata_from_filename(file_path)

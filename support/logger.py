@@ -146,12 +146,30 @@ class AppLogger:
             f"Old: '{old_value}' -> New: '{new_value}'"
         )
     
-    def log_performance(self, operation: str, duration: float, details: str = ""):
-        """Log spécifique pour les performances."""
-        self.performance_logger.info(
-            f"Performance - Operation: {operation}, Duration: {duration:.3f}s, "
-            f"Details: {details}"
-        )
+    def log_performance(self, operation: str, duration: float, details: str = "",
+                       memory_usage: Optional[float] = None, cpu_usage: Optional[float] = None):
+        """
+        Log spécifique pour les performances avec métriques système.
+        
+        Args:
+            operation: Nom de l'opération
+            duration: Durée en secondes
+            details: Détails supplémentaires
+            memory_usage: Utilisation mémoire en MB (optionnel)
+            cpu_usage: Utilisation CPU en % (optionnel)
+        """
+        perf_message = f"Performance - Operation: {operation}, Duration: {duration:.3f}s"
+        
+        if memory_usage is not None:
+            perf_message += f", Memory: {memory_usage:.1f}MB"
+        
+        if cpu_usage is not None:
+            perf_message += f", CPU: {cpu_usage:.1f}%"
+        
+        if details:
+            perf_message += f", Details: {details}"
+        
+        self.performance_logger.info(perf_message)
     
     def set_level(self, level: str):
         """

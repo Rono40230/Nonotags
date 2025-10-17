@@ -32,12 +32,23 @@ except ImportError:
     # Pour les tests et développement sans mutagen
     MP3 = None
 
+# Support multi-format
+try:
+    from mutagen.flac import FLAC
+except ImportError:
+    FLAC = None
+try:
+    from mutagen.mp4 import MP4
+except ImportError:
+    MP4 = None
+
 # Import des modules de support
 from support.logger import AppLogger
 from support.config_manager import ConfigManager
 from support.state_manager import StateManager
 from support.validator import FileValidator, MetadataValidator, ValidationResult
 from support.honest_logger import honest_logger, ProcessingResult
+from support.cache import cached_metadata, metadata_cache
 from database.db_manager import DatabaseManager
 
 
@@ -145,6 +156,202 @@ class MetadataCleaner:
         }
         
         self.logger.debug("Règles de nettoyage chargées depuis la configuration")
+    
+    def _load_audio_file(self, file_path: str) -> Optional[Any]:
+        """
+        Charge un fichier audio selon son format.
+        
+        Args:
+            file_path: Chemin vers le fichier audio
+            
+        Returns:
+            Objet audio Mutagen ou None si format non supporté
+        """
+        file_ext = file_path.lower().endswith
+        
+        try:
+            if file_ext('.mp3') and MP3:
+                return MP3(file_path)
+            elif file_ext('.flac') and FLAC:
+                return FLAC(file_path)
+            elif (file_ext('.m4a') or file_ext('.mp4')) and MP4:
+                return MP4(file_path)
+        except Exception as e:
+            self.logger.warning(f"Erreur chargement fichier {file_path}: {e}")
+        
+        return None
+    
+    def _clean_audio_file_metadata(self, audio_file: Any, file_path: str, results: CleaningResults) -> bool:
+        """
+        Nettoie les métadonnées d'un fichier audio selon son format.
+        
+        Args:
+            audio_file: Objet audio Mutagen
+            file_path: Chemin du fichier
+            results: Objet résultats à mettre à jour
+            
+        Returns:
+            bool: True si des changements ont été effectués
+        """
+        changes_made = False
+        file_ext = file_path.lower().endswith
+        
+        honest_logger.info(f"🎵 Traitement métadonnées: {Path(file_path).name}")
+        
+        if file_ext('.mp3'):
+            # Nettoyage MP3 avec tags ID3
+            changes_made = self._clean_mp3_metadata(audio_file, results)
+        elif file_ext('.flac') and FLAC:
+            # Nettoyage FLAC
+            changes_made = self._clean_flac_metadata(audio_file, results)
+        elif (file_ext('.m4a') or file_ext('.mp4')) and MP4:
+            # Nettoyage M4A/MP4
+            changes_made = self._clean_mp4_metadata(audio_file, results)
+        else:
+            # Format non supporté pour le nettoyage
+            results.warnings.append(f"Format {file_path.split('.')[-1]} non supporté pour le nettoyage")
+        
+        return changes_made
+    
+    def _clean_mp3_metadata(self, audio_file: Any, results: CleaningResults) -> bool:
+        """Nettoie les métadonnées MP3."""
+        changes_made = False
+        
+        # RÈGLE 4 : Suppression des commentaires (tags COMM)
+        comment_tags = [tag for tag in audio_file.tags.keys() if tag.startswith('COMM')]
+        if comment_tags:
+            honest_logger.info(f"💬 RÈGLE 4 - {len(comment_tags)} commentaires détectés à supprimer")
+            for comment_tag in comment_tags:
+                del audio_file.tags[comment_tag]
+                honest_logger.success(f"✅ RÈGLE 4 - Commentaire supprimé: {comment_tag}")
+            changes_made = True
+        else:
+            honest_logger.debug(f"ℹ️ RÈGLE 4 - Aucun commentaire trouvé")
+        
+        # Nettoyage des champs texte (règles 5-8)
+        for field_name in self._metadata_fields:
+            if field_name in audio_file.tags:
+                original_value = str(audio_file.tags[field_name].text[0])
+                honest_logger.info(f"🏷️ Traitement champ {field_name}: '{original_value}'")
+                
+                cleaned_value = self._apply_cleaning_rules(original_value)
+                
+                if cleaned_value != original_value:
+                    # Déterminer quelle règle a causé le changement
+                    applied_rules = self._identify_applied_rules(original_value, cleaned_value)
+                    
+                    # Mise à jour de la métadonnée
+                    audio_file.tags[field_name].text = [cleaned_value]
+                    
+                    # Enregistrement du changement
+                    for rule in applied_rules:
+                        change = MetadataChange(
+                            field_name=field_name,
+                            old_value=original_value,
+                            new_value=cleaned_value,
+                            rule_applied=rule
+                        )
+                        results.changes.append(change)
+                    
+                    changes_made = True
+                    
+                    honest_logger.success(
+                        f"✅ Métadonnée modifiée: {field_name}: '{original_value}' → '{cleaned_value}'"
+                    )
+                else:
+                    honest_logger.debug(f"ℹ️ Champ {field_name} déjà propre: '{original_value}'")
+        
+        return changes_made
+    
+    def _clean_flac_metadata(self, audio_file: Any, results: CleaningResults) -> bool:
+        """Nettoie les métadonnées FLAC."""
+        changes_made = False
+        
+        # Champs FLAC à nettoyer
+        flac_fields = {
+            'title': 'title',
+            'artist': 'artist', 
+            'album': 'album',
+            'genre': 'genre'
+        }
+        
+        for field_name, flac_key in flac_fields.items():
+            if flac_key in audio_file:
+                original_value = audio_file[flac_key][0]
+                honest_logger.info(f"🏷️ Traitement champ {field_name}: '{original_value}'")
+                
+                cleaned_value = self._apply_cleaning_rules(original_value)
+                
+                if cleaned_value != original_value:
+                    applied_rules = self._identify_applied_rules(original_value, cleaned_value)
+                    
+                    # Mise à jour de la métadonnée FLAC
+                    audio_file[flac_key] = [cleaned_value]
+                    
+                    # Enregistrement du changement
+                    for rule in applied_rules:
+                        change = MetadataChange(
+                            field_name=field_name,
+                            old_value=original_value,
+                            new_value=cleaned_value,
+                            rule_applied=rule
+                        )
+                        results.changes.append(change)
+                    
+                    changes_made = True
+                    
+                    honest_logger.success(
+                        f"✅ Métadonnée modifiée: {field_name}: '{original_value}' → '{cleaned_value}'"
+                    )
+                else:
+                    honest_logger.debug(f"ℹ️ Champ {field_name} déjà propre: '{original_value}'")
+        
+        return changes_made
+    
+    def _clean_mp4_metadata(self, audio_file: MP4, results: CleaningResults) -> bool:
+        """Nettoie les métadonnées M4A/MP4."""
+        changes_made = False
+        
+        # Champs MP4 à nettoyer
+        mp4_fields = {
+            'title': '\xa9nam',
+            'artist': '\xa9ART',
+            'album': '\xa9alb',
+            'genre': '\xa9gen'
+        }
+        
+        for field_name, mp4_key in mp4_fields.items():
+            if mp4_key in audio_file:
+                original_value = audio_file[mp4_key][0]
+                honest_logger.info(f"🏷️ Traitement champ {field_name}: '{original_value}'")
+                
+                cleaned_value = self._apply_cleaning_rules(original_value)
+                
+                if cleaned_value != original_value:
+                    applied_rules = self._identify_applied_rules(original_value, cleaned_value)
+                    
+                    # Mise à jour de la métadonnée MP4
+                    audio_file[mp4_key] = [cleaned_value]
+                    
+                    # Enregistrement du changement
+                    for rule in applied_rules:
+                        change = MetadataChange(
+                            field_name=field_name,
+                            old_value=original_value,
+                            new_value=cleaned_value,
+                            rule_applied=rule
+                        )
+                        results.changes.append(change)
+                    
+                    changes_made = True
+                    
+                    honest_logger.success(
+                        f"✅ Métadonnée modifiée: {field_name}: '{original_value}' → '{cleaned_value}'"
+                    )
+                else:
+                    honest_logger.debug(f"ℹ️ Champ {field_name} déjà propre: '{original_value}'")
+        
+        return changes_made
     
     def clean_album_metadata(self, album_path: str) -> AlbumCleaningStats:
         """
@@ -254,10 +461,10 @@ class MetadataCleaner:
     
     def clean_file_metadata(self, file_path: str) -> CleaningResults:
         """
-        Nettoie les métadonnées d'un fichier MP3 spécifique.
+        Nettoie les métadonnées d'un fichier audio (MP3, FLAC, M4A, etc.).
         
         Args:
-            file_path: Chemin vers le fichier MP3
+            file_path: Chemin vers le fichier audio
             
         Returns:
             CleaningResults: Résultats du nettoyage
@@ -268,74 +475,22 @@ class MetadataCleaner:
             import time
             start_time = time.time()
             
-            # Validation du fichier MP3
+            # Validation du fichier audio
             validation = self.validator.validate_mp3_file(file_path)
             if not validation.is_valid:
                 results.errors.extend(validation.errors)
                 results.warnings.extend(validation.warnings)
-                self.logger.warning(f"Fichier MP3 invalide : {file_path}")
+                self.logger.warning(f"Fichier audio invalide : {file_path}")
                 return results
             
-            # Chargement des métadonnées
-            if MP3 is None:
-                results.errors.append("Mutagen non disponible - impossible de traiter les métadonnées")
+            # Chargement du fichier audio selon son format
+            audio_file = self._load_audio_file(file_path)
+            if audio_file is None:
+                results.errors.append("Format audio non supporté ou Mutagen non disponible")
                 return results
             
-            try:
-                audio_file = MP3(file_path)
-            except ID3NoHeaderError:
-                # Créer les tags ID3 s'ils n'existent pas
-                audio_file = MP3(file_path)
-                audio_file.add_tags()
-            
-            # Application des règles de nettoyage
-            changes_made = False
-            
-            honest_logger.info(f"🎵 Traitement métadonnées: {Path(file_path).name}")
-            
-            # RÈGLE 4 : Suppression des commentaires (tags COMM)
-            comment_tags = [tag for tag in audio_file.tags.keys() if tag.startswith('COMM')]
-            if comment_tags:
-                honest_logger.info(f"💬 RÈGLE 4 - {len(comment_tags)} commentaires détectés à supprimer")
-                for comment_tag in comment_tags:
-                    del audio_file.tags[comment_tag]
-                    honest_logger.success(f"✅ RÈGLE 4 - Commentaire supprimé: {comment_tag}")
-                changes_made = True
-            else:
-                honest_logger.debug(f"ℹ️ RÈGLE 4 - Aucun commentaire trouvé")
-            
-            # Nettoyage des champs texte (règles 5-8)
-            for field_name in self._metadata_fields:
-                if field_name in audio_file.tags:
-                    original_value = str(audio_file.tags[field_name].text[0])
-                    honest_logger.info(f"🏷️ Traitement champ {field_name}: '{original_value}'")
-                    
-                    cleaned_value = self._apply_cleaning_rules(original_value)
-                    
-                    if cleaned_value != original_value:
-                        # Déterminer quelle règle a causé le changement
-                        applied_rules = self._identify_applied_rules(original_value, cleaned_value)
-                        
-                        # Mise à jour de la métadonnée
-                        audio_file.tags[field_name].text = [cleaned_value]
-                        
-                        # Enregistrement du changement
-                        for rule in applied_rules:
-                            change = MetadataChange(
-                                field_name=field_name,
-                                old_value=original_value,
-                                new_value=cleaned_value,
-                                rule_applied=rule
-                            )
-                            results.changes.append(change)
-                        
-                        changes_made = True
-                        
-                        honest_logger.success(
-                            f"✅ Métadonnée modifiée: {field_name}: '{original_value}' → '{cleaned_value}'"
-                        )
-                    else:
-                        honest_logger.debug(f"ℹ️ Champ {field_name} déjà propre: '{original_value}'")
+            # Application des règles de nettoyage selon le format
+            changes_made = self._clean_audio_file_metadata(audio_file, file_path, results)
             
             # Sauvegarde des modifications
             if changes_made:

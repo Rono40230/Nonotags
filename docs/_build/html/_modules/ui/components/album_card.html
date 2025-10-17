@@ -1,0 +1,745 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ui.components.album_card &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/translations.js?v=e6b791cb"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_services.html">API Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Code du module</a></li>
+      <li class="breadcrumb-item active">ui.components.album_card</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Code source de ui.components.album_card</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Composant AlbumCard</span>
+<span class="sd">Widget représentant une carte d&#39;album dans l&#39;interface</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gi</span>
+<span class="n">gi</span><span class="o">.</span><span class="n">require_version</span><span class="p">(</span><span class="s1">&#39;Gtk&#39;</span><span class="p">,</span> <span class="s1">&#39;3.0&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">gi.repository</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gtk</span><span class="p">,</span> <span class="n">Pango</span><span class="p">,</span> <span class="n">GdkPixbuf</span><span class="p">,</span> <span class="n">GdkPixbuf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+
+<span class="c1"># Import pour lecture métadonnées</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.mp3</span><span class="w"> </span><span class="kn">import</span> <span class="n">MP3</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.id3</span><span class="w"> </span><span class="kn">import</span> <span class="n">ID3NoHeaderError</span>
+    <span class="n">MUTAGEN_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">MUTAGEN_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="c1"># Import du gestionnaire d&#39;événements - DÉSACTIVÉ, remplacé par RefreshManager</span>
+<span class="c1"># from services.metadata_event_manager import metadata_event_manager</span>
+
+<div class="viewcode-block" id="AlbumCard">
+<a class="viewcode-back" href="../../../api_ui.html#ui.components.album_card.AlbumCard">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AlbumCard</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Widget représentant une carte d&#39;album&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">parent_app</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span> <span class="o">=</span> <span class="n">album_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent_app</span> <span class="o">=</span> <span class="n">parent_app</span>
+        
+        <span class="c1"># Sauvegarder le chemin d&#39;album original pour éviter la corruption lors d&#39;éditions multi-albums</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_album_path</span> <span class="o">=</span> <span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;folder_path&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_shadow_type</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">ShadowType</span><span class="o">.</span><span class="n">OUT</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_style_context</span><span class="p">()</span><span class="o">.</span><span class="n">add_class</span><span class="p">(</span><span class="s2">&quot;album-card&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_style_context</span><span class="p">()</span><span class="o">.</span><span class="n">add_class</span><span class="p">(</span><span class="s2">&quot;album-card-large&quot;</span><span class="p">)</span>  <span class="c1"># Nouvelle classe pour forcer la taille</span>
+        
+                <span class="c1"># Taille fixe pour la carte - FORCER avec toutes les méthodes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_size_request</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_property</span><span class="p">(</span><span class="s2">&quot;width-request&quot;</span><span class="p">,</span> <span class="mi">320</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_property</span><span class="p">(</span><span class="s2">&quot;height-request&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_hexpand</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_vexpand</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_halign</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Align</span><span class="o">.</span><span class="n">CENTER</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_valign</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Align</span><span class="o">.</span><span class="n">START</span><span class="p">)</span>
+        
+        <span class="c1"># Container principal avec taille contrôlée</span>
+        <span class="n">vbox</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">orientation</span><span class="o">=</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+        <span class="n">vbox</span><span class="o">.</span><span class="n">set_margin_left</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">vbox</span><span class="o">.</span><span class="n">set_margin_right</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">vbox</span><span class="o">.</span><span class="n">set_margin_top</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">vbox</span><span class="o">.</span><span class="n">set_margin_bottom</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+        <span class="c1"># Forcer la taille du conteneur principal</span>
+        <span class="n">vbox</span><span class="o">.</span><span class="n">set_size_request</span><span class="p">(</span><span class="mi">296</span><span class="p">,</span> <span class="mi">476</span><span class="p">)</span>  <span class="c1"># 320-24 pour les marges</span>
+        
+        <span class="c1"># Case de sélection en haut à droite</span>
+        <span class="n">header_box</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">orientation</span><span class="o">=</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="n">header_box</span><span class="o">.</span><span class="n">set_halign</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Align</span><span class="o">.</span><span class="n">FILL</span><span class="p">)</span>
+        
+        <span class="c1"># Case de sélection à droite</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection_checkbox</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">CheckButton</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection_checkbox</span><span class="o">.</span><span class="n">set_halign</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Align</span><span class="o">.</span><span class="n">END</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection_checkbox</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;toggled&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_selection_toggled</span><span class="p">)</span>
+        <span class="n">header_box</span><span class="o">.</span><span class="n">pack_end</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selection_checkbox</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        
+        <span class="n">vbox</span><span class="o">.</span><span class="n">pack_start</span><span class="p">(</span><span class="n">header_box</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1"># Pochette d&#39;album (taille souhaitée 300x300)</span>
+        <span class="n">cover_frame</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Frame</span><span class="p">()</span>
+        <span class="n">cover_frame</span><span class="o">.</span><span class="n">set_size_request</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+        <span class="n">cover_frame</span><span class="o">.</span><span class="n">set_halign</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Align</span><span class="o">.</span><span class="n">CENTER</span><span class="p">)</span>
+        
+        <span class="c1"># Affichage de la pochette d&#39;album (vraie image ou placeholder)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cover_widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_cover_widget</span><span class="p">()</span>
+        <span class="n">cover_frame</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cover_widget</span><span class="p">)</span>
+        
+        <span class="n">vbox</span><span class="o">.</span><span class="n">pack_start</span><span class="p">(</span><span class="n">cover_frame</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1"># Informations de l&#39;album (centrées)</span>
+        <span class="n">info_box</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">orientation</span><span class="o">=</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">info_box</span><span class="o">.</span><span class="n">set_halign</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Align</span><span class="o">.</span><span class="n">CENTER</span><span class="p">)</span>
+        
+        <span class="c1"># Ligne 1 : Artiste (en gras)</span>
+        <span class="n">artist_label</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">()</span>
+        <span class="n">artist_label</span><span class="o">.</span><span class="n">set_markup</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;b&gt;</span><span class="si">{</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;artist&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Artiste Inconnu&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/b&gt;&#39;</span><span class="p">)</span>
+        <span class="n">artist_label</span><span class="o">.</span><span class="n">set_halign</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Align</span><span class="o">.</span><span class="n">CENTER</span><span class="p">)</span>
+        <span class="n">artist_label</span><span class="o">.</span><span class="n">set_justify</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Justification</span><span class="o">.</span><span class="n">CENTER</span><span class="p">)</span>
+        <span class="n">artist_label</span><span class="o">.</span><span class="n">set_ellipsize</span><span class="p">(</span><span class="n">Pango</span><span class="o">.</span><span class="n">EllipsizeMode</span><span class="o">.</span><span class="n">END</span><span class="p">)</span>
+        <span class="n">artist_label</span><span class="o">.</span><span class="n">set_max_width_chars</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+        <span class="n">info_box</span><span class="o">.</span><span class="n">pack_start</span><span class="p">(</span><span class="n">artist_label</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1"># Ligne 2 : Titre = métadonnées album (priorité) puis nom du dossier (fallback)</span>
+        <span class="c1"># Priorité aux métadonnées de l&#39;album plutôt qu&#39;au nom du dossier</span>
+        <span class="n">album_title</span> <span class="o">=</span> <span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;album&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">album_title</span><span class="p">:</span>
+            <span class="c1"># Fallback sur le nom du dossier seulement si pas de métadonnées album</span>
+            <span class="n">folder_path</span> <span class="o">=</span> <span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;folder_path&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">)</span>
+            <span class="n">album_title</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span> <span class="k">if</span> <span class="n">folder_path</span> <span class="k">else</span> <span class="s1">&#39;Album Inconnu&#39;</span>
+        
+        <span class="c1"># Ajouter l&#39;année au format (Année) Titre</span>
+        <span class="c1"># Calculer la plage d&#39;années en scannant TOUS les fichiers</span>
+        <span class="n">folder_path</span> <span class="o">=</span> <span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;folder_path&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">)</span>
+        <span class="n">year_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_compilation_year_range</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">year_range</span><span class="p">:</span>
+            <span class="n">year_title_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">year_range</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">album_title</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">year_title_text</span> <span class="o">=</span> <span class="n">album_title</span>
+        <span class="n">year_title_label</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">()</span>
+        <span class="n">year_title_label</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="n">year_title_text</span><span class="p">)</span>
+        <span class="n">year_title_label</span><span class="o">.</span><span class="n">set_halign</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Align</span><span class="o">.</span><span class="n">CENTER</span><span class="p">)</span>
+        <span class="n">year_title_label</span><span class="o">.</span><span class="n">set_justify</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Justification</span><span class="o">.</span><span class="n">CENTER</span><span class="p">)</span>
+        <span class="n">year_title_label</span><span class="o">.</span><span class="n">get_style_context</span><span class="p">()</span><span class="o">.</span><span class="n">add_class</span><span class="p">(</span><span class="s2">&quot;subtitle-label&quot;</span><span class="p">)</span>
+        <span class="n">year_title_label</span><span class="o">.</span><span class="n">set_ellipsize</span><span class="p">(</span><span class="n">Pango</span><span class="o">.</span><span class="n">EllipsizeMode</span><span class="o">.</span><span class="n">END</span><span class="p">)</span>
+        <span class="n">year_title_label</span><span class="o">.</span><span class="n">set_max_width_chars</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+        <span class="n">info_box</span><span class="o">.</span><span class="n">pack_start</span><span class="p">(</span><span class="n">year_title_label</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1"># Ligne 3 : Genre</span>
+        <span class="n">genre_label</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">()</span>
+        <span class="n">genre_label</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;genre&quot;</span><span class="p">,</span> <span class="s2">&quot;Genre inconnu&quot;</span><span class="p">))</span>
+        <span class="n">genre_label</span><span class="o">.</span><span class="n">set_halign</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Align</span><span class="o">.</span><span class="n">CENTER</span><span class="p">)</span>
+        <span class="n">genre_label</span><span class="o">.</span><span class="n">set_justify</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Justification</span><span class="o">.</span><span class="n">CENTER</span><span class="p">)</span>
+        <span class="n">genre_label</span><span class="o">.</span><span class="n">get_style_context</span><span class="p">()</span><span class="o">.</span><span class="n">add_class</span><span class="p">(</span><span class="s2">&quot;subtitle-label&quot;</span><span class="p">)</span>
+        <span class="n">genre_label</span><span class="o">.</span><span class="n">set_ellipsize</span><span class="p">(</span><span class="n">Pango</span><span class="o">.</span><span class="n">EllipsizeMode</span><span class="o">.</span><span class="n">END</span><span class="p">)</span>
+        <span class="n">genre_label</span><span class="o">.</span><span class="n">set_max_width_chars</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+        <span class="n">info_box</span><span class="o">.</span><span class="n">pack_start</span><span class="p">(</span><span class="n">genre_label</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        
+        <span class="n">vbox</span><span class="o">.</span><span class="n">pack_start</span><span class="p">(</span><span class="n">info_box</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1"># Boutons d&#39;action compacts sans classe CSS contraignante</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edit_button</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Éditer l&#39;album&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edit_button</span><span class="o">.</span><span class="n">set_size_request</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">edit_button</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_edit_clicked</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">playlist_button</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Créer la playlist de l&#39;album&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">playlist_button</span><span class="o">.</span><span class="n">set_size_request</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">playlist_button</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_playlist_clicked</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_button</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Supprimer de la liste&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_button</span><span class="o">.</span><span class="n">set_size_request</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_button</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_remove_clicked</span><span class="p">)</span>
+        
+        <span class="c1"># Ajouter les boutons à la vbox</span>
+        <span class="n">vbox</span><span class="o">.</span><span class="n">pack_start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edit_button</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">vbox</span><span class="o">.</span><span class="n">pack_start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">playlist_button</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">vbox</span><span class="o">.</span><span class="n">pack_start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remove_button</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">vbox</span><span class="p">)</span>
+        
+        <span class="c1"># S&#39;enregistrer comme observateur pour les changements de métadonnées - DÉSACTIVÉ</span>
+        <span class="c1"># Remplacé par RefreshManager qui gère centralement les mises à jour</span>
+        <span class="c1"># self._register_metadata_observer()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_register_metadata_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enregistre cette card comme observateur des changements de métadonnées - DÉSACTIVÉ&quot;&quot;&quot;</span>
+        <span class="c1"># album_path = self.album_data.get(&#39;folder_path&#39;) or self.album_data.get(&#39;path&#39;, &#39;&#39;)</span>
+        <span class="c1"># if album_path:</span>
+        <span class="c1">#     metadata_event_manager.register_observer(album_path, self._on_metadata_changed)</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_on_metadata_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback appelé quand les métadonnées changent - DÉSACTIVÉ&quot;&quot;&quot;</span>
+        <span class="c1"># GLib.idle_add(self._update_display)</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Destructeur pour nettoyer l&#39;observateur - DÉSACTIVÉ&quot;&quot;&quot;</span>
+        <span class="c1"># try:</span>
+        <span class="c1">#     album_path = self.album_data.get(&#39;folder_path&#39;) or self.album_data.get(&#39;path&#39;, &#39;&#39;)</span>
+        <span class="c1">#     if album_path:</span>
+        <span class="c1">#         metadata_event_manager.unregister_observer(album_path, self._on_metadata_changed)</span>
+        <span class="c1"># except:</span>
+        <span class="c1">#     pass  # Ignorer les erreurs lors de la destruction</span>
+        <span class="k">pass</span>
+    
+<div class="viewcode-block" id="AlbumCard.on_edit_clicked">
+<a class="viewcode-back" href="../../../api_ui.html#ui.components.album_card.AlbumCard.on_edit_clicked">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_edit_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">button</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ouvre la fenêtre d&#39;édition&quot;&quot;&quot;</span>
+        <span class="c1"># Import local pour éviter les dépendances circulaires</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">ui.managers.persistent_window_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">persistent_window_manager</span><span class="p">,</span> <span class="n">WindowType</span>
+        
+        <span class="c1"># Créer identifiant unique basé sur le chemin de l&#39;album</span>
+        <span class="n">folder_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;folder_path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">identifier</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;edit_single_</span><span class="si">{</span><span class="nb">hash</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">folder_path</span> <span class="k">else</span> <span class="kc">None</span>
+        
+        <span class="c1"># Utiliser le gestionnaire persistant - nouvelle fenêtre pour chaque album</span>
+        <span class="n">edit_window</span> <span class="o">=</span> <span class="n">persistent_window_manager</span><span class="o">.</span><span class="n">create_or_focus_window</span><span class="p">(</span>
+            <span class="n">window_type</span><span class="o">=</span><span class="n">WindowType</span><span class="o">.</span><span class="n">ALBUM_EDIT</span><span class="p">,</span>
+            <span class="n">identifier</span><span class="o">=</span><span class="n">identifier</span><span class="p">,</span>
+            <span class="n">focus_existing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Toujours nouvelle fenêtre pour édition individuelle</span>
+            <span class="n">album_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="p">,</span>
+            <span class="n">parent_card</span><span class="o">=</span><span class="bp">self</span>
+        <span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">edit_window</span><span class="p">:</span>
+            <span class="n">edit_window</span><span class="o">.</span><span class="n">show_all</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="AlbumCard.on_playlist_clicked">
+<a class="viewcode-back" href="../../../api_ui.html#ui.components.album_card.AlbumCard.on_playlist_clicked">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_playlist_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">button</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crée une playlist avec cet album&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Récupérer le chemin du dossier de l&#39;album</span>
+            <span class="n">folder_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;folder_path&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">folder_path</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder_path</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_show_error</span><span class="p">(</span><span class="s2">&quot;Dossier de l&#39;album non trouvé&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+            
+            <span class="c1"># Créer la playlist M3U</span>
+            <span class="n">playlist_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_playlist_m3u</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">playlist_path</span><span class="p">:</span>
+                <span class="n">album_title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;album&#39;</span><span class="p">,</span> <span class="s1">&#39;Album&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_show_success</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Playlist créée pour &#39;</span><span class="si">{</span><span class="n">album_title</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_show_error</span><span class="p">(</span><span class="s2">&quot;Impossible de créer la playlist&quot;</span><span class="p">)</span>
+                
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_show_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="AlbumCard.on_remove_clicked">
+<a class="viewcode-back" href="../../../api_ui.html#ui.components.album_card.AlbumCard.on_remove_clicked">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_remove_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">button</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retire cet album de la liste&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">album_title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;album&#39;</span><span class="p">,</span> <span class="s1">&#39;Album&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Notifier l&#39;application parent pour supprimer des structures de données</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_app</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_app</span><span class="p">,</span> <span class="s1">&#39;remove_album_from_list&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent_app</span><span class="o">.</span><span class="n">remove_album_from_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="p">)</span>
+            
+            <span class="c1"># Retirer de la grille parent directement</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parent</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_parent</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_show_success</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Album &#39;</span><span class="si">{</span><span class="n">album_title</span><span class="si">}</span><span class="s2">&#39; retiré de la liste&quot;</span><span class="p">)</span>
+                    
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_show_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur suppression album: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_playlist_m3u</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crée une playlist M3U avec les fichiers MP3 du dossier&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Chercher tous les fichiers MP3 dans le dossier</span>
+            <span class="n">mp3_files</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">folder_path</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">file_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mp3&#39;</span><span class="p">):</span>
+                    <span class="n">mp3_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">mp3_files</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Aucun fichier MP3 trouvé dans le dossier&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Trier les fichiers par nom</span>
+            <span class="n">mp3_files</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            
+            <span class="c1"># Récupérer l&#39;artiste depuis les données de l&#39;album</span>
+            <span class="n">artist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;artist&#39;</span><span class="p">,</span> <span class="s1">&#39;Artiste Inconnu&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Récupérer le titre de l&#39;album depuis le nom du dossier (comme affiché dans la carte)</span>
+            <span class="k">if</span> <span class="n">folder_path</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder_path</span><span class="p">):</span>
+                <span class="n">album_folder_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">album_folder_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;album&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;Album&#39;</span>
+            
+            <span class="c1"># Construire le nom au format : artiste - titre de l&#39;album (tel qu&#39;affiché)</span>
+            <span class="n">playlist_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">artist</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">album_folder_name</span><span class="si">}</span><span class="s2">&quot;</span>
+            
+            <span class="c1"># Nettoyer le nom de fichier des caractères non autorisés</span>
+            <span class="n">safe_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">playlist_name</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">isalnum</span><span class="p">()</span> <span class="ow">or</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;(&#39;</span><span class="p">,</span> <span class="s1">&#39;)&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">playlist_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">safe_name</span><span class="si">}</span><span class="s2">.m3u&quot;</span>
+            <span class="n">playlist_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder_path</span><span class="p">,</span> <span class="n">playlist_filename</span><span class="p">)</span>
+            
+            <span class="c1"># Contenu de la playlist</span>
+            <span class="n">playlist_content</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#EXTM3U&quot;</span><span class="p">]</span>
+            
+            <span class="k">for</span> <span class="n">mp3_file</span> <span class="ow">in</span> <span class="n">mp3_files</span><span class="p">:</span>
+                <span class="c1"># Ajouter chaque fichier avec chemin relatif</span>
+                <span class="n">playlist_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#EXTINF:-1,</span><span class="si">{</span><span class="n">mp3_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">playlist_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">)</span>
+            
+            <span class="c1"># Écrire le fichier playlist</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">playlist_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlist_content</span><span class="p">))</span>
+            
+            <span class="k">return</span> <span class="n">playlist_path</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_show_success</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Affiche un message de succès&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Implémenter notification toast si disponible</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_show_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Affiche un message d&#39;erreur&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># TODO: Implémenter notification toast si disponible</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_compilation_year_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calcule la plage d&#39;années en scannant TOUS les fichiers audio d&#39;un dossier.</span>
+<span class="sd">        Retourne une chaîne formatée pour les compilations ou l&#39;année unique.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.id3</span><span class="w"> </span><span class="kn">import</span> <span class="n">ID3</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.mp3</span><span class="w"> </span><span class="kn">import</span> <span class="n">MP3</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.mp4</span><span class="w"> </span><span class="kn">import</span> <span class="n">MP4</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.flac</span><span class="w"> </span><span class="kn">import</span> <span class="n">FLAC</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">folder_path</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder_path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        
+        <span class="n">all_years</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        
+        <span class="c1"># Scanner TOUS les fichiers audio du dossier</span>
+        <span class="n">audio_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span> 
+                      <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.mp3&#39;</span><span class="p">,</span> <span class="s1">&#39;.flac&#39;</span><span class="p">,</span> <span class="s1">&#39;.m4a&#39;</span><span class="p">,</span> <span class="s1">&#39;.mp4&#39;</span><span class="p">))]</span>
+        
+        <span class="k">for</span> <span class="n">audio_file</span> <span class="ow">in</span> <span class="n">audio_files</span><span class="p">:</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder_path</span><span class="p">,</span> <span class="n">audio_file</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">year</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                
+                <span class="k">if</span> <span class="n">file_path</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mp3&#39;</span><span class="p">):</span>
+                    <span class="n">audio</span> <span class="o">=</span> <span class="n">MP3</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                        <span class="n">year</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TYER&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TYER&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">year</span><span class="p">:</span>
+                            <span class="n">year</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TDRC&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TDRC&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                        
+                <span class="k">elif</span> <span class="n">file_path</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.flac&#39;</span><span class="p">):</span>
+                    <span class="n">audio</span> <span class="o">=</span> <span class="n">FLAC</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                        <span class="n">year</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DATE&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DATE&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                        
+                <span class="k">elif</span> <span class="n">file_path</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.m4a&#39;</span><span class="p">,</span> <span class="s1">&#39;.mp4&#39;</span><span class="p">)):</span>
+                    <span class="n">audio</span> <span class="o">=</span> <span class="n">MP4</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                        <span class="n">year</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;©day&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;©day&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                
+                <span class="c1"># Extraire l&#39;année de la chaîne (peut contenir date complète)</span>
+                <span class="k">if</span> <span class="n">year</span><span class="p">:</span>
+                    <span class="n">years_found</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\b\d</span><span class="si">{4}</span><span class="s1">\b&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">years_found</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="mi">1900</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2100</span><span class="p">:</span>
+                            <span class="n">all_years</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+                            
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># Ignorer les erreurs de fichiers individuels</span>
+                <span class="k">continue</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">all_years</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        
+        <span class="c1"># Si une seule année, la retourner</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_years</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">all_years</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="c1"># Si plusieurs années, créer la plage</span>
+        <span class="n">sorted_years</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">all_years</span><span class="p">])</span>
+        <span class="n">min_year</span> <span class="o">=</span> <span class="n">sorted_years</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">max_year</span> <span class="o">=</span> <span class="n">sorted_years</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">min_year</span> <span class="o">==</span> <span class="n">max_year</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_year</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Format compilation : YYYY-YY</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">min_year</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">max_year</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span><span class="si">}</span><span class="s2">&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Met à jour l&#39;affichage de la carte après édition&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Utiliser le chemin d&#39;album ORIGINAL au lieu des données corrompues</span>
+            <span class="n">folder_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_album_path</span>
+            <span class="k">if</span> <span class="n">folder_path</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder_path</span><span class="p">):</span>
+                <span class="c1"># Recharger les métadonnées depuis le premier fichier audio du dossier</span>
+                <span class="n">audio_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span> 
+                              <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.mp3&#39;</span><span class="p">,</span> <span class="s1">&#39;.flac&#39;</span><span class="p">,</span> <span class="s1">&#39;.m4a&#39;</span><span class="p">,</span> <span class="s1">&#39;.mp4&#39;</span><span class="p">))]</span>
+                
+                <span class="k">if</span> <span class="n">audio_files</span><span class="p">:</span>
+                    <span class="n">first_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder_path</span><span class="p">,</span> <span class="n">audio_files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">fresh_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_metadata_from_file</span><span class="p">(</span><span class="n">first_file</span><span class="p">)</span>
+                    
+                    <span class="c1"># REMPLACER complètement album_data au lieu de seulement mettre à jour</span>
+                    <span class="c1"># Utiliser le chemin original préservé au lieu du chemin corrompu</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span> <span class="o">=</span> <span class="n">fresh_metadata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># Nouvelles métadonnées complètes</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="p">[</span><span class="s1">&#39;folder_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_album_path</span>  <span class="c1"># Utiliser le chemin ORIGINAL</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_album_path</span>  <span class="c1"># Utiliser le chemin ORIGINAL</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>  <span class="c1"># Fichiers audio non trouvés</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>  <span class="c1"># Dossier introuvable</span>
+        
+            <span class="c1"># Parcourir la hiérarchie pour trouver les labels</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_children</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">box_child</span> <span class="ow">in</span> <span class="n">child</span><span class="o">.</span><span class="n">get_children</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">box_child</span><span class="p">,</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">):</span>  <span class="c1"># Info box</span>
+                            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">box_child</span><span class="o">.</span><span class="n">get_children</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">)]</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># Artiste + Titre + Genre (minimum)</span>
+                                <span class="c1"># Label 0 : Artiste</span>
+                                <span class="n">artist_label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="n">new_artist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;artist&quot;</span><span class="p">,</span> <span class="s2">&quot;Artiste Inconnu&quot;</span><span class="p">)</span>
+                                <span class="n">artist_label</span><span class="o">.</span><span class="n">set_markup</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;b&gt;</span><span class="si">{</span><span class="n">new_artist</span><span class="si">}</span><span class="s1">&lt;/b&gt;&#39;</span><span class="p">)</span>
+                                
+                                <span class="c1"># Label 1 : Titre (métadonnées album plutôt que nom du dossier)</span>
+                                <span class="n">title_label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                                <span class="c1"># Priorité aux métadonnées de l&#39;album plutôt qu&#39;au nom du dossier</span>
+                                <span class="n">new_title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;album&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="n">new_title</span><span class="p">:</span>
+                                    <span class="c1"># Fallback sur le nom du dossier seulement si pas de métadonnées album</span>
+                                    <span class="n">folder_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;folder_path&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">)</span>
+                                    <span class="n">new_title</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span> <span class="k">if</span> <span class="n">folder_path</span> <span class="k">else</span> <span class="s1">&#39;Album Inconnu&#39;</span>
+                                
+                                <span class="c1"># Ajouter l&#39;année au format (Année) Titre</span>
+                                <span class="c1"># Calculer la plage d&#39;années en scannant TOUS les fichiers</span>
+                                <span class="n">folder_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;folder_path&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_album_path</span>
+                                <span class="n">year_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_compilation_year_range</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span>
+                                
+                                <span class="k">if</span> <span class="n">year_range</span><span class="p">:</span>
+                                    <span class="n">new_title_with_year</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">year_range</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">new_title</span><span class="si">}</span><span class="s2">&quot;</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="n">new_title_with_year</span> <span class="o">=</span> <span class="n">new_title</span>
+                                
+                                <span class="n">title_label</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="n">new_title_with_year</span><span class="p">)</span>
+                                
+                                <span class="c1"># Label 2 : Genre</span>
+                                <span class="n">genre_label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                                <span class="n">new_genre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;genre&quot;</span><span class="p">,</span> <span class="s2">&quot;Genre inconnu&quot;</span><span class="p">)</span>
+                                <span class="n">genre_label</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="n">new_genre</span><span class="p">)</span>
+                                
+                                <span class="k">return</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_metadata_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Charge les métadonnées depuis un fichier audio&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.id3</span><span class="w"> </span><span class="kn">import</span> <span class="n">ID3</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.mp3</span><span class="w"> </span><span class="kn">import</span> <span class="n">MP3</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.mp4</span><span class="w"> </span><span class="kn">import</span> <span class="n">MP4</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">mutagen.flac</span><span class="w"> </span><span class="kn">import</span> <span class="n">FLAC</span>
+            
+            <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
+            
+            <span class="k">if</span> <span class="n">file_path</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mp3&#39;</span><span class="p">):</span>
+                <span class="n">audio</span> <span class="o">=</span> <span class="n">MP3</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">ID3</span><span class="o">=</span><span class="n">ID3</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                    <span class="n">artist</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TPE1&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TPE1&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                    <span class="n">album</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TALB&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TALB&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                    <span class="n">genre</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TCON&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TCON&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                    <span class="n">year</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TDRC&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TDRC&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                    
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;artist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">artist</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;album&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">album</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;genre&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">genre</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">year</span>
+                    
+            <span class="k">elif</span> <span class="n">file_path</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.flac&#39;</span><span class="p">):</span>
+                <span class="n">audio</span> <span class="o">=</span> <span class="n">FLAC</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;artist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ARTIST&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ARTIST&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;album&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ALBUM&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ALBUM&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;genre&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;GENRE&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;GENRE&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DATE&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DATE&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                    
+            <span class="k">elif</span> <span class="n">file_path</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.m4a&#39;</span><span class="p">,</span> <span class="s1">&#39;.mp4&#39;</span><span class="p">)):</span>
+                <span class="n">audio</span> <span class="o">=</span> <span class="n">MP4</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;artist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\xa9</span><span class="s1">ART&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\xa9</span><span class="s1">ART&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;album&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\xa9</span><span class="s1">alb&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\xa9</span><span class="s1">alb&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;genre&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\xa9</span><span class="s1">gen&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\xa9</span><span class="s1">gen&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\xa9</span><span class="s1">day&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\xa9</span><span class="s1">day&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+            
+            <span class="k">return</span> <span class="n">metadata</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+    
+<div class="viewcode-block" id="AlbumCard.update_folder_path">
+<a class="viewcode-back" href="../../../api_ui.html#ui.components.album_card.AlbumCard.update_folder_path">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_folder_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_folder_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Met à jour le chemin du dossier après renommage et rafraîchit l&#39;affichage&quot;&quot;&quot;</span>
+        <span class="c1"># Mettre à jour les données de l&#39;album</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="p">[</span><span class="s1">&#39;folder_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_folder_path</span>
+        
+        <span class="c1"># Rafraîchir l&#39;affichage pour montrer le nouveau nom</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_display</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="AlbumCard.refresh_cover">
+<a class="viewcode-back" href="../../../api_ui.html#ui.components.album_card.AlbumCard.refresh_cover">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh_cover</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Met à jour la pochette de la carte après téléchargement&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Trouver le frame qui contient la pochette</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_children</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">box_child</span> <span class="ow">in</span> <span class="n">child</span><span class="o">.</span><span class="n">get_children</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">box_child</span><span class="p">,</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>  <span class="c1"># Cover frame</span>
+                            <span class="c1"># Supprimer l&#39;ancien widget</span>
+                            <span class="n">old_cover</span> <span class="o">=</span> <span class="n">box_child</span><span class="o">.</span><span class="n">get_child</span><span class="p">()</span>
+                            <span class="k">if</span> <span class="n">old_cover</span><span class="p">:</span>
+                                <span class="n">box_child</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_cover</span><span class="p">)</span>
+                            
+                            <span class="c1"># Créer le nouveau widget pochette</span>
+                            <span class="n">new_cover</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_cover_widget</span><span class="p">()</span>
+                            <span class="n">box_child</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_cover</span><span class="p">)</span>
+                            <span class="n">box_child</span><span class="o">.</span><span class="n">show_all</span><span class="p">()</span>
+                            
+                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔄 Pochette de carte rafraîchie&quot;</span><span class="p">)</span>
+                            <span class="k">return</span> <span class="kc">True</span>
+            
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ Frame pochette introuvable&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Erreur rafraîchissement pochette: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+    
+<div class="viewcode-block" id="AlbumCard.update_cover">
+<a class="viewcode-back" href="../../../api_ui.html#ui.components.album_card.AlbumCard.update_cover">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_cover</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Met à jour la pochette de la carte après téléchargement d&#39;une nouvelle pochette&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Récupérer le frame qui contient la pochette</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_children</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">box_child</span> <span class="ow">in</span> <span class="n">child</span><span class="o">.</span><span class="n">get_children</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">box_child</span><span class="p">,</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>  <span class="c1"># Cover frame</span>
+                            <span class="c1"># Supprimer l&#39;ancien widget de pochette</span>
+                            <span class="n">old_cover</span> <span class="o">=</span> <span class="n">box_child</span><span class="o">.</span><span class="n">get_child</span><span class="p">()</span>
+                            <span class="k">if</span> <span class="n">old_cover</span><span class="p">:</span>
+                                <span class="n">box_child</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_cover</span><span class="p">)</span>
+                            
+                            <span class="c1"># Créer et ajouter la nouvelle pochette</span>
+                            <span class="n">new_cover_widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_cover_widget</span><span class="p">()</span>
+                            <span class="n">box_child</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_cover_widget</span><span class="p">)</span>
+                            <span class="n">box_child</span><span class="o">.</span><span class="n">show_all</span><span class="p">()</span>
+                            
+                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Pochette de carte mise à jour&quot;</span><span class="p">)</span>
+                            <span class="k">return</span> <span class="kc">True</span>
+            
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ Frame de pochette non trouvé pour mise à jour&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Erreur mise à jour pochette carte: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+    
+<div class="viewcode-block" id="AlbumCard.on_selection_toggled">
+<a class="viewcode-back" href="../../../api_ui.html#ui.components.album_card.AlbumCard.on_selection_toggled">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_selection_toggled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkbox</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gère la sélection/déselection de l&#39;album&quot;&quot;&quot;</span>
+        <span class="n">is_selected</span> <span class="o">=</span> <span class="n">checkbox</span><span class="o">.</span><span class="n">get_active</span><span class="p">()</span>
+        <span class="n">album_title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;album&#39;</span><span class="p">,</span> <span class="s1">&#39;Album Sans Titre&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_selected</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Album sélectionné: </span><span class="si">{</span><span class="n">album_title</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Album désélectionné: </span><span class="si">{</span><span class="n">album_title</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_cover_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crée le widget de pochette - vraie image ou placeholder&quot;&quot;&quot;</span>
+        <span class="n">album_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;folder_path&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">album_path</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">album_path</span><span class="p">):</span>
+            <span class="c1"># Chercher une pochette dans le dossier</span>
+            <span class="n">cover_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_cover_file</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">cover_path</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cover_path</span><span class="p">):</span>
+                <span class="c1"># Charger et afficher la vraie pochette</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_cover_image</span><span class="p">(</span><span class="n">cover_path</span><span class="p">)</span>
+        
+        <span class="c1"># Fallback: placeholder avec emoji</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_cover_placeholder</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_cover_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cherche un fichier de pochette dans le dossier d&#39;album&quot;&quot;&quot;</span>
+        <span class="n">cover_names</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;cover.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;cover.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;cover.png&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;folder.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;folder.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;folder.png&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;front.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;front.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;front.png&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;album.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;album.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;album.png&#39;</span>
+        <span class="p">]</span>
+        
+        <span class="k">for</span> <span class="n">cover_name</span> <span class="ow">in</span> <span class="n">cover_names</span><span class="p">:</span>
+            <span class="n">cover_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">album_path</span><span class="p">,</span> <span class="n">cover_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cover_path</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">cover_path</span>
+        
+        <span class="k">return</span> <span class="kc">None</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_cover_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cover_path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crée un widget Gtk.Image avec la pochette redimensionnée&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Charger et redimensionner l&#39;image à 300x300</span>
+            <span class="n">pixbuf</span> <span class="o">=</span> <span class="n">GdkPixbuf</span><span class="o">.</span><span class="n">Pixbuf</span><span class="o">.</span><span class="n">new_from_file_at_scale</span><span class="p">(</span>
+                <span class="n">cover_path</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="kc">True</span>
+            <span class="p">)</span>
+            
+            <span class="n">image</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Image</span><span class="p">()</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">set_from_pixbuf</span><span class="p">(</span><span class="n">pixbuf</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">image</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur chargement pochette </span><span class="si">{</span><span class="n">cover_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_cover_placeholder</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_cover_placeholder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crée le placeholder coloré avec emoji&quot;&quot;&quot;</span>
+        <span class="n">cover_label</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">()</span>
+        <span class="n">cover_label</span><span class="o">.</span><span class="n">set_markup</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;span font=&quot;48&quot;&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;emoji&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;🎵&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/span&gt;&#39;</span><span class="p">)</span>
+        <span class="n">cover_label</span><span class="o">.</span><span class="n">get_style_context</span><span class="p">()</span><span class="o">.</span><span class="n">add_class</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cover-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">album_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;color&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;blue&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cover_label</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

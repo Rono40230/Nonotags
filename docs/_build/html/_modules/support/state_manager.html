@@ -1,0 +1,676 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>support.state_manager &mdash; Documentation Nonotags 1.0.0</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=05dadb3a"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/translations.js?v=e6b791cb"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Nonotags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guide utilisateur:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation de Nonotags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilisation.html">Guide d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api_core.html">API Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_services.html">API Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_ui.html">API UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_support.html">API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_database.html">API Database</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules détaillés:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Nonotags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Code du module</a></li>
+      <li class="breadcrumb-item active">support.state_manager</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Code source de support.state_manager</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module 16 - Gestionnaire d&#39;état global de l&#39;application</span>
+<span class="sd">Centralise l&#39;état de l&#39;application et coordination entre modules.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">threading</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lock</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">support.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+
+<div class="viewcode-block" id="ApplicationState">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.ApplicationState">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ApplicationState</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;États possibles de l&#39;application.&quot;&quot;&quot;</span>
+    <span class="n">STARTING</span> <span class="o">=</span> <span class="s2">&quot;starting&quot;</span>
+    <span class="n">READY</span> <span class="o">=</span> <span class="s2">&quot;ready&quot;</span>
+    <span class="n">IMPORTING</span> <span class="o">=</span> <span class="s2">&quot;importing&quot;</span>
+    <span class="n">PROCESSING</span> <span class="o">=</span> <span class="s2">&quot;processing&quot;</span>
+    <span class="n">ERROR</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span>
+    <span class="n">SHUTDOWN</span> <span class="o">=</span> <span class="s2">&quot;shutdown&quot;</span></div>
+
+
+<div class="viewcode-block" id="ImportStatus">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.ImportStatus">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImportStatus</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;États possibles d&#39;un import.&quot;&quot;&quot;</span>
+    <span class="n">PENDING</span> <span class="o">=</span> <span class="s2">&quot;pending&quot;</span>
+    <span class="n">IN_PROGRESS</span> <span class="o">=</span> <span class="s2">&quot;in_progress&quot;</span>
+    <span class="n">SUCCESS</span> <span class="o">=</span> <span class="s2">&quot;success&quot;</span>
+    <span class="n">ERROR</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span>
+    <span class="n">CANCELLED</span> <span class="o">=</span> <span class="s2">&quot;cancelled&quot;</span></div>
+
+
+<div class="viewcode-block" id="AlbumState">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.AlbumState">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AlbumState</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;État d&#39;un album dans l&#39;application.&quot;&quot;&quot;</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">artist</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">track_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">import_status</span><span class="p">:</span> <span class="n">ImportStatus</span> <span class="o">=</span> <span class="n">ImportStatus</span><span class="o">.</span><span class="n">PENDING</span>
+    <span class="n">error_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">selected</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">last_modified</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+    <span class="n">metadata_changed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="ImportTask">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.ImportTask">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImportTask</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tâche d&#39;import en cours.&quot;&quot;&quot;</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">status</span><span class="p">:</span> <span class="n">ImportStatus</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># 0.0 à 1.0</span>
+    <span class="n">current_step</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">error_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">start_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+    <span class="n">end_time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="StateManager">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StateManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gestionnaire centralisé de l&#39;état global de l&#39;application.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise le gestionnaire d&#39;état.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+        
+        <span class="c1"># État global de l&#39;application</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_app_state</span> <span class="o">=</span> <span class="n">ApplicationState</span><span class="o">.</span><span class="n">STARTING</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_error_message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        
+        <span class="c1"># Albums importés et gérés</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AlbumState</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_selected_albums</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Tâches d&#39;import en cours</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_import_tasks</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ImportTask</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># Système d&#39;événements</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event_handlers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># Statistiques</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;total_imports&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;successful_imports&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;failed_imports&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;total_tracks_processed&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;total_metadata_changes&#39;</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">}</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;State manager initialized&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># === Gestion de l&#39;état global ===</span>
+    
+<div class="viewcode-block" id="StateManager.get_app_state">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.get_app_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_app_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ApplicationState</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retourne l&#39;état actuel de l&#39;application.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_state</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.set_app_state">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.set_app_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_app_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">ApplicationState</span><span class="p">,</span> <span class="n">error_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Définit l&#39;état de l&#39;application.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            state: Nouvel état</span>
+<span class="sd">            error_message: Message d&#39;erreur si applicable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="n">old_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_state</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_app_state</span> <span class="o">=</span> <span class="n">state</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error_message</span> <span class="o">=</span> <span class="n">error_message</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Application state changed: </span><span class="si">{</span><span class="n">old_state</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error_message</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error state: </span><span class="si">{</span><span class="n">error_message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Émission de l&#39;événement</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;app_state_changed&#39;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s1">&#39;old_state&#39;</span><span class="p">:</span> <span class="n">old_state</span><span class="p">,</span>
+            <span class="s1">&#39;new_state&#39;</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span>
+            <span class="s1">&#39;error_message&#39;</span><span class="p">:</span> <span class="n">error_message</span>
+        <span class="p">})</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.get_error_message">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.get_error_message">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_error_message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retourne le dernier message d&#39;erreur.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_error_message</span></div>
+
+    
+    <span class="c1"># === Gestion des albums ===</span>
+    
+<div class="viewcode-block" id="StateManager.add_album">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.add_album">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_album</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album</span><span class="p">:</span> <span class="n">AlbumState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ajoute un album à l&#39;état.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album: Album à ajouter</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            True si l&#39;album a été ajouté, False s&#39;il existait déjà</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">album</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Album already exists: </span><span class="si">{</span><span class="n">album</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">[</span><span class="n">album</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">album</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Album added: </span><span class="si">{</span><span class="n">album</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">album</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;album_added&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;album&#39;</span><span class="p">:</span> <span class="n">album</span><span class="p">})</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.update_album">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.update_album">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_album</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Met à jour un album.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_id: ID de l&#39;album</span>
+<span class="sd">            **kwargs: Champs à mettre à jour</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            True si l&#39;album a été mis à jour, False sinon</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">album_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Album not found for update: </span><span class="si">{</span><span class="n">album_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            
+            <span class="n">album</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">[</span><span class="n">album_id</span><span class="p">]</span>
+            <span class="n">old_values</span> <span class="o">=</span> <span class="p">{}</span>
+            
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">album</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+                    <span class="n">old_values</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">album</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">album</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            
+            <span class="n">album</span><span class="o">.</span><span class="n">last_modified</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Album updated: </span><span class="si">{</span><span class="n">album_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;album_updated&#39;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s1">&#39;album_id&#39;</span><span class="p">:</span> <span class="n">album_id</span><span class="p">,</span>
+            <span class="s1">&#39;old_values&#39;</span><span class="p">:</span> <span class="n">old_values</span><span class="p">,</span>
+            <span class="s1">&#39;new_values&#39;</span><span class="p">:</span> <span class="n">kwargs</span>
+        <span class="p">})</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.remove_album">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.remove_album">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_album</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Supprime un album de l&#39;état.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_id: ID de l&#39;album à supprimer</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            True si l&#39;album a été supprimé, False sinon</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">album_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Album not found for removal: </span><span class="si">{</span><span class="n">album_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            
+            <span class="n">album</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">album_id</span><span class="p">)</span>
+            
+            <span class="c1"># Suppression de la sélection si nécessaire</span>
+            <span class="k">if</span> <span class="n">album_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_selected_albums</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_selected_albums</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">album_id</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Album removed: </span><span class="si">{</span><span class="n">album_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;album_removed&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;album_id&#39;</span><span class="p">:</span> <span class="n">album_id</span><span class="p">,</span> <span class="s1">&#39;album&#39;</span><span class="p">:</span> <span class="n">album</span><span class="p">})</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.get_album">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.get_album">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_album</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AlbumState</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retourne un album par son ID.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_id: ID de l&#39;album</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Album ou None si non trouvé</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">album_id</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.get_all_albums">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.get_all_albums">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_all_albums</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AlbumState</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retourne tous les albums.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.get_albums_by_status">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.get_albums_by_status">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_albums_by_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="n">ImportStatus</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AlbumState</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retourne les albums avec un statut donné.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            status: Statut recherché</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Liste des albums avec ce statut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">album</span> <span class="k">for</span> <span class="n">album</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> 
+                   <span class="k">if</span> <span class="n">album</span><span class="o">.</span><span class="n">import_status</span> <span class="o">==</span> <span class="n">status</span><span class="p">]</span></div>
+
+    
+    <span class="c1"># === Gestion de la sélection ===</span>
+    
+<div class="viewcode-block" id="StateManager.select_album">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.select_album">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">select_album</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sélectionne un album.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_id: ID de l&#39;album à sélectionner</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            True si l&#39;album a été sélectionné, False sinon</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">album_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            
+            <span class="k">if</span> <span class="n">album_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_selected_albums</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_selected_albums</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">album_id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">[</span><span class="n">album_id</span><span class="p">]</span><span class="o">.</span><span class="n">selected</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;album_selected&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;album_id&#39;</span><span class="p">:</span> <span class="n">album_id</span><span class="p">})</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.deselect_album">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.deselect_album">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">deselect_album</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Désélectionne un album.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_id: ID de l&#39;album à désélectionner</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            True si l&#39;album a été désélectionné, False sinon</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">album_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_selected_albums</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_selected_albums</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">album_id</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">album_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">[</span><span class="n">album_id</span><span class="p">]</span><span class="o">.</span><span class="n">selected</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;album_deselected&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;album_id&#39;</span><span class="p">:</span> <span class="n">album_id</span><span class="p">})</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.clear_selection">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.clear_selection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Vide la sélection.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">album_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_selected_albums</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">album_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_albums</span><span class="p">[</span><span class="n">album_id</span><span class="p">]</span><span class="o">.</span><span class="n">selected</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_selected_albums</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;selection_cleared&#39;</span><span class="p">,</span> <span class="p">{})</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.get_selected_albums">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.get_selected_albums">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_selected_albums</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retourne la liste des IDs d&#39;albums sélectionnés.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_selected_albums</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+    
+    <span class="c1"># === Gestion des tâches d&#39;import ===</span>
+    
+<div class="viewcode-block" id="StateManager.start_import_task">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.start_import_task">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start_import_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="n">ImportTask</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Démarre une tâche d&#39;import.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            task: Tâche d&#39;import à démarrer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_import_tasks</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Import task started: </span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;import_task_started&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="n">task</span><span class="p">})</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.update_import_task">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.update_import_task">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_import_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Met à jour une tâche d&#39;import.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            task_id: ID de la tâche</span>
+<span class="sd">            **kwargs: Champs à mettre à jour</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">task_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_import_tasks</span><span class="p">:</span>
+                <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_import_tasks</span><span class="p">[</span><span class="n">task_id</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+                        <span class="nb">setattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;import_task_updated&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;task_id&#39;</span><span class="p">:</span> <span class="n">task_id</span><span class="p">,</span> <span class="s1">&#39;updates&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">})</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.finish_import_task">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.finish_import_task">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">finish_import_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="n">ImportStatus</span><span class="p">,</span> <span class="n">error_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Termine une tâche d&#39;import.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            task_id: ID de la tâche</span>
+<span class="sd">            status: Statut final</span>
+<span class="sd">            error_message: Message d&#39;erreur si applicable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">task_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_import_tasks</span><span class="p">:</span>
+                <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_import_tasks</span><span class="p">[</span><span class="n">task_id</span><span class="p">]</span>
+                <span class="n">task</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status</span>
+                <span class="n">task</span><span class="o">.</span><span class="n">error_message</span> <span class="o">=</span> <span class="n">error_message</span>
+                <span class="n">task</span><span class="o">.</span><span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                
+                <span class="c1"># Mise à jour des statistiques</span>
+                <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="n">ImportStatus</span><span class="o">.</span><span class="n">SUCCESS</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="s1">&#39;successful_imports&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="n">ImportStatus</span><span class="o">.</span><span class="n">ERROR</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="s1">&#39;failed_imports&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Import task finished: </span><span class="si">{</span><span class="n">task_id</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">status</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;import_task_finished&#39;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s1">&#39;task_id&#39;</span><span class="p">:</span> <span class="n">task_id</span><span class="p">,</span>
+            <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span>
+            <span class="s1">&#39;error_message&#39;</span><span class="p">:</span> <span class="n">error_message</span>
+        <span class="p">})</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.get_import_tasks">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.get_import_tasks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_import_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ImportTask</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retourne toutes les tâches d&#39;import.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_import_tasks</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.get_active_import_tasks">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.get_active_import_tasks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_active_import_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ImportTask</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retourne les tâches d&#39;import en cours.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">task</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_import_tasks</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> 
+                   <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">ImportStatus</span><span class="o">.</span><span class="n">IN_PROGRESS</span><span class="p">]</span></div>
+
+    
+    <span class="c1"># === Système d&#39;événements ===</span>
+    
+<div class="viewcode-block" id="StateManager.register_event_handler">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.register_event_handler">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_event_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Enregistre un gestionnaire d&#39;événement.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            event_type: Type d&#39;événement</span>
+<span class="sd">            handler: Fonction gestionnaire</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">event_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_handlers</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_event_handlers</span><span class="p">[</span><span class="n">event_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event_handlers</span><span class="p">[</span><span class="n">event_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event handler registered for: </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.unregister_event_handler">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.unregister_event_handler">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unregister_event_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Désenregistre un gestionnaire d&#39;événement.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            event_type: Type d&#39;événement</span>
+<span class="sd">            handler: Fonction gestionnaire</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">event_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_handlers</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_event_handlers</span><span class="p">[</span><span class="n">event_type</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event handler unregistered for: </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">pass</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_emit_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Émet un événement.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            event_type: Type d&#39;événement</span>
+<span class="sd">            data: Données de l&#39;événement</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">event_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_handlers</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_handlers</span><span class="p">[</span><span class="n">event_type</span><span class="p">]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">handler</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in event handler for </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># === Statistiques ===</span>
+    
+<div class="viewcode-block" id="StateManager.get_statistics">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.get_statistics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retourne les statistiques de l&#39;application.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.increment_stat">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.increment_stat">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">increment_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stat_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Incrémente une statistique.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            stat_name: Nom de la statistique</span>
+<span class="sd">            value: Valeur à ajouter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stat_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">stat_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">value</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.reset_statistics">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.reset_statistics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remet à zéro toutes les statistiques.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Statistics reset&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;statistics_reset&#39;</span><span class="p">,</span> <span class="p">{})</span></div>
+
+    
+<div class="viewcode-block" id="StateManager.update_album_processing_status">
+<a class="viewcode-back" href="../../api_support.html#support.state_manager.StateManager.update_album_processing_status">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_album_processing_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Met à jour le statut de traitement d&#39;un album.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            album_path: Chemin vers l&#39;album</span>
+<span class="sd">            status: Nouveau statut (cleaning_files, processing, completed, failed, etc.)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            True si mis à jour avec succès</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Trouver l&#39;album par path ou créer une entrée temporaire</span>
+            <span class="n">album_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">album_path</span><span class="p">)</span>
+            
+            <span class="c1"># Log du changement de statut</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Album </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2"> status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Émettre un événement pour notifier l&#39;UI</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_emit_event</span><span class="p">(</span><span class="s1">&#39;album_status_changed&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;album_path&#39;</span><span class="p">:</span> <span class="n">album_path</span><span class="p">,</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span>
+                <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="p">})</span>
+            
+            <span class="k">return</span> <span class="kc">True</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur mise à jour statut album </span><span class="si">{</span><span class="n">album_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2025, Rono.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
